@@ -15,6 +15,12 @@ setup (
         author_email='d0u9.su@outlook.com',
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
+        include_package_data=True,
+        zip_safe=False,
+        install_requires=[
+            'Flask>=0.2',
+            'youtube-dl',
+        ],
         entry_points={
             'console_scripts': [
                 'youtube-dl-webui = youtube_dl_webui:main'
