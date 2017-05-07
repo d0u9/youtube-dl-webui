@@ -1,0 +1,12 @@
+{
+    "general": {
+        "download_dir": "/tmp/ydl/youtube-dl"
+    },
+    "server": {
+        "host": "0.0.0.0",
+        "port": 5000
+    },
+    "youtube_dl": {
+        "proxy": "socks5://127.0.0.1:1080"
+    }
+}
