@@ -46,24 +46,31 @@ class task_status():
 
 class ydl_task():
     def __init__(self, info, status, ydl_opts={}):
-        self.ydl_opts = ydl_opts
         self.tid = info['tid']
+        self.info =info
         self.status = status
-        self.ydl_opts = ydl_opts
+        self.ydl_opts = copy.deepcopy(ydl_opts.dict())
+        self.downloader = None
 
-        self.downloader = downloader(info, status, copy.deepcopy(ydl_opts.dict()))
+    def delegate(self):
+        self.downloader = downloader(self.info, self.status, self.ydl_opts)
+
 
     def start_dl(self):
         self.status.set_state('downloading')
+        self.delegate()
         self.downloader.start()
 
+
     def pause_dl(self):
-        self.tasks.get_status(self.tid).set_state('paused')
-        #  self.downloader.stop()
+        self.status.set_state('paused')
+        self.downloader.stop()
+
 
     def resume_dl(self):
-        self.tasks.get_status(self.tid).set_state('downloading')
-        #  self.downloader.start()
+        self.status.set_state('downloading')
+        self.delegate()
+        self.downloader.start()
 
     def del_task(self):
         pass

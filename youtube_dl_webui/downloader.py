@@ -64,7 +64,8 @@ class downloader(Process):
 
         from time import sleep
         from random import randint
-        sleep(randint(2, 10))
+        #  sleep(randint(5, 10))
+        sleep(1000)
 
 
         self.status.set_state('finished')
@@ -86,5 +87,5 @@ class downloader(Process):
         self.ydl_conf[key] = val
 
     def stop(self):
-        print ("stop")
         self.terminate()
+        self.join()

@@ -100,9 +100,22 @@ class ydl_manger():
         task = ydl_task(info, status, ydl_opts)
         self.tasks.add_object(tid, task)
 
+        return tid
+
+
+    def start_task(self, tid):
+        task = self.tasks.get_object(tid)
         task.start_dl()
 
-        return tid
+
+    def pause_task(self, tid):
+        task = self.tasks.get_object(tid)
+        task.pause_dl()
+
+
+    def resume_task(self, tid):
+        task = self.tasks.get_object(tid)
+        task.resume_dl()
 
 
     def get_task_status(self, tid):

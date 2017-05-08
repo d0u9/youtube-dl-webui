@@ -20,6 +20,11 @@ def getopt(argv):
 
 
 def main(argv=None):
+    from os import getpid
+
+    print("pid is {}".format(getpid()))
+
+
     args = getopt(argv)
     conf = config(args)
 
@@ -32,13 +37,25 @@ def main(argv=None):
 
     from time import sleep
     sleep(1)
-    status = m.get_task_status(tid1)
-    #  print ('current_task_status {}'.format(str(status)))
-    #  status = m.get_task_status(tid2)
-    #  print ('current_task_status {}'.format(str(status)))
 
     print("-------------------------------------------------")
-    sleep(10)
+    sleep(1)
+
+    m.start_task(tid1)
+    status = m.get_task_status(tid1)
+    print ('current_task_status {}'.format(str(status)))
+
+    sleep(5)
+    m.pause_task(tid1)
+    status = m.get_task_status(tid1)
+    print ('current_task_status {}'.format(str(status)))
+
+    sleep(5)
+    m.resume_task(tid1)
+    status = m.get_task_status(tid1)
+    print ('current_task_status {}'.format(str(status)))
+
+    sleep(1000)
 
     #  s = server()
     #  s.run(conf.server)
