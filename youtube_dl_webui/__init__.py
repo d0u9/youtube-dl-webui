@@ -60,6 +60,10 @@ def main(argv=None):
     print(m.query_task(tid1))
 
     print("-------------------------------------------------")
+    sleep(10)
+    status = m.get_task_status(tid1)
+    print ('current_task_status {}'.format(str(status)))
+
     sleep(1000)
 
     #  s = server()

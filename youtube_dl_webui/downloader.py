@@ -52,36 +52,35 @@ class downloader(Process):
 
 
     def run(self):
-        self.ydl_opts['forcejson'] = '1'
-        self.ydl_opts['logger'] = self.log_filter
-        self.ydl_opts['skip_download'] = '1'
+        #  self.ydl_opts['forcejson'] = '1'
+        #  self.ydl_opts['logger'] = self.log_filter
+        #  self.ydl_opts['skip_download'] = '1'
 
         # For tests below, delete after use
-        info_dict = {'title': 'this is a test title'}
-        self.status.update_from_info_dict(info_dict)
+        #  info_dict = {'title': 'this is a test title'}
+        #  self.status.update_from_info_dict(info_dict)
 
-        print ('start downloading... {}'.format(self.status.get_status()))
+        #  print ('start downloading... {}'.format(self.status.get_status()))
 
-        from time import sleep
-        from random import randint
-        #  sleep(randint(5, 10))
-        sleep(1000)
+        #  from time import sleep
+        #  from random import randint
+        #  #  sleep(randint(5, 10))
+        #  sleep(1000)
 
 
-        self.status.set_state('finished')
-        print ('download finished {}'.format(self.status.get_status()))
+        #  self.status.set_state('finished')
+        #  print ('download finished {}'.format(self.status.get_status()))
 
         # For tests above, delete after use
 
-        #  with youtube_dl.YoutubeDL(self.ydl_conf) as ydl:
-            #  ydl.download([self.task_info.get('url')])
 
-        #  self.task_status.update_from_info_dict(self.log_filter.get_info_dict())
+        with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            print("downloading {}".format(self.info['url']))
+            info_dict = ydl.extract_info(self.info['url'], download=False)
 
-        #  self.log_filter.only_json = False
-        #  del self.ydl_conf['skip_download']
-        #  with youtube_dl.YoutubeDL(self.ydl_conf) as ydl:
-            #  ydl.download([self.task_info.get('url')])
+            self.status.update_from_info_dict(info_dict)
+            ydl.download([self.info['url']])
+
 
     def update_ydl_conf(self, key, val):
         self.ydl_conf[key] = val
