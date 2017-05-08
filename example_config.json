@@ -1,6 +1,7 @@
 {
     "general": {
-        "download_dir": "/tmp/ydl/youtube-dl"
+        "download_dir": "/tmp/ydl/youtube-dl",
+        "log_size": 10
     },
     "server": {
         "host": "0.0.0.0",

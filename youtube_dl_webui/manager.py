@@ -90,6 +90,20 @@ class tasks():
             return self._data_.get(tid).get('status').get_status()
 
 
+    def state_list(self):
+        ret = {'downloading': 0, 'paused': 0, 'finished': 0}
+        for key, val in self._data_.items():
+            state = val['status']['state']
+            if state is 'downloading':
+                ret['downloading'] += 1
+            elif state is 'paused':
+                ret['paused'] += 1
+            elif state is 'finished':
+                ret['finished'] += 1
+
+        return ret
+
+
 def create_dl_dir(dl_dir):
     # create download dir
     if os.path.exists(dl_dir) and not os.path.isdir(dl_dir):
@@ -160,6 +174,10 @@ class ydl_manger():
 
     def query_task(self, tid, exerpt=False):
         return self.tasks.query_task(tid, exerpt)
+
+
+    def state_list(self):
+        return self.tasks.state_list()
 
 
 
