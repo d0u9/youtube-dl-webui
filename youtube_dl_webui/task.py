@@ -4,18 +4,22 @@
 import multiprocessing
 import copy
 
+from multiprocessing.managers import BaseManager
+from collections import deque
 from downloader import downloader
 from hashlib import sha1
 
+
 class task_status():
-    def __init__(self, url):
+    def __init__(self, url, opts, share_manager=None):
         self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
         self._data = {
                         'id': sha1(url.encode()).hexdigest(),
                      'title': '',
                        'url': url,
                   'progress': '0.0',
-                     'state': self.states['paused']
+                     'state': self.states['paused'],
+                      'log' : deque(maxlen=opts.log_size)
                 }
 
     def get_exerpt(self):
@@ -42,6 +46,13 @@ class task_status():
         self._data['state'] = self.states[state]
 
         return True
+
+    def push_log(self, log_type, log):
+        valid_types = ['error', 'warning', 'debug']
+        if log_type not in valid_types:
+            return None
+
+        self._data['log'].append({'type':log_type, 'log': log})
 
 
 class ydl_task():

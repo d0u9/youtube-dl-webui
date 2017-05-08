@@ -8,37 +8,21 @@ import copy
 from multiprocessing import Process
 
 class log_filter(object):
-    def __init__(self):
-        self.info_dict = {}
-        self.only_json = True
+    def __init__(self, status):
+        self.status = status
 
-    def get_info_dict(self):
-        return self.info_dict
 
     def debug(self, msg):
-
-        # find the info_dict in the outputs
-        if msg[0] is '{':
-            try:
-                j = json.loads(msg)
-            except ValueError:
-                return False
-
-            #  print (msg)
-            self.info_dict = j
-            return True
-
-        elif not self.only_json:
-            print (msg)
+        self.status.push_log('debug', msg)
 
 
     def warning(self, msg):
-        #  print(msg)
-        pass
+        self.status.push_log('warning', msg)
+
 
     def error(self, msg):
-        #  print(msg)
-        pass
+        self.status.push_log('error', msg)
+
 
 class downloader(Process):
     def __init__(self, info, status, ydl_opts):
@@ -48,14 +32,10 @@ class downloader(Process):
         self.status = status
         self.ydl_opts = ydl_opts
 
-        self.log_filter = log_filter()
+        self.log_filter = log_filter(status)
 
 
     def run(self):
-        #  self.ydl_opts['forcejson'] = '1'
-        #  self.ydl_opts['logger'] = self.log_filter
-        #  self.ydl_opts['skip_download'] = '1'
-
         # For tests below, delete after use
         #  info_dict = {'title': 'this is a test title'}
         #  self.status.update_from_info_dict(info_dict)
@@ -74,6 +54,7 @@ class downloader(Process):
         # For tests above, delete after use
 
 
+        self.ydl_opts['logger'] = self.log_filter
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
             print("downloading {}".format(self.info['url']))
             info_dict = ydl.extract_info(self.info['url'], download=False)

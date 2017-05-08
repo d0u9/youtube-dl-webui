@@ -23,9 +23,10 @@ class youtube_dl_conf():
 
 
 class manger_config():
-    def __init__(self, general_conf, ydl_opts):
+    def __init__(self, general_conf={}, ydl_opts={}):
         self.ydl_opts = youtube_dl_conf(ydl_opts)
         self.download_dir = general_conf.get('download_dir', '/tmp/ydl')
+        self.log_size = general_conf.get('log_size', 10)
 
 
 def override_conf_file(conf_dict, args):

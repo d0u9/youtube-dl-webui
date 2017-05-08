@@ -62,7 +62,9 @@ def main(argv=None):
     print("-------------------------------------------------")
     sleep(10)
     status = m.get_task_status(tid1)
-    print ('current_task_status {}'.format(str(status)))
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(status)
 
     sleep(1000)
 

@@ -13,8 +13,9 @@ class share_manager(BaseManager):
 
 
 class tasks():
-    def __init__(self):
+    def __init__(self, opts):
         self._data_ = {}
+        self.opts = opts
         share_manager.register('task_status', task_status)
         self.share_manager = share_manager()
         self.share_manager.start()
@@ -44,7 +45,7 @@ class tasks():
 
     def add_status(self, tid):
         url = self._data_[tid]['info']['url']
-        self._data_[tid]['status'] = self.share_manager.task_status(url)
+        self._data_[tid]['status'] = self.share_manager.task_status(url, self.opts)
 
 
     def get_status(self, tid):
@@ -116,7 +117,7 @@ class ydl_manger():
         #  self.share_manager.start()
         #  self.tasks = self.share_manager.tasks()
 
-        self.tasks = tasks()
+        self.tasks = tasks(self.conf)
 
 
     def create_task(self, task_info):
