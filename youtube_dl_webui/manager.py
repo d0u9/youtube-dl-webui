@@ -59,6 +59,36 @@ class tasks():
         return self._data_.get(tid).get('object')
 
 
+    def enumerate_task(self, state='all', exerpt=False):
+        valid_states = {'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
+        if state not in valid_states:
+            return None
+
+        ret = {}
+        for key, val in self._data_.items():
+            status = val['status'].get_status()
+
+            if state != 'all' and status['state'] != valid_states[state]:
+                continue
+
+            if exerpt:
+                ret[key] = val['status'].get_exerpt()
+            else:
+                ret[key] = val['status'].get_status()
+
+        return ret
+
+
+    def query_task(self, tid, exerpt=False):
+        if tid not in self._data_:
+            return None
+
+        if exerpt:
+            return self._data_.get(tid).get('status').get_exerpt()
+        else:
+            return self._data_.get(tid).get('status').get_status()
+
+
 def create_dl_dir(dl_dir):
     # create download dir
     if os.path.exists(dl_dir) and not os.path.isdir(dl_dir):
@@ -121,4 +151,14 @@ class ydl_manger():
     def get_task_status(self, tid):
         s = self.tasks.get_status(tid).get_status()
         return s
+
+
+    def enumerate_task(self, state='all', exerpt=False):
+        return self.tasks.enumerate_task(state=state, exerpt=exerpt)
+
+
+    def query_task(self, tid, exerpt=False):
+        return self.tasks.query_task(tid, exerpt)
+
+
 
