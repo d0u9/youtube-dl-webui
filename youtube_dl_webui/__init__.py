@@ -25,7 +25,20 @@ def main(argv=None):
 
     m = ydl_manger(conf.manager)
 
-    m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaDME'})
+    tid1 = m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaDME'})
+    print ('create new task: id = {}'.format(tid1))
+    tid2 = m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaQQQ'})
+    print ('create new task: id = {}'.format(tid2))
+
+    from time import sleep
+    sleep(1)
+    status = m.get_task_status(tid1)
+    #  print ('current_task_status {}'.format(str(status)))
+    #  status = m.get_task_status(tid2)
+    #  print ('current_task_status {}'.format(str(status)))
+
+    print("-------------------------------------------------")
+    sleep(10)
 
     #  s = server()
     #  s.run(conf.server)

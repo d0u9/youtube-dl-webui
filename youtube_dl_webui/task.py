@@ -2,58 +2,69 @@
 # -*- coding: utf-8 -*-
 
 import multiprocessing
+import copy
+
 from downloader import downloader
 from hashlib import sha1
 
 class task_status():
     def __init__(self, url):
-        self.lock = multiprocessing.Lock()
+        self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
         self._data = {
                         'id': sha1(url.encode()).hexdigest(),
                      'title': '',
                        'url': url,
-                  'progress': '0.0'
+                  'progress': '0.0',
+                     'state': self.states['paused']
                 }
 
     def get_exerpt(self):
         exerpt_keys = set(['id', 'url', 'title', 'progress'])
         exerpt = {}
 
-        with self.lock:
-            for key, val in self._data.items():
-                if key in exerpt_keys:
-                    exerpt[key] = val
+        for key, val in self._data.items():
+            if key in exerpt_keys:
+                exerpt[key] = val
 
         return exerpt
 
     def update_from_info_dict(self, info_dict):
-        with self.lock:
-            self._data['title'] = info_dict['title']
+        self._data['title'] = info_dict['title']
 
-        print ('xxxxx')
-        print (self._data)
+
+    def get_status(self):
+        return self._data
+
+    def set_state(self, state):
+        if state not in self.states:
+            return False
+
+        self._data['state'] = self.states[state]
+
+        return True
 
 
 class ydl_task():
-    def __init__(self, task_info, ydl_conf={}):
-        self.ydl_conf = ydl_conf
+    def __init__(self, info, status, ydl_opts={}):
+        self.ydl_opts = ydl_opts
+        self.tid = info['tid']
+        self.status = status
+        self.ydl_opts = ydl_opts
 
-        self.task_info = task_info
-        self.task_status = task_status(task_info['url'])
-
-        self.downloader = downloader(self.task_info, self.task_status, ydl_conf)
+        self.downloader = downloader(info, status, copy.deepcopy(ydl_opts.dict()))
 
     def start_dl(self):
+        self.status.set_state('downloading')
         self.downloader.start()
 
-    def stop_dl(self):
-        self.downloader.stop()
-
     def pause_dl(self):
-        self.downloader.stop()
+        self.tasks.get_status(self.tid).set_state('paused')
+        #  self.downloader.stop()
 
     def resume_dl(self):
-        pass
+        self.tasks.get_status(self.tid).set_state('downloading')
+        #  self.downloader.start()
 
     def del_task(self):
-        self.stop_dl()
+        pass
+        #  self.stop_dl()

@@ -23,8 +23,8 @@ class youtube_dl_conf():
 
 
 class manger_config():
-    def __init__(self, general_conf, ydl_conf):
-        self.ydl_conf = youtube_dl_conf(ydl_conf)
+    def __init__(self, general_conf, ydl_opts):
+        self.ydl_opts = youtube_dl_conf(ydl_opts)
         self.download_dir = general_conf.get('download_dir', '/tmp/ydl')
 
 

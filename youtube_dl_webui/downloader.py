@@ -3,6 +3,7 @@
 
 import youtube_dl
 import json
+import copy
 
 from multiprocessing import Process
 
@@ -40,29 +41,46 @@ class log_filter(object):
         pass
 
 class downloader(Process):
-    def __init__(self, task_info, task_status, ydl_conf={}):
+    def __init__(self, info, status, ydl_opts):
         Process.__init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None)
-        self.task_info = task_info
-        self.task_status = task_status
-        self.ydl_conf = ydl_conf
+        self.tid = info['tid']
+        self.info = info
+        self.status = status
+        self.ydl_opts = ydl_opts
 
         self.log_filter = log_filter()
 
+
     def run(self):
-        self.ydl_conf['forcejson'] = '1'
-        self.ydl_conf['logger'] = self.log_filter
-        self.ydl_conf['skip_download'] = '1'
-        with youtube_dl.YoutubeDL(self.ydl_conf) as ydl:
-            ydl.download([self.task_info.get('url')])
+        self.ydl_opts['forcejson'] = '1'
+        self.ydl_opts['logger'] = self.log_filter
+        self.ydl_opts['skip_download'] = '1'
 
-        self.task_status.update_from_info_dict(self.log_filter.get_info_dict())
+        # For tests below, delete after use
+        info_dict = {'title': 'this is a test title'}
+        self.status.update_from_info_dict(info_dict)
 
-        self.log_filter.only_json = False
-        del self.ydl_conf['skip_download']
-        with youtube_dl.YoutubeDL(self.ydl_conf) as ydl:
-            ydl.download([self.task_info.get('url')])
+        print ('start downloading... {}'.format(self.status.get_status()))
 
-        print ("zzzz")
+        from time import sleep
+        from random import randint
+        sleep(randint(2, 10))
+
+
+        self.status.set_state('finished')
+        print ('download finished {}'.format(self.status.get_status()))
+
+        # For tests above, delete after use
+
+        #  with youtube_dl.YoutubeDL(self.ydl_conf) as ydl:
+            #  ydl.download([self.task_info.get('url')])
+
+        #  self.task_status.update_from_info_dict(self.log_filter.get_info_dict())
+
+        #  self.log_filter.only_json = False
+        #  del self.ydl_conf['skip_download']
+        #  with youtube_dl.YoutubeDL(self.ydl_conf) as ydl:
+            #  ydl.download([self.task_info.get('url')])
 
     def update_ydl_conf(self, key, val):
         self.ydl_conf[key] = val
