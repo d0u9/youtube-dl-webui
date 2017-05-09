@@ -8,16 +8,23 @@ from multiprocessing.managers import BaseManager
 from collections import deque
 from downloader import downloader
 from hashlib import sha1
+from time import time
 
 
 class task_status():
-    def __init__(self, url, opts, share_manager=None):
+    def __init__(self, url, opts, params={}):
         self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
         self._data = {
                         'id': sha1(url.encode()).hexdigest(),
                      'title': '',
                        'url': url,
                   'progress': '0.0',
+               'create_time': time(),
+                'start_time': time(),
+                'pause_time': time(),
+               'finish_time': time(),
+                   'elapsed': 0,
+                       'ETA': 0,
                      'state': self.states['paused'],
                       'log' : deque(maxlen=opts.log_size)
                 }
@@ -39,13 +46,29 @@ class task_status():
     def get_status(self):
         return self._data
 
+
+    def set_item(self, item, val):
+        if item not in self._data:
+            return None
+
+        self._data[item] = val
+
+        return True
+
+
+    def get_item(self, item):
+        if item not in self._data:
+            return None
+
+        return self._data[item]
+
+
     def set_state(self, state):
         if state not in self.states:
             return False
 
-        self._data['state'] = self.states[state]
+        return self.set_item('state', self.states[state])
 
-        return True
 
     def push_log(self, log_type, log):
         valid_types = ['error', 'warning', 'debug']
@@ -70,6 +93,7 @@ class ydl_task():
     def start_dl(self):
         self.status.set_state('downloading')
         self.delegate()
+        self.status.set_item('start_time', time())
         self.downloader.start()
 
 
@@ -77,10 +101,19 @@ class ydl_task():
         self.status.set_state('paused')
         self.downloader.stop()
 
+        cur_time = time()
+        start_time = self.status.get_item('start_time')
+        elapsed = self.status.get_item('elapsed')
+
+        elapsed += cur_time - start_time
+        self.status.set_item('pause_time', cur_time)
+        self.status.set_item('elapsed', elapsed)
+
 
     def resume_dl(self):
         self.status.set_state('downloading')
         self.delegate()
+        self.status.set_item('start_time', time())
         self.downloader.start()
 
     def del_task(self):

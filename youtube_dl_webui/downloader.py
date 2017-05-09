@@ -6,6 +6,7 @@ import json
 import copy
 
 from multiprocessing import Process
+from time import time
 
 class log_filter(object):
     def __init__(self, status):
@@ -37,23 +38,27 @@ class downloader(Process):
 
     def run(self):
         # For tests below, delete after use
-        #  info_dict = {'title': 'this is a test title'}
-        #  self.status.update_from_info_dict(info_dict)
+        info_dict = {'title': 'this is a test title'}
+        self.status.update_from_info_dict(info_dict)
 
-        #  print ('start downloading... {}'.format(self.status.get_status()))
-
-        #  from time import sleep
-        #  from random import randint
-        #  #  sleep(randint(5, 10))
-        #  sleep(1000)
+        print ('start downloading... {}'.format(self.status.get_status()))
 
 
-        #  self.status.set_state('finished')
-        #  print ('download finished {}'.format(self.status.get_status()))
+        from time import sleep
+        from random import randint
+        #  sleep(randint(5, 10))
+        t = 10 - self.status.get_item('elapsed')
+        print ("--- Time remain {}".format(t))
+        sleep(t)
+
+
+        self.status.set_state('finished')
+        print ('download finished {}'.format(self.status.get_status()))
 
         # For tests above, delete after use
 
 
+        """
         self.ydl_opts['logger'] = self.log_filter
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
             print("downloading {}".format(self.info['url']))
@@ -61,6 +66,14 @@ class downloader(Process):
 
             self.status.update_from_info_dict(info_dict)
             ydl.download([self.info['url']])
+        """
+
+        cur_time = time()
+        start_time = self.status.get_item('start_time')
+        elapsed = self.status.get_item('elapsed')
+        elapsed += cur_time - start_time
+        self.status.set_item('finishe_time', cur_time)
+        self.status.set_item('elapsed', elapsed)
 
 
     def update_ydl_conf(self, key, val):
