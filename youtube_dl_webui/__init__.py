@@ -5,8 +5,7 @@ from __future__ import unicode_literals
 from argparse import ArgumentParser
 
 from config import config
-from server import server
-from manager import ydl_manger
+from server import server, manager, app
 
 
 def getopt(argv):
@@ -24,19 +23,17 @@ def main(argv=None):
 
     print("pid is {}".format(getpid()))
 
-
     args = getopt(argv)
     conf = config(args)
 
-    m = ydl_manger(conf.manager)
-
+    manager.load_conf(conf.manager)
 
     s = server()
     s.run(conf.server)
 
-    tid1 = m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaDME'})
+    tid1 = manager.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaDME'})
     print ('create new task: id = {}'.format(tid1))
-    tid2 = m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaQQQ'})
+    tid2 = manager.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaQQQ'})
     print ('create new task: id = {}'.format(tid2))
 
     from time import sleep
@@ -45,27 +42,27 @@ def main(argv=None):
     print("-------------------------------------------------")
     sleep(1)
 
-    m.start_task(tid1)
-    status = m.get_task_status(tid1)
+    manager.start_task(tid1)
+    status = manager.get_task_status(tid1)
     print ('current_task_status {}'.format(str(status)))
 
     sleep(1)
-    m.pause_task(tid1)
-    status = m.get_task_status(tid1)
+    manager.pause_task(tid1)
+    status = manager.get_task_status(tid1)
     print ('current_task_status {}'.format(str(status)))
 
     sleep(1)
-    m.resume_task(tid1)
-    status = m.get_task_status(tid1)
+    manager.resume_task(tid1)
+    status = manager.get_task_status(tid1)
     print ('current_task_status {}'.format(str(status)))
 
-    print(m.list_tasks(state='downloading'))
+    print(manager.list_tasks(state='downloading'))
     print("-------------------------------------------------")
-    print(m.query_task(tid1))
+    print(manager.query_task(tid1))
 
     print("-------------------------------------------------")
     sleep(10)
-    status = m.get_task_status(tid1)
+    status = manager.get_task_status(tid1)
     import pprint
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(status)

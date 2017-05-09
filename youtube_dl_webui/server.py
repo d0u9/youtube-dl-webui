@@ -3,10 +3,15 @@
 
 from __future__ import unicode_literals
 
+import json
+
 from flask import Flask
 from flask import render_template
 from flask import request
 
+from manager import ydl_manger
+
+manager = ydl_manger()
 app = Flask(__name__)
 
 @app.errorhandler(500)
@@ -22,7 +27,10 @@ def index():
 @app.route('/task', methods=['POST'])
 def add_task():
     s = str(request.form)
-    return s
+    print(s)
+    tid = manager.create_task({'url': request.form['url']})
+    manager.start_task(tid)
+    return json.dumps({'tid': tid})
 
 
 class server():

@@ -107,16 +107,23 @@ def create_dl_dir(dl_dir):
 
 
 class ydl_manger():
-    def __init__(self, conf):
+    def __init__(self, conf=None):
+        self.conf = None
+        self.tasks = None
+        if conf is not None:
+            self.load_conf(conf)
+
+        self.downloading_counter = 0
+        self.paused_counter = 0
+        self.finished_coutner = 0
+
+
+    def load_conf(self, conf):
         self.conf = conf
         create_dl_dir(self.conf.download_dir)
         os.chdir(self.conf.download_dir)
 
         self.tasks = tasks(self.conf)
-
-        self.downloading_counter = 0
-        self.paused_counter = 0
-        self.finished_coutner = 0
 
 
     def create_task(self, task_info):
