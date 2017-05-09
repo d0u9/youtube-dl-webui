@@ -30,6 +30,10 @@ def main(argv=None):
 
     m = ydl_manger(conf.manager)
 
+
+    s = server()
+    s.run(conf.server)
+
     tid1 = m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaDME'})
     print ('create new task: id = {}'.format(tid1))
     tid2 = m.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaQQQ'})
@@ -67,9 +71,6 @@ def main(argv=None):
     pp.pprint(status)
 
     sleep(1000)
-
-    #  s = server()
-    #  s.run(conf.server)
 
 
 
