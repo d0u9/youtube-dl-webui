@@ -55,7 +55,7 @@ def main(argv=None):
     status = m.get_task_status(tid1)
     print ('current_task_status {}'.format(str(status)))
 
-    print(m.enumerate_task(state='downloading'))
+    print(m.list_tasks(state='downloading'))
     print("-------------------------------------------------")
     print(m.query_task(tid1))
 

@@ -60,24 +60,25 @@ class tasks():
         return self._data_.get(tid).get('object')
 
 
-    def enumerate_task(self, state='all', exerpt=False):
-        valid_states = {'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
-        if state not in valid_states:
+    def list_tasks(self, state='all', exerpt=True):
+        state_table = {'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
+        if state not in state_table:
             return None
 
-        ret = {}
+        task_list = {}
         for key, val in self._data_.items():
             status = val['status'].get_status()
+            cstate = status['state']
 
-            if state != 'all' and status['state'] != valid_states[state]:
+            if state is not 'all' and cstate is not state_table[state]:
                 continue
 
             if exerpt:
-                ret[key] = val['status'].get_exerpt()
+                task_list[key] = val['status'].get_exerpt()
             else:
-                ret[key] = val['status'].get_status()
+                task_list[key] = val['status'].get_status()
 
-        return ret
+        return task_list
 
 
     def query_task(self, tid, exerpt=False):
@@ -88,20 +89,6 @@ class tasks():
             return self._data_.get(tid).get('status').get_exerpt()
         else:
             return self._data_.get(tid).get('status').get_status()
-
-
-    def state_list(self):
-        ret = {'downloading': 0, 'paused': 0, 'finished': 0}
-        for key, val in self._data_.items():
-            state = val['status']['state']
-            if state is 'downloading':
-                ret['downloading'] += 1
-            elif state is 'paused':
-                ret['paused'] += 1
-            elif state is 'finished':
-                ret['finished'] += 1
-
-        return ret
 
 
 def create_dl_dir(dl_dir):
@@ -125,13 +112,11 @@ class ydl_manger():
         create_dl_dir(self.conf.download_dir)
         os.chdir(self.conf.download_dir)
 
-        # dict to index task, key->url, val->task instance.
-        #  share_manager.register('tasks', tasks)
-        #  self.share_manager = share_manager()
-        #  self.share_manager.start()
-        #  self.tasks = self.share_manager.tasks()
-
         self.tasks = tasks(self.conf)
+
+        self.downloading_counter = 0
+        self.paused_counter = 0
+        self.finished_coutner = 0
 
 
     def create_task(self, task_info):
@@ -145,6 +130,8 @@ class ydl_manger():
         task = ydl_task(info, status, ydl_opts)
         self.tasks.add_object(tid, task)
 
+        self.paused_counter += 1
+
         return tid
 
 
@@ -152,24 +139,37 @@ class ydl_manger():
         task = self.tasks.get_object(tid)
         task.start_dl()
 
+        self.paused_counter -= 1
+        self.downloading_counter += 1
+
 
     def pause_task(self, tid):
         task = self.tasks.get_object(tid)
         task.pause_dl()
+
+        self.downloading_counter -= 1
+        self.paused_counter += 1
 
 
     def resume_task(self, tid):
         task = self.tasks.get_object(tid)
         task.resume_dl()
 
+        self.paused_counter -= 1
+        self.downloading_counter += 1
 
     def get_task_status(self, tid):
         s = self.tasks.get_status(tid).get_status()
         return s
 
 
-    def enumerate_task(self, state='all', exerpt=False):
-        return self.tasks.enumerate_task(state=state, exerpt=exerpt)
+    def list_tasks(self, state='all', exerpt=True):
+        counter = {'downloading': self.downloading_counter,
+                'paused': self.paused_counter,
+                'finished': self.finished_coutner}
+        tasks = self.tasks.list_tasks(state=state, exerpt=exerpt)
+
+        return {'tasks': tasks, 'counter': counter}
 
 
     def query_task(self, tid, exerpt=False):
@@ -177,7 +177,9 @@ class ydl_manger():
 
 
     def state_list(self):
-        return self.tasks.state_list()
+        return {'downloading': self.downloading_counter,
+                'paused': self.paused_counter,
+                'finished': self.finished_coutner}
 
 
 
