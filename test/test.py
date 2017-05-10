@@ -54,6 +54,15 @@ def task_list():
     j = json.loads(r.text)
     return j
 
+
+def list_state():
+    url = 'http://127.0.0.1:5000/task/state_coutner'
+    r = requests.get(url)
+
+    print('status: {}'.format(r.status_code))
+    j = json.loads(r.text)
+    return j
+
 if __name__ == '__main__':
     print('add a new task')
     if len(sys.argv) is not 1:
@@ -100,6 +109,6 @@ if __name__ == '__main__':
     sleep(1)
 
     print('--------- list tasks')
-    r = task_list()
+    r = list_state()
     print(r)
     sleep(1)

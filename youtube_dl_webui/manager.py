@@ -197,9 +197,6 @@ class ydl_manger():
 
 
     def state_list(self):
-        tasks, counter = self.tasks.list_tasks(state=state, exerpt=exerpt)
+        tasks, counter = self.tasks.list_tasks(state='all', exerpt=True)
         return counter
-
-
-
 

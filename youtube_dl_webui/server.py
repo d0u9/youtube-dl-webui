@@ -49,6 +49,12 @@ def list_task():
     return json.dumps(l)
 
 
+@app.route('/task/state_coutner', methods=['GET'])
+def list_state():
+    l = manager.state_list()
+    return json.dumps(l)
+
+
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
     act = request.args.get('del_data', None)
