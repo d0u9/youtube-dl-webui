@@ -4,9 +4,50 @@
 import youtube_dl
 import json
 import copy
+import pprint
 
 from multiprocessing import Process
 from time import time
+
+
+status_global = None
+
+class ydl_hook():
+    @classmethod
+    def dispatcher(cls, d):
+        if d['status'] == 'downloading':
+            cls.downloading(d)
+        elif d['status'] == 'finished':
+            cls.finished(d)
+        elif d['status'] == 'error':
+            cls.error(d)
+
+
+    @classmethod
+    def finished(cls, d):
+        global status_global
+        print('Done downloading, now converting ...')
+
+
+    @classmethod
+    def downloading(cls, d):
+        global status_global
+        status_global.set_item('filename', d['filename'])
+        status_global.set_item('tmpfilename', d['tmpfilename'])
+        status_global.set_item('downloaded_bytes', d['downloaded_bytes'])
+        if 'total_bytes' in d:
+            status_global.set_item('total_bytes', d['total_bytes'])
+        else:
+            status_global.set_item('total_bytes_estimate', d['total_bytes_estimate'])
+        status_global.set_item('eta', d['eta'])
+        status_global.set_item('speed', d['speed'])
+        status_global.set_item('percent', d['_percent_str'])
+
+
+    @classmethod
+    def error(cls, d):
+        print('error ...')
+
 
 class log_filter(object):
     def __init__(self, status):
@@ -35,11 +76,22 @@ class downloader(Process):
 
         self.log_filter = log_filter(status)
 
+        global status_global
+        status_global = status
+
+
+    def intercept_ydl_opts(self):
+#        self.ydl_opts['logger'] = self.log_filter
+        self.ydl_opts['progress_hooks'] = [ydl_hook.dispatcher]
+#        self.ydl_opts['progress_hooks'] = [hook]
+
 
     def run(self):
         print ('start downloading... {}'.format(self.status.get_status()))
+        pp = pprint.PrettyPrinter(indent=4)
 
         # For tests below, delete after use
+        """
         info_dict = {'title': 'this is a test title', 'file': 'hello file'}
         self.status.update_from_info_dict(info_dict)
 
@@ -58,14 +110,16 @@ class downloader(Process):
 
 
         """
-        self.ydl_opts['logger'] = self.log_filter
+
+        self.intercept_ydl_opts()
+
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
             print("downloading {}".format(self.info['url']))
             info_dict = ydl.extract_info(self.info['url'], download=False)
+            pp.pprint(info_dict)
 
             self.status.update_from_info_dict(info_dict)
             ydl.download([self.info['url']])
-        """
 
 
         self.status.set_state('finished')

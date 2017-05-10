@@ -18,14 +18,20 @@ class task_status():
                         'id': sha1(url.encode()).hexdigest(),
                      'title': '',
                        'url': url,
-                  'progress': '0.0',
-                      'file': '',
+                   'percent': '0.0',
+                  'filename': '',
+               'tmpfilename': '',
+          'downloaded_bytes': 0,
+               'total_bytes': 0,
+      'total_bytes_estimate': 0,
+                     'speed': 0,
+                       'eta': 0,
+                   'elapsed': 0,
                'create_time': time(),
                 'start_time': time(),
                 'pause_time': time(),
                'finish_time': time(),
-                   'elapsed': 0,
-                       'ETA': 0,
+                    'format': 0,
                      'state': self.states['paused'],
                       'log' : deque(maxlen=opts.log_size)
                 }
@@ -42,7 +48,7 @@ class task_status():
 
     def update_from_info_dict(self, info_dict):
         self._data['title'] = info_dict['title']
-        self._data['file'] = info_dict['file']
+        self._data['format'] = info_dict['format']
 
 
     def get_status(self):
