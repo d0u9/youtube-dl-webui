@@ -41,6 +41,14 @@ def add_task():
     return json.dumps({'tid': tid})
 
 
+@app.route('/task/list', methods=['GET'])
+def list_task():
+    state = request.args.get('state', 'all')
+
+    l = manager.list_tasks(state)
+    return json.dumps(l)
+
+
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
     act = request.args.get('del_data', None)
@@ -51,6 +59,7 @@ def delete_task(tid):
         manager.delete_task(tid)
 
     return success()
+
 
 @app.route('/task/tid/<tid>/status', methods=['GET'])
 def query_task(tid):

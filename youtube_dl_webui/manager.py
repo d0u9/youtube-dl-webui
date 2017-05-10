@@ -39,6 +39,7 @@ class tasks():
 
         return tid
 
+
     def get_info(self, tid):
         return self._data_.get(tid).get('info')
 
@@ -61,8 +62,10 @@ class tasks():
 
 
     def list_tasks(self, state='all', exerpt=True):
-        state_table = {'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
-        if state not in state_table:
+        state_index = {'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
+        counter = {'downloading': 0, 'paused': 0, 'finished': 0}
+
+        if state not in state_index:
             return None
 
         task_list = {}
@@ -70,7 +73,14 @@ class tasks():
             status = val['status'].get_status()
             cstate = status['state']
 
-            if state is not 'all' and cstate is not state_table[state]:
+            if cstate is state_index['downloading']:
+                counter['downloading'] += 1
+            elif cstate is state_index['paused']:
+                counter['paused'] += 1
+            elif cstate is state_index['finished']:
+                counter['finished'] += 1
+
+            if state is not 'all' and cstate is not state_index[state]:
                 continue
 
             if exerpt:
@@ -78,7 +88,7 @@ class tasks():
             else:
                 task_list[key] = val['status'].get_status()
 
-        return task_list
+        return task_list, counter
 
 
     def query_task(self, tid, exerpt=False):
@@ -96,8 +106,8 @@ class tasks():
 
     def delete_task(self, tid):
         task = self._data_.pop(tid)
-        file_name = task.get('status').get_item('file')
-        return file_name
+        status = task.get('status')
+        return status
 
 
 def create_dl_dir(dl_dir):
@@ -122,10 +132,6 @@ class ydl_manger():
         if conf is not None:
             self.load_conf(conf)
 
-        self.downloading_counter = 0
-        self.paused_counter = 0
-        self.finished_coutner = 0
-
 
     def load_conf(self, conf):
         self.conf = conf
@@ -146,8 +152,6 @@ class ydl_manger():
         task = ydl_task(info, status, ydl_opts)
         self.tasks.add_object(tid, task)
 
-        self.paused_counter += 1
-
         return tid
 
 
@@ -155,29 +159,23 @@ class ydl_manger():
         task = self.tasks.get_object(tid)
         task.start_dl()
 
-        self.paused_counter -= 1
-        self.downloading_counter += 1
-
 
     def pause_task(self, tid):
         task = self.tasks.get_object(tid)
         task.pause_dl()
-
-        self.downloading_counter -= 1
-        self.paused_counter += 1
 
 
     def resume_task(self, tid):
         task = self.tasks.get_object(tid)
         task.resume_dl()
 
-        self.paused_counter -= 1
-        self.downloading_counter += 1
-
 
     def delete_task(self, tid, del_data=False):
+        state_index = {'downloading': 1, 'paused': 2, 'finished': 3}
         self.pause_task(tid)
-        file_name = self.tasks.delete_task(tid)
+        status = self.tasks.delete_task(tid)
+        file_name = status.get_item('file')
+        state = status.get_item('state')
 
         if del_data is True:
             os.remove(file_name)
@@ -189,10 +187,7 @@ class ydl_manger():
 
 
     def list_tasks(self, state='all', exerpt=True):
-        counter = {'downloading': self.downloading_counter,
-                'paused': self.paused_counter,
-                'finished': self.finished_coutner}
-        tasks = self.tasks.list_tasks(state=state, exerpt=exerpt)
+        tasks, counter = self.tasks.list_tasks(state=state, exerpt=exerpt)
 
         return {'tasks': tasks, 'counter': counter}
 
@@ -202,9 +197,9 @@ class ydl_manger():
 
 
     def state_list(self):
-        return {'downloading': self.downloading_counter,
-                'paused': self.paused_counter,
-                'finished': self.finished_coutner}
+        tasks, counter = self.tasks.list_tasks(state=state, exerpt=exerpt)
+        return counter
+
 
 
 

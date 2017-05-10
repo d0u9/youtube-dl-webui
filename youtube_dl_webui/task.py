@@ -94,6 +94,7 @@ class ydl_task():
         self.ydl_opts = copy.deepcopy(ydl_opts.dict())
         self.downloader = None
 
+
     def delegate(self):
         self.downloader = downloader(self.info, self.status, self.ydl_opts)
 
@@ -123,7 +124,3 @@ class ydl_task():
         self.delegate()
         self.status.set_item('start_time', time())
         self.downloader.start()
-
-    def del_task(self):
-        pass
-        #  self.stop_dl()

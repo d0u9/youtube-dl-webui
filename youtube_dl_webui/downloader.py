@@ -46,14 +46,13 @@ class downloader(Process):
         from time import sleep
         from random import randint
         #  sleep(randint(5, 10))
-        t = 100 - self.status.get_item('elapsed')
+        t = 20 - self.status.get_item('elapsed')
         while t > 0:
             msg = "--- Time remain {}".format(t)
             print (msg)
             self.status.push_log('debug', msg)
             t -= 1
             sleep(1)
-
 
         # For tests above, delete after use
 

@@ -3,6 +3,7 @@
 
 import requests
 import json
+import sys
 from time import sleep
 
 def task_add(url):
@@ -45,10 +46,27 @@ def task_query(tid, exerpt=False):
     return j
 
 
+def task_list():
+    url = 'http://127.0.0.1:5000/task/list'
+    r = requests.get(url)
+
+    print('status: {}'.format(r.status_code))
+    j = json.loads(r.text)
+    return j
+
 if __name__ == '__main__':
     print('add a new task')
-    r = task_add('test url')
+    if len(sys.argv) is not 1:
+        name = sys.argv[1]
+    else:
+        name = 'test url'
+    r = task_add(name)
     tid = r['tid']
+    print(r)
+    sleep(1)
+
+    print('--------- list tasks')
+    r = task_list()
     print(r)
     sleep(1)
 
@@ -62,6 +80,11 @@ if __name__ == '__main__':
     print(r)
     sleep(2)
 
+    print('--------- list tasks')
+    r = task_list()
+    print(r)
+    sleep(1)
+
     print('--------- resume a task')
     r = task_act(tid, 'resume')
     print(r)
@@ -74,4 +97,9 @@ if __name__ == '__main__':
     sleep(3)
     print('--------- delete a task')
     r = task_delete(tid)
+    sleep(1)
 
+    print('--------- list tasks')
+    r = task_list()
+    print(r)
+    sleep(1)
