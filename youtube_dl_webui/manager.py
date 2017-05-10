@@ -87,8 +87,11 @@ class tasks():
 
         if exerpt:
             return self._data_.get(tid).get('status').get_exerpt()
-        else:
-            return self._data_.get(tid).get('status').get_status()
+
+        status = self._data_.get(tid).get('status').get_status()
+        print(status)
+
+        return status
 
 
     def delete_task(self, tid):

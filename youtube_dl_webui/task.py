@@ -46,7 +46,13 @@ class task_status():
 
 
     def get_status(self):
-        return self._data
+        data = copy.deepcopy(self._data)
+        log = []
+        for l in self._data.get('log'):
+            log.append(l)
+
+        data['log'] = log
+        return data
 
 
     def set_item(self, item, val):
@@ -77,7 +83,7 @@ class task_status():
         if log_type not in valid_types:
             return None
 
-        self._data['log'].append({'type':log_type, 'log': log})
+        self._data['log'].append({'type':log_type, 'time': int(time()), 'log': log})
 
 
 class ydl_task():

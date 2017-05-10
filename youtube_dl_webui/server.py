@@ -52,6 +52,17 @@ def delete_task(tid):
 
     return success()
 
+@app.route('/task/<tid>/status', methods=['GET'])
+def query_task(tid):
+    exerpt = request.args.get('exerpt', None)
+
+    if exerpt == 'true':
+        status = manager.query_task(tid, exerpt=True)
+    else:
+        status = manager.query_task(tid)
+
+    return json.dumps(status)
+
 
 @app.route('/task/<tid>', methods=['PUT'])
 def manipulate_task(tid):
