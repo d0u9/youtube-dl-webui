@@ -13,7 +13,7 @@ def task_add(url):
 
 
 def task_act(tid, act):
-    url = 'http://127.0.0.1:5000/task/{}?act={}'.format(tid, act)
+    url = 'http://127.0.0.1:5000/task/tid/{}?act={}'.format(tid, act)
     if act is 'pause' or act is 'resume':
         r = requests.put(url)
         print('status: {}'.format(r.status_code))
@@ -23,7 +23,7 @@ def task_act(tid, act):
 
 
 def task_delete(tid, del_data=False):
-    url = 'http://127.0.0.1:5000/task/{}'.format(tid)
+    url = 'http://127.0.0.1:5000/task/tid/{}'.format(tid)
 
     r = requests.delete(url)
 
@@ -34,7 +34,7 @@ def task_delete(tid, del_data=False):
 
 
 def task_query(tid, exerpt=False):
-    url = 'http://127.0.0.1:5000/task/{}/status'.format(tid)
+    url = 'http://127.0.0.1:5000/task/tid/{}/status'.format(tid)
 
     if exerpt is True:
         url = url + '?exerpt=true'

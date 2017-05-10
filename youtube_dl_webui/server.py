@@ -41,7 +41,7 @@ def add_task():
     return json.dumps({'tid': tid})
 
 
-@app.route('/task/<tid>', methods=['DELETE'])
+@app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
     act = request.args.get('del_data', None)
 
@@ -52,7 +52,7 @@ def delete_task(tid):
 
     return success()
 
-@app.route('/task/<tid>/status', methods=['GET'])
+@app.route('/task/tid/<tid>/status', methods=['GET'])
 def query_task(tid):
     exerpt = request.args.get('exerpt', None)
 
@@ -64,7 +64,7 @@ def query_task(tid):
     return json.dumps(status)
 
 
-@app.route('/task/<tid>', methods=['PUT'])
+@app.route('/task/tid/<tid>', methods=['PUT'])
 def manipulate_task(tid):
     act = request.args.get('act', None)
     if act is None:
