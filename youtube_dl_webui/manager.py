@@ -91,6 +91,12 @@ class tasks():
             return self._data_.get(tid).get('status').get_status()
 
 
+    def delete_task(self, tid):
+        task = self._data_.pop(tid)
+        file_name = task.get('status').get_item('file')
+        return file_name
+
+
 def create_dl_dir(dl_dir):
     # create download dir
     if os.path.exists(dl_dir) and not os.path.isdir(dl_dir):
@@ -164,6 +170,15 @@ class ydl_manger():
 
         self.paused_counter -= 1
         self.downloading_counter += 1
+
+
+    def delete_task(self, tid, del_file=False):
+        self.pause_task(tid)
+        file_name = self.tasks.delete_task(tid)
+
+        if del_file is True:
+            os.remove(file_name)
+
 
     def get_task_status(self, tid):
         s = self.tasks.get_status(tid).get_status()

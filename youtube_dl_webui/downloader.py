@@ -40,7 +40,7 @@ class downloader(Process):
         print ('start downloading... {}'.format(self.status.get_status()))
 
         # For tests below, delete after use
-        info_dict = {'title': 'this is a test title'}
+        info_dict = {'title': 'this is a test title', 'file': 'hello file'}
         self.status.update_from_info_dict(info_dict)
 
         from time import sleep

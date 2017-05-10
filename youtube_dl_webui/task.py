@@ -19,6 +19,7 @@ class task_status():
                      'title': '',
                        'url': url,
                   'progress': '0.0',
+                      'file': '',
                'create_time': time(),
                 'start_time': time(),
                 'pause_time': time(),
@@ -41,6 +42,7 @@ class task_status():
 
     def update_from_info_dict(self, info_dict):
         self._data['title'] = info_dict['title']
+        self._data['file'] = info_dict['file']
 
 
     def get_status(self):
