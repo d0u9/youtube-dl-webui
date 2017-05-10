@@ -14,9 +14,12 @@ from manager import ydl_manger
 manager = ydl_manger()
 app = Flask(__name__)
 
-@app.errorhandler(500)
-def S404(error):
-    return '500 error'
+def invalid_request():
+    return json.dumps({'status': 'error', 'errmsg': 'invalid_request'})
+
+@app.errorhandler(404)
+def not_found(error):
+    return '404 not found'
 
 
 @app.route('/')
@@ -31,6 +34,22 @@ def add_task():
     tid = manager.create_task({'url': request.form['url']})
     manager.start_task(tid)
     return json.dumps({'tid': tid})
+
+
+@app.route('/task/<tid>', methods=['PUT'])
+def manipulate_task(tid):
+    act = request.args.get('act', None)
+    if act is None:
+        return invalid_request()
+
+    if act == 'pause':
+        manager.pause_task(tid)
+    elif act == 'resume':
+        manager.resume_task(tid)
+    else:
+        return json.dumps({'status': 'error', 'errmsg': 'unknow action'})
+
+    return json.dumps({'status': 'ok'})
 
 
 class server():

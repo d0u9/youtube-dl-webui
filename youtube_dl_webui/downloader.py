@@ -40,16 +40,17 @@ class downloader(Process):
         print ('start downloading... {}'.format(self.status.get_status()))
 
         # For tests below, delete after use
-        """
         info_dict = {'title': 'this is a test title'}
         self.status.update_from_info_dict(info_dict)
 
         from time import sleep
         from random import randint
         #  sleep(randint(5, 10))
-        t = 10 - self.status.get_item('elapsed')
-        print ("--- Time remain {}".format(t))
-        sleep(t)
+        t = 15 - self.status.get_item('elapsed')
+        while t > 0:
+            print ("--- Time remain {}".format(t))
+            t -= 1
+            sleep(1)
 
 
         # For tests above, delete after use
@@ -63,6 +64,8 @@ class downloader(Process):
 
             self.status.update_from_info_dict(info_dict)
             ydl.download([self.info['url']])
+        """
+
 
         self.status.set_state('finished')
         print ('download finished {}'.format(self.status.get_status()))
