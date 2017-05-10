@@ -172,11 +172,11 @@ class ydl_manger():
         self.downloading_counter += 1
 
 
-    def delete_task(self, tid, del_file=False):
+    def delete_task(self, tid, del_data=False):
         self.pause_task(tid)
         file_name = self.tasks.delete_task(tid)
 
-        if del_file is True:
+        if del_data is True:
             os.remove(file_name)
 
 

@@ -17,6 +17,11 @@ app = Flask(__name__)
 def invalid_request():
     return json.dumps({'status': 'error', 'errmsg': 'invalid_request'})
 
+
+def success():
+    return json.dumps({'status': 'success'})
+
+
 @app.errorhandler(404)
 def not_found(error):
     return '404 not found'
@@ -36,6 +41,18 @@ def add_task():
     return json.dumps({'tid': tid})
 
 
+@app.route('/task/<tid>', methods=['DELETE'])
+def delete_task(tid):
+    act = request.args.get('del_data', None)
+
+    if act == 'true':
+        manager.delete_task(tid, True)
+    else:
+        manager.delete_task(tid)
+
+    return success()
+
+
 @app.route('/task/<tid>', methods=['PUT'])
 def manipulate_task(tid):
     act = request.args.get('act', None)
@@ -49,7 +66,7 @@ def manipulate_task(tid):
     else:
         return json.dumps({'status': 'error', 'errmsg': 'unknow action'})
 
-    return json.dumps({'status': 'ok'})
+    return success()
 
 
 class server():
