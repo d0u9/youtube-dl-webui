@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import youtube_dl
 import json
 import copy
 import pprint
@@ -9,6 +8,7 @@ import pprint
 from multiprocessing import Process
 from time import time
 
+import youtube_dl
 
 status_global = None
 

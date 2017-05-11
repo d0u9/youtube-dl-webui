@@ -6,9 +6,10 @@ import copy
 
 from multiprocessing.managers import BaseManager
 from collections import deque
-from downloader import downloader
 from hashlib import sha1
 from time import time
+
+from .downloader import downloader
 
 
 class task_status():

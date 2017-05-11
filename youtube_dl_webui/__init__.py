@@ -4,8 +4,8 @@
 from __future__ import unicode_literals
 from argparse import ArgumentParser
 
-from config import config
-from server import server, manager, app
+from .config import config
+from .server import server, manager, app
 
 
 def getopt(argv):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from task import ydl_task, task_status
+import os
 
 from hashlib import sha1
 from multiprocessing.managers import BaseManager
 
-import os
+from .task import ydl_task, task_status
 
 class share_manager(BaseManager):
     pass

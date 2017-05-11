@@ -9,7 +9,7 @@ from flask import Flask
 from flask import render_template
 from flask import request
 
-from manager import ydl_manger
+from .manager import ydl_manger
 
 manager = ydl_manger()
 app = Flask(__name__)
