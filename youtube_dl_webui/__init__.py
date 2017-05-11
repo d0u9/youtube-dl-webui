@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 
 from .config import config
 from .server import server, manager, app
+from .manager import ydl_manger
 
 
 def getopt(argv):
@@ -23,13 +24,17 @@ def main(argv=None):
 
     print("pid is {}".format(getpid()))
 
-    args = getopt(argv)
-    conf = config(args)
+    #------------------------------------
+    cmd_args = getopt(argv)
+    conf = config(cmd_args)
 
-    manager.load_conf(conf.manager)
+    manager = ydl_manger(conf.manager)
 
-    s = server()
-    s.run(conf.server)
+    s = server(conf.server)
+    s.bind_ydl_manager(manager)
+    s.run()
+    """
+
 
     tid1 = manager.create_task({'url': 'https://www.youtube.com/watch?v=daVDrGsaDME'})
     print ('create new task: id = {}'.format(tid1))
@@ -69,5 +74,6 @@ def main(argv=None):
 
     sleep(1000)
 
+    """
 
 

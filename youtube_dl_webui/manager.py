@@ -13,9 +13,9 @@ class share_manager(BaseManager):
 
 
 class tasks():
-    def __init__(self, opts):
+    def __init__(self, conf):
         self._data_ = {}
-        self.opts = opts
+        self.conf = conf
         share_manager.register('task_status', task_status)
         self.share_manager = share_manager()
         self.share_manager.start()
@@ -46,7 +46,8 @@ class tasks():
 
     def add_status(self, tid):
         url = self._data_[tid]['info']['url']
-        self._data_[tid]['status'] = self.share_manager.task_status(url, self.opts)
+        opts = {'log_size': self.conf.dl_log_size}
+        self._data_[tid]['status'] = self.share_manager.task_status(url, opts)
 
 
     def get_status(self, tid):
@@ -135,8 +136,7 @@ class ydl_manger():
 
     def load_conf(self, conf):
         self.conf = conf
-        create_dl_dir(self.conf.download_dir)
-        os.chdir(self.conf.download_dir)
+        os.chdir(self.conf.public.download_dir)
 
         self.tasks = tasks(self.conf)
 

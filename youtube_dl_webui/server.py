@@ -11,7 +11,7 @@ from flask import request
 
 from .manager import ydl_manger
 
-manager = ydl_manger()
+manager = None
 app = Flask(__name__)
 
 def invalid_request():
@@ -94,11 +94,20 @@ def manipulate_task(tid):
 
     return success()
 
-
 class server():
-    def __init__(self):
-        pass
+    def __init__(self, conf):
+        global app
+        self.app = app
+        self.conf = conf
+        self.manager = None
 
-    def run(self, conf):
-        app.run(host=conf.host, port=conf.port)
+
+    def run(self):
+        self.app.run(host=self.conf.host, port=self.conf.port)
+
+
+    def bind_ydl_manager(self, ydl_manager):
+        global manager
+        self.manager = ydl_manager
+        manager = ydl_manager
 

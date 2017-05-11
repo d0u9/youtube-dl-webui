@@ -14,6 +14,9 @@ from .downloader import downloader
 
 class task_status():
     def __init__(self, url, opts, params={}):
+        print('========================')
+        print(opts)
+        print('========================')
         self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
         self._data = {
                         'id': sha1(url.encode()).hexdigest(),
@@ -34,7 +37,7 @@ class task_status():
                'finish_time': time(),
                     'format': 0,
                      'state': self.states['paused'],
-                      'log' : deque(maxlen=opts.log_size)
+                      'log' : deque(maxlen=opts['log_size'])
                 }
 
     def get_exerpt(self):
