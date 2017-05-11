@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json
+import json, os
+from sqlite3 import dbapi2 as sqlite3
 
 
 class ydl_opts(object):
@@ -21,6 +22,8 @@ class public_config(object):
     def __init__(self, conf_dict):
         general_conf = conf_dict.get('general')
         self.download_dir = general_conf.get('download_dir', None)
+        self.db_path = general_conf.get('db_path', None)
+        self.db = None
 
 
 class server_config(object):
@@ -74,7 +77,7 @@ class config(object):
         self.ydl_opts = ydl_opts(conf_dict.get('youtube_dl'))
         self.manager.add_ydl_opts(self.ydl_opts)
 
-        self.db = None
+        self.prepare()
 
 
     def _load_cmd_args_(self):
@@ -115,11 +118,15 @@ class config(object):
             print('[ERROR] The db_path: {} is not writable'.format(db_path))
             raise Exception('The db_path is not valid')
 
+        # first time to create db
         if not os.path.exists(db_path):
             db = sqlite3.connect(db_path)
             db.row_factory = sqlite3.Row
             with open('./schema.sql', mode='r') as f:
                 db.cursor().executescript(f.read())
+        else:
+            db = sqlite3.connect(db_path)
+            db.row_factory = sqlite3.Row
 
         self.public.db = db
 

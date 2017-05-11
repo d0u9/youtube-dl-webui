@@ -29,6 +29,12 @@ def not_found(error):
 
 @app.route('/')
 def index():
+    db = server.get_db()
+    print(db)
+    db.execute('insert into entries (title, text) values (?, ?)',
+                     ['123', '666666666'])
+    db.commit()
+
     return render_template('index.html')
 
 
@@ -106,11 +112,13 @@ def manipulate_task(tid):
 
 class server():
     manager = None
+    db = None
     def __init__(self, conf):
         global app
         self.app = app
         self.conf = conf
         self.manager = None
+        server.db = conf.public.db
 
 
     def run(self):
@@ -124,9 +132,18 @@ class server():
     @staticmethod
     def get_manager():
         manager = getattr(g, 'manager', None)
+
         if manager is None:
-            #  manager = g.manager = manager
             manager = g.manager = server.manager
+
         return manager
 
+    @staticmethod
+    def get_db():
+        db = getattr(g, 'db', None)
+
+        if db is None:
+            db = g.db = server.db
+
+        return db
 
