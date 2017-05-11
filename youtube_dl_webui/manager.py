@@ -100,7 +100,6 @@ class tasks():
             return self._data_.get(tid).get('status').get_exerpt()
 
         status = self._data_.get(tid).get('status').get_status()
-        print(status)
 
         return status
 

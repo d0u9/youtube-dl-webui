@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from argparse import ArgumentParser
 
 from .config import config
-from .server import server, manager, app
+from .server import server
 from .manager import ydl_manger
 
 

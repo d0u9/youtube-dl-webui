@@ -14,9 +14,6 @@ from .downloader import downloader
 
 class task_status():
     def __init__(self, url, opts, params={}):
-        print('========================')
-        print(opts)
-        print('========================')
         self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
         self._data = {
                         'id': sha1(url.encode()).hexdigest(),

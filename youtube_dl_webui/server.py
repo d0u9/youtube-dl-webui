@@ -8,10 +8,10 @@ import json
 from flask import Flask
 from flask import render_template
 from flask import request
+from flask import g
 
 from .manager import ydl_manger
 
-manager = None
 app = Flask(__name__)
 
 def invalid_request():
@@ -34,8 +34,8 @@ def index():
 
 @app.route('/task', methods=['POST'])
 def add_task():
-    s = str(request.form)
-    print(s)
+    manager = server.get_manager()
+
     tid = manager.create_task({'url': request.form['url']})
     manager.start_task(tid)
     return json.dumps({'tid': tid})
@@ -43,6 +43,8 @@ def add_task():
 
 @app.route('/task/list', methods=['GET'])
 def list_task():
+    manager = server.get_manager()
+
     state = request.args.get('state', 'all')
 
     l = manager.list_tasks(state)
@@ -51,12 +53,15 @@ def list_task():
 
 @app.route('/task/state_coutner', methods=['GET'])
 def list_state():
+    manager = server.get_manager()
     l = manager.state_list()
     return json.dumps(l)
 
 
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
+    manager = server.get_manager()
+
     act = request.args.get('del_data', None)
 
     if act == 'true':
@@ -69,6 +74,8 @@ def delete_task(tid):
 
 @app.route('/task/tid/<tid>/status', methods=['GET'])
 def query_task(tid):
+    manager = server.get_manager()
+
     exerpt = request.args.get('exerpt', None)
 
     if exerpt == 'true':
@@ -81,6 +88,8 @@ def query_task(tid):
 
 @app.route('/task/tid/<tid>', methods=['PUT'])
 def manipulate_task(tid):
+    manager = server.get_manager()
+
     act = request.args.get('act', None)
     if act is None:
         return invalid_request()
@@ -94,7 +103,9 @@ def manipulate_task(tid):
 
     return success()
 
+
 class server():
+    manager = None
     def __init__(self, conf):
         global app
         self.app = app
@@ -107,7 +118,15 @@ class server():
 
 
     def bind_ydl_manager(self, ydl_manager):
-        global manager
         self.manager = ydl_manager
-        manager = ydl_manager
+        server.manager = ydl_manager
+
+    @staticmethod
+    def get_manager():
+        manager = getattr(g, 'manager', None)
+        if manager is None:
+            #  manager = g.manager = manager
+            manager = g.manager = server.manager
+        return manager
+
 
