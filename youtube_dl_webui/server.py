@@ -11,6 +11,7 @@ from flask import request
 from flask import g
 
 from .manager import ydl_manger
+from .utils import YDLManagerError
 
 app = Flask(__name__)
 
@@ -42,18 +43,25 @@ def index():
 def add_task():
     manager = server.get_manager()
 
-    tid = manager.create_task({'url': request.form['url']})
-    manager.start_task(tid)
-    return json.dumps({'tid': tid})
+    try:
+        tid = manager.create_task({'url': request.form['url']})
+        manager.start_task(tid)
+    except YDLManagerError as e:
+        return json.dumps({'status': 'error', 'errmsg': e.msg})
+
+    return json.dumps({'status': 'success', 'tid': tid})
 
 
 @app.route('/task/list', methods=['GET'])
 def list_task():
     manager = server.get_manager()
 
-    state = request.args.get('state', 'all')
+    try:
+        state = request.args.get('state', 'all')
+        l = manager.list_tasks(state)
+    except YDLManagerError as e:
+        return json.dumps({'status': 'error', 'errmsg': e.msg})
 
-    l = manager.list_tasks(state)
     return json.dumps(l)
 
 
@@ -67,13 +75,15 @@ def list_state():
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
     manager = server.get_manager()
-
     act = request.args.get('del_data', None)
 
-    if act == 'true':
-        manager.delete_task(tid, True)
-    else:
-        manager.delete_task(tid)
+    try:
+        if act == 'true':
+            manager.delete_task(tid, True)
+        else:
+            manager.delete_task(tid)
+    except YDLManagerError as e:
+        return json.dumps({'status': 'error', 'errmsg': e.msg})
 
     return success()
 
@@ -81,13 +91,15 @@ def delete_task(tid):
 @app.route('/task/tid/<tid>/status', methods=['GET'])
 def query_task(tid):
     manager = server.get_manager()
-
     exerpt = request.args.get('exerpt', None)
 
-    if exerpt == 'true':
-        status = manager.query_task(tid, exerpt=True)
-    else:
-        status = manager.query_task(tid)
+    try:
+        if exerpt == 'true':
+            status = manager.query_task(tid, exerpt=True)
+        else:
+            status = manager.query_task(tid)
+    except YDLManagerError as e:
+        return json.dumps({'status': 'error', 'errmsg': e.msg})
 
     return json.dumps(status)
 
@@ -100,12 +112,15 @@ def manipulate_task(tid):
     if act is None:
         return invalid_request()
 
-    if act == 'pause':
-        manager.pause_task(tid)
-    elif act == 'resume':
-        manager.resume_task(tid)
-    else:
-        return json.dumps({'status': 'error', 'errmsg': 'unknow action'})
+    try:
+        if act == 'pause':
+            manager.pause_task(tid)
+        elif act == 'resume':
+            manager.resume_task(tid)
+        else:
+            return json.dumps({'status': 'error', 'errmsg': 'unknow action'})
+    except YDLManagerError as e:
+        return json.dumps({'status': 'error', 'errmsg': e.msg})
 
     return success()
 

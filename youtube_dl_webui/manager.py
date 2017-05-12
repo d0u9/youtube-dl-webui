@@ -7,6 +7,8 @@ from hashlib import sha1
 from multiprocessing.managers import BaseManager
 
 from .task import ydl_task, task_desc
+from .utils import TaskError
+from .utils import YDLManagerError
 
 
 class share_manager(BaseManager):
@@ -27,13 +29,16 @@ class tasks():
     def add_param(self, param):
         if 'url' not in param:
             print ('[ERROR] Can not find url in task param')
-            return None
+            raise TaskError('No url in task parameters')
 
         # Combine default config with the current task param
         pass
 
         url = param.get('url')
         tid =  sha1(url.encode()).hexdigest()
+
+        if tid in self._data_:
+            raise TaskError('Task exists', url=url)
 
         param['tid'] = tid
         self._data_[tid] = {}
@@ -44,10 +49,16 @@ class tasks():
 
 
     def get_param(self, tid):
+        if tid not in self._data_:
+            raise TaskError('Task does not exist', tid=tid)
+
         return self._data_.get(tid).get('param')
 
 
     def add_desc(self, tid):
+        if tid not in self._data_:
+            raise TaskError('Task does not exist', tid=tid)
+
         url = self._data_[tid]['param']['url']
         opts = {'log_size': self.conf.dl_log_size}
 
@@ -55,14 +66,23 @@ class tasks():
 
 
     def get_desc(self, tid):
+        if tid not in self._data_:
+            raise TaskError('Task does not exist', tid=tid)
+
         return self._data_.get(tid).get('desc')
 
 
     def add_object(self, tid, task):
+        if tid not in self._data_:
+            raise TaskError('Task does not exist', tid=tid)
+
         self._data_[tid]['object'] = task
 
 
     def get_object(self, tid):
+        if tid not in self._data_:
+            raise TaskError('Task does not exist', tid=tid)
+
         return self._data_.get(tid).get('object')
 
 
@@ -71,7 +91,7 @@ class tasks():
         counter = {'downloading': 0, 'paused': 0, 'finished': 0}
 
         if state not in state_index:
-            return None
+            raise TaskError('Not a valid state', tid=tid)
 
         task_list = {}
         for key, val in self._data_.items():
@@ -98,7 +118,7 @@ class tasks():
 
     def query_task(self, tid, exerpt=False):
         if tid not in self._data_:
-            return None
+            raise TaskError('Task does not exist', tid=tid)
 
         if exerpt:
             return self._data_.get(tid).get('desc').get_exerpt()
@@ -109,6 +129,9 @@ class tasks():
 
 
     def delete_task(self, tid):
+        if tid not in self._data_:
+            raise TaskError('Task does not exist', tid=tid)
+
         task = self._data_.pop(tid)
         desc = task.get('desc')
         return desc
@@ -130,7 +153,11 @@ class ydl_manger():
 
 
     def create_task(self, task_param):
-        tid = self.tasks.add_param(task_param)
+        try:
+            tid = self.tasks.add_param(task_param)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
+
         self.tasks.add_desc(tid)
 
         param = task_param
@@ -144,36 +171,57 @@ class ydl_manger():
 
 
     def start_task(self, tid):
-        task = self.tasks.get_object(tid)
+        try:
+            task = self.tasks.get_object(tid)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
         task.start_dl()
 
 
     def pause_task(self, tid):
-        task = self.tasks.get_object(tid)
+        try:
+            task = self.tasks.get_object(tid)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
         task.pause_dl()
 
 
     def resume_task(self, tid):
-        task = self.tasks.get_object(tid)
+        try:
+            task = self.tasks.get_object(tid)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
         task.resume_dl()
 
 
     def delete_task(self, tid, del_data=False):
-        self.pause_task(tid)
-        status = self.tasks.delete_task(tid)
-        file_name = status.get_item('filename')
+        try:
+            self.pause_task(tid)
+            desc = self.tasks.delete_task(tid)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
+
+        file_name = desc.get_info_item('filename')
 
         if del_data is True:
             os.remove(file_name)
 
 
     def list_tasks(self, state='all', exerpt=True):
-        tasks, counter = self.tasks.list_tasks(state=state, exerpt=exerpt)
+        try:
+            tasks, counter = self.tasks.list_tasks(state=state, exerpt=exerpt)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
 
         return {'tasks': tasks, 'counter': counter}
 
 
     def query_task(self, tid, exerpt=False):
+        try:
+            task = self.tasks.get_object(tid)
+        except TaskError as e:
+            raise YDLManagerError(e.msg)
+
         return self.tasks.query_task(tid, exerpt)
 
 
