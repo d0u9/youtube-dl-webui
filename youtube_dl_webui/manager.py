@@ -6,7 +6,7 @@ import os
 from hashlib import sha1
 from multiprocessing.managers import BaseManager
 
-from .task import ydl_task, task_status
+from .task import ydl_task, task_desc
 
 class share_manager(BaseManager):
     pass
@@ -16,7 +16,7 @@ class tasks():
     def __init__(self, conf):
         self._data_ = {}
         self.conf = conf
-        share_manager.register('task_status', task_status)
+        share_manager.register('task_desc', task_desc)
         self.share_manager = share_manager()
         self.share_manager.start()
 
@@ -35,7 +35,7 @@ class tasks():
         param['tid'] = tid
         self._data_[tid] = {}
         self._data_[tid]['param'] = param
-        self._data_[tid]['status'] = None
+        self._data_[tid]['desc'] = None
 
         return tid
 
@@ -47,11 +47,11 @@ class tasks():
     def add_status(self, tid):
         url = self._data_[tid]['param']['url']
         opts = {'log_size': self.conf.dl_log_size}
-        self._data_[tid]['status'] = self.share_manager.task_status(url, opts)
+        self._data_[tid]['desc'] = self.share_manager.task_desc(url, opts)
 
 
     def get_status(self, tid):
-        return self._data_.get(tid).get('status')
+        return self._data_.get(tid).get('desc')
 
 
     def add_object(self, tid, task):
@@ -71,7 +71,7 @@ class tasks():
 
         task_list = {}
         for key, val in self._data_.items():
-            status = val['status'].get_status()
+            status = val['desc'].get_status()
             cstate = status['state']
 
             if cstate is state_index['downloading']:
@@ -85,9 +85,9 @@ class tasks():
                 continue
 
             if exerpt:
-                task_list[key] = val['status'].get_exerpt()
+                task_list[key] = val['desc'].get_exerpt()
             else:
-                task_list[key] = val['status'].get_status()
+                task_list[key] = val['desc'].get_status()
 
         return task_list, counter
 
@@ -97,16 +97,16 @@ class tasks():
             return None
 
         if exerpt:
-            return self._data_.get(tid).get('status').get_exerpt()
+            return self._data_.get(tid).get('desc').get_exerpt()
 
-        status = self._data_.get(tid).get('status').get_status()
+        status = self._data_.get(tid).get('desc').get_status()
 
         return status
 
 
     def delete_task(self, tid):
         task = self._data_.pop(tid)
-        status = task.get('status')
+        status = task.get('desc')
         return status
 
 
@@ -179,7 +179,7 @@ class ydl_manger():
             os.remove(file_name)
 
 
-    def get_task_status(self, tid):
+    def get_task_desc(self, tid):
         s = self.tasks.get_status(tid).get_status()
         return s
 

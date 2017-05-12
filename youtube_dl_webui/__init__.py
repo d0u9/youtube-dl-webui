@@ -48,17 +48,17 @@ def main(argv=None):
     sleep(1)
 
     manager.start_task(tid1)
-    status = manager.get_task_status(tid1)
+    status = manager.get_task_desc(tid1)
     print ('current_task_status {}'.format(str(status)))
 
     sleep(1)
     manager.pause_task(tid1)
-    status = manager.get_task_status(tid1)
+    status = manager.get_task_desc(tid1)
     print ('current_task_status {}'.format(str(status)))
 
     sleep(1)
     manager.resume_task(tid1)
-    status = manager.get_task_status(tid1)
+    status = manager.get_task_desc(tid1)
     print ('current_task_status {}'.format(str(status)))
 
     print(manager.list_tasks(state='downloading'))
@@ -67,7 +67,7 @@ def main(argv=None):
 
     print("-------------------------------------------------")
     sleep(10)
-    status = manager.get_task_status(tid1)
+    status = manager.get_task_desc(tid1)
     import pprint
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(status)

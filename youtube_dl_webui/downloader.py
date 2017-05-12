@@ -91,8 +91,7 @@ class downloader(Process):
         pp = pprint.PrettyPrinter(indent=4)
 
         # For tests below, delete after use
-        """
-        info_dict = {'title': 'this is a test title', 'file': 'hello file'}
+        info_dict = {'title': 'this is a test title', 'format': 'test format'}
         self.status.update_from_info_dict(info_dict)
 
         from time import sleep
@@ -120,6 +119,7 @@ class downloader(Process):
 
             self.status.update_from_info_dict(info_dict)
             ydl.download([self.param['url']])
+        """
 
 
         self.status.set_state('finished')

@@ -12,7 +12,7 @@ from time import time
 from .downloader import downloader
 
 
-class task_status():
+class task_desc():
     def __init__(self, url, opts, params={}):
         self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
         self._data_ = {
