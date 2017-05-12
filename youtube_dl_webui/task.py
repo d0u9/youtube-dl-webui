@@ -43,6 +43,7 @@ class task_desc():
                       'log' : deque(maxlen=opts['log_size'])
                 }
 
+
     def get_exerpt(self):
         exerpt_keys = set(['tid', 'url', 'title', 'percent'])
         exerpt = {}
@@ -65,6 +66,7 @@ class task_desc():
 
     def get_status(self):
         data = copy.deepcopy(self.status)
+
         log = []
         for l in self.status.get('log'):
             log.append(l)
@@ -73,29 +75,48 @@ class task_desc():
         return data
 
 
-    def set_item(self, item, val):
-        if self.info.get(item, None) is not None:
+    def get_info(self):
+        data = copy.deepcopy(self.info)
+        return data
+
+
+    def set_item(self, item, val, override=False):
+        self.set_info_item(item, val, override)
+        self.set_status_item(item, val, override)
+
+
+    def set_info_item(self, item, val, override=False):
+        if override is True or self.info.get(item, None) is not None:
             self.info[item] = val
 
-        if self.status.get(item, None) is not None:
+
+    def set_status_item(self, item, val, override=False):
+        if override is True or self.status.get(item, None) is not None:
             self.status[item] = val
 
 
     def get_item(self, item):
-        if self.info.get(item, None) is not None:
-            return self.info[item]
+        a = self.get_info_item(item)
 
-        if self.status.get(item, None) is not None:
-            return self.status[item]
+        if a is None:
+            return self.get_status_item(item)
+        else:
+            return a
 
-        return None
+
+    def get_info_item(self, item):
+        return self.info.get(item, None)
+
+
+    def get_status_item(self, item):
+        return self.status.get(item,None)
 
 
     def set_state(self, state):
         if state not in self.state_index:
             return False
 
-        return self.set_item('state', self.state_index[state])
+        return self.set_status_item('state', self.state_index[state])
 
 
     def push_log(self, log_type, log):
@@ -107,40 +128,40 @@ class task_desc():
 
 
 class ydl_task():
-    def __init__(self, param, status, ydl_opts={}):
+    def __init__(self, param, desc, ydl_opts={}):
         self.tid = param['tid']
         self.param = param
-        self.status = status
+        self.desc = desc
         self.ydl_opts = copy.deepcopy(ydl_opts.dict())
         self.downloader = None
 
 
     def delegate(self):
-        self.downloader = downloader(self.param, self.status, self.ydl_opts)
+        self.downloader = downloader(self.param, self.desc, self.ydl_opts)
 
 
     def start_dl(self):
-        self.status.set_state('downloading')
+        self.desc.set_state('downloading')
         self.delegate()
-        self.status.set_item('start_time', time())
+        self.desc.set_status_item('start_time', time())
         self.downloader.start()
 
 
     def pause_dl(self):
-        self.status.set_state('paused')
+        self.desc.set_state('paused')
         self.downloader.stop()
 
         cur_time = time()
-        start_time = self.status.get_item('start_time')
-        elapsed = self.status.get_item('elapsed')
+        start_time = self.desc.get_item('start_time')
+        elapsed = self.desc.get_item('elapsed')
 
         elapsed += cur_time - start_time
-        self.status.set_item('pause_time', cur_time)
-        self.status.set_item('elapsed', elapsed)
+        self.desc.set_item('pause_time', cur_time)
+        self.desc.set_item('elapsed', elapsed)
 
 
     def resume_dl(self):
-        self.status.set_state('downloading')
+        self.desc.set_state('downloading')
         self.delegate()
-        self.status.set_item('start_time', time())
+        self.desc.set_item('start_time', time())
         self.downloader.start()

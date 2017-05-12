@@ -50,34 +50,34 @@ class ydl_hook():
 
 
 class log_filter(object):
-    def __init__(self, status):
-        self.status = status
+    def __init__(self, desc):
+        self.desc = desc
 
 
     def debug(self, msg):
-        self.status.push_log('debug', msg)
+        self.desc.push_log('debug', msg)
 
 
     def warning(self, msg):
-        self.status.push_log('warning', msg)
+        self.desc.push_log('warning', msg)
 
 
     def error(self, msg):
-        self.status.push_log('error', msg)
+        self.desc.push_log('error', msg)
 
 
 class downloader(Process):
-    def __init__(self, param, status, ydl_opts):
+    def __init__(self, param, desc, ydl_opts):
         Process.__init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None)
         self.tid = param['tid']
         self.param = param
-        self.status = status
+        self.desc = desc
         self.ydl_opts = ydl_opts
 
-        self.log_filter = log_filter(status)
+        self.log_filter = log_filter(desc)
 
         global status_global
-        status_global = status
+        status_global = desc
 
 
     def intercept_ydl_opts(self):
@@ -87,21 +87,21 @@ class downloader(Process):
 
 
     def run(self):
-        print ('start downloading... {}'.format(self.status.get_status()))
+        print ('start downloading... {}'.format(self.desc.get_status()))
         pp = pprint.PrettyPrinter(indent=4)
 
         # For tests below, delete after use
         info_dict = {'title': 'this is a test title', 'format': 'test format'}
-        self.status.update_from_info_dict(info_dict)
+        self.desc.update_from_info_dict(info_dict)
 
         from time import sleep
         from random import randint
         #  sleep(randint(5, 10))
-        t = 20 - self.status.get_item('elapsed')
+        t = 20 - self.desc.get_status_item('elapsed')
         while t > 0:
             msg = "--- Time remain {}".format(t)
             print (msg)
-            self.status.push_log('debug', msg)
+            self.desc.push_log('debug', msg)
             t -= 1
             sleep(1)
 
@@ -117,20 +117,20 @@ class downloader(Process):
             info_dict = ydl.extract_info(self.param['url'], download=False)
             pp.pprint(info_dict)
 
-            self.status.update_from_info_dict(info_dict)
+            self.desc.update_from_info_dict(info_dict)
             ydl.download([self.param['url']])
         """
 
 
-        self.status.set_state('finished')
-        print ('download finished {}'.format(self.status.get_status()))
+        self.desc.set_state('finished')
+        print ('download finished {}'.format(self.desc.get_status()))
 
         cur_time = time()
-        start_time = self.status.get_item('start_time')
-        elapsed = self.status.get_item('elapsed')
+        start_time = self.desc.get_item('start_time')
+        elapsed = self.desc.get_item('elapsed')
         elapsed += cur_time - start_time
-        self.status.set_item('finishe_time', cur_time)
-        self.status.set_item('elapsed', elapsed)
+        self.desc.set_item('finishe_time', cur_time)
+        self.desc.set_item('elapsed', elapsed)
 
 
     def update_ydl_conf(self, key, val):

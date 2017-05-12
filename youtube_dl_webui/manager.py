@@ -174,8 +174,7 @@ class ydl_manger():
 
 
     def query_task(self, tid, exerpt=False):
-        task_desc = self.tasks.get_desc(tid)
-        return task_desc.query_task(tid, exerpt)
+        return self.tasks.query_task(tid, exerpt)
 
 
     def state_list(self):
