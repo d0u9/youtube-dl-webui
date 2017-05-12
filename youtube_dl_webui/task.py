@@ -14,11 +14,20 @@ from .downloader import downloader
 
 class task_desc():
     def __init__(self, url, opts, params={}):
-        self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
-        self._data_ = {
-                        'id': sha1(url.encode()).hexdigest(),
+        self.state_index = {'downloading': 1, 'paused': 2, 'finished': 3}
+        self.tid = sha1(url.encode()).hexdigest()
+        self.info = {
+                        'tid': self.tid,
                      'title': '',
                        'url': url,
+                  'filename': '',
+               'create_time': time(),
+               'finish_time': time(),
+                    'format': 0
+                }
+
+        self.status = {
+                        'tid': self.tid,
                    'percent': '0.0',
                   'filename': '',
                'tmpfilename': '',
@@ -28,20 +37,21 @@ class task_desc():
                      'speed': 0,
                        'eta': 0,
                    'elapsed': 0,
-               'create_time': time(),
                 'start_time': time(),
                 'pause_time': time(),
-               'finish_time': time(),
-                    'format': 0,
-                     'state': self.states['paused'],
+                     'state': self.state_index['paused'],
                       'log' : deque(maxlen=opts['log_size'])
                 }
 
     def get_exerpt(self):
-        exerpt_keys = set(['id', 'url', 'title', 'progress'])
+        exerpt_keys = set(['tid', 'url', 'title', 'percent'])
         exerpt = {}
 
-        for key, val in self._data_.items():
+        for key, val in self.info.items():
+            if key in exerpt_keys:
+                exerpt[key] = val
+
+        for key, val in self.status.items():
             if key in exerpt_keys:
                 exerpt[key] = val
 
@@ -49,14 +59,14 @@ class task_desc():
 
 
     def update_from_info_dict(self, info_dict):
-        self._data_['title'] = info_dict['title']
-        self._data_['format'] = info_dict['format']
+        self.info['title'] = info_dict['title']
+        self.info['format'] = info_dict['format']
 
 
     def get_status(self):
-        data = copy.deepcopy(self._data_)
+        data = copy.deepcopy(self.status)
         log = []
-        for l in self._data_.get('log'):
+        for l in self.status.get('log'):
             log.append(l)
 
         data['log'] = log
@@ -64,26 +74,28 @@ class task_desc():
 
 
     def set_item(self, item, val):
-        if item not in self._data_:
-            return None
+        if self.info.get(item, None) is not None:
+            self.info[item] = val
 
-        self._data_[item] = val
-
-        return True
+        if self.status.get(item, None) is not None:
+            self.status[item] = val
 
 
     def get_item(self, item):
-        if item not in self._data_:
-            return None
+        if self.info.get(item, None) is not None:
+            return self.info[item]
 
-        return self._data_[item]
+        if self.status.get(item, None) is not None:
+            return self.status[item]
+
+        return None
 
 
     def set_state(self, state):
-        if state not in self.states:
+        if state not in self.state_index:
             return False
 
-        return self.set_item('state', self.states[state])
+        return self.set_item('state', self.state_index[state])
 
 
     def push_log(self, log_type, log):
@@ -91,7 +103,7 @@ class task_desc():
         if log_type not in valid_types:
             return None
 
-        self._data_['log'].append({'type':log_type, 'time': int(time()), 'log': log})
+        self.status['log'].append({'type':log_type, 'time': int(time()), 'log': log})
 
 
 class ydl_task():
