@@ -67,10 +67,10 @@ class log_filter(object):
 
 
 class downloader(Process):
-    def __init__(self, info, status, ydl_opts):
+    def __init__(self, desc, status, ydl_opts):
         Process.__init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None)
-        self.tid = info['tid']
-        self.info = info
+        self.tid = desc['tid']
+        self.desc = desc
         self.status = status
         self.ydl_opts = ydl_opts
 
@@ -114,12 +114,12 @@ class downloader(Process):
         self.intercept_ydl_opts()
 
         with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
-            print("downloading {}".format(self.info['url']))
-            info_dict = ydl.extract_info(self.info['url'], download=False)
+            print("downloading {}".format(self.desc['url']))
+            info_dict = ydl.extract_info(self.desc['url'], download=False)
             pp.pprint(info_dict)
 
             self.status.update_from_info_dict(info_dict)
-            ydl.download([self.info['url']])
+            ydl.download([self.desc['url']])
 
 
         self.status.set_state('finished')

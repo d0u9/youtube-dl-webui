@@ -21,31 +21,31 @@ class tasks():
         self.share_manager.start()
 
 
-    def add_info(self, info):
-        if 'url' not in info:
-            print ('[ERROR] Can not find url in task_info')
+    def add_desc(self, desc):
+        if 'url' not in desc:
+            print ('[ERROR] Can not find url in task desc')
             return None
 
-        # Combine default config with the current task_info
+        # Combine default config with the current task desc
         pass
 
-        url = info.get('url')
+        url = desc.get('url')
         tid =  sha1(url.encode()).hexdigest()
 
-        info['tid'] = tid
+        desc['tid'] = tid
         self._data_[tid] = {}
-        self._data_[tid]['info'] = info
+        self._data_[tid]['desc'] = desc
         self._data_[tid]['status'] = None
 
         return tid
 
 
-    def get_info(self, tid):
-        return self._data_.get(tid).get('info')
+    def get_desc(self, tid):
+        return self._data_.get(tid).get('desc')
 
 
     def add_status(self, tid):
-        url = self._data_[tid]['info']['url']
+        url = self._data_[tid]['desc']['url']
         opts = {'log_size': self.conf.dl_log_size}
         self._data_[tid]['status'] = self.share_manager.task_status(url, opts)
 
@@ -140,15 +140,15 @@ class ydl_manger():
         self.tasks = tasks(self.conf)
 
 
-    def create_task(self, task_info):
-        tid = self.tasks.add_info(task_info)
+    def create_task(self, task_desc):
+        tid = self.tasks.add_desc(task_desc)
         self.tasks.add_status(tid)
 
         #  task = ydl_task(tid, self.tasks, self.conf.ydl_opts)
-        info = task_info
+        desc = task_desc
         status = self.tasks.get_status(tid)
         ydl_opts = self.conf.ydl_opts
-        task = ydl_task(info, status, ydl_opts)
+        task = ydl_task(desc, status, ydl_opts)
         self.tasks.add_object(tid, task)
 
         return tid

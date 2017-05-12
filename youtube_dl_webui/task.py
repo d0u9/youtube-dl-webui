@@ -15,7 +15,7 @@ from .downloader import downloader
 class task_status():
     def __init__(self, url, opts, params={}):
         self.states = {'downloading': 1, 'paused': 2, 'finished': 3}
-        self._data = {
+        self._data_ = {
                         'id': sha1(url.encode()).hexdigest(),
                      'title': '',
                        'url': url,
@@ -41,21 +41,21 @@ class task_status():
         exerpt_keys = set(['id', 'url', 'title', 'progress'])
         exerpt = {}
 
-        for key, val in self._data.items():
+        for key, val in self._data_.items():
             if key in exerpt_keys:
                 exerpt[key] = val
 
         return exerpt
 
     def update_from_info_dict(self, info_dict):
-        self._data['title'] = info_dict['title']
-        self._data['format'] = info_dict['format']
+        self._data_['title'] = info_dict['title']
+        self._data_['format'] = info_dict['format']
 
 
     def get_status(self):
-        data = copy.deepcopy(self._data)
+        data = copy.deepcopy(self._data_)
         log = []
-        for l in self._data.get('log'):
+        for l in self._data_.get('log'):
             log.append(l)
 
         data['log'] = log
@@ -63,19 +63,19 @@ class task_status():
 
 
     def set_item(self, item, val):
-        if item not in self._data:
+        if item not in self._data_:
             return None
 
-        self._data[item] = val
+        self._data_[item] = val
 
         return True
 
 
     def get_item(self, item):
-        if item not in self._data:
+        if item not in self._data_:
             return None
 
-        return self._data[item]
+        return self._data_[item]
 
 
     def set_state(self, state):
@@ -90,20 +90,20 @@ class task_status():
         if log_type not in valid_types:
             return None
 
-        self._data['log'].append({'type':log_type, 'time': int(time()), 'log': log})
+        self._data_['log'].append({'type':log_type, 'time': int(time()), 'log': log})
 
 
 class ydl_task():
-    def __init__(self, info, status, ydl_opts={}):
-        self.tid = info['tid']
-        self.info =info
+    def __init__(self, desc, status, ydl_opts={}):
+        self.tid = desc['tid']
+        self.desc =desc
         self.status = status
         self.ydl_opts = copy.deepcopy(ydl_opts.dict())
         self.downloader = None
 
 
     def delegate(self):
-        self.downloader = downloader(self.info, self.status, self.ydl_opts)
+        self.downloader = downloader(self.desc, self.status, self.ydl_opts)
 
 
     def start_dl(self):
