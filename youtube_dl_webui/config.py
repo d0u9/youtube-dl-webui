@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json, os
-from sqlite3 import dbapi2 as sqlite3
+import sqlite3
 
 
 class ydl_opts(object):
@@ -24,6 +24,16 @@ class public_config(object):
         self.download_dir = general_conf.get('download_dir', None)
         self.db_path = general_conf.get('db_path', None)
         self.db = None
+        self.conn = None
+
+
+    def bind_sqlite_handler(self, conn, db):
+        self.db = db
+        self.conn = conn
+
+
+    def get_sqlite_handler(self):
+        return self.conn, self.db
 
 
 class server_config(object):
@@ -120,15 +130,14 @@ class config(object):
 
         # first time to create db
         if not os.path.exists(db_path):
-            db = sqlite3.connect(db_path)
-            db.row_factory = sqlite3.Row
+            conn = sqlite3.connect(db_path)
+            db = conn.cursor()
             with open('./schema.sql', mode='r') as f:
-                db.cursor().executescript(f.read())
+                conn.executescript(f.read())
         else:
-            db = sqlite3.connect(db_path)
-            db.row_factory = sqlite3.Row
+            conn = sqlite3.connect(db_path)
+            db = conn.cursor()
 
-        self.public.db = db
-
+        self.public.bind_sqlite_handler(conn, db)
 
 

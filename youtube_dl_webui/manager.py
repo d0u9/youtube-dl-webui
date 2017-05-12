@@ -26,16 +26,9 @@ class tasks():
         self.share_manager.start()
 
 
-    def add_param(self, param):
-        if 'url' not in param:
-            print ('[ERROR] Can not find url in task param')
-            raise TaskError('No url in task parameters')
-
+    def add_param(self, tid, param):
         # Combine default config with the current task param
         pass
-
-        url = param.get('url')
-        tid =  sha1(url.encode()).hexdigest()
 
         if tid in self._data_:
             raise TaskError('Task exists', url=url)
@@ -44,8 +37,6 @@ class tasks():
         self._data_[tid] = {}
         self._data_[tid]['param'] = param
         self._data_[tid]['desc'] = None
-
-        return tid
 
 
     def get_param(self, tid):
@@ -150,11 +141,23 @@ class ydl_manger():
         os.chdir(self.conf.public.download_dir)
 
         self.tasks = tasks(self.conf)
+        self.conn, self.db = conf.public.get_sqlite_handler()
 
 
     def create_task(self, task_param):
+        if 'url' not in task_param:
+            print ('[ERROR] Can not find url in task param')
+            raise YDLManagerError('No url in task parameters')
+
+        url = task_param.get('url')
+        tid =  sha1(url.encode()).hexdigest()
+
+        self.db.execute("SELECT * FROM task_param WHERE tid=(?)", (tid,))
+        if self.db.fetchone() is not None:
+            raise YDLManagerError('Task exists', url=url)
+
         try:
-            tid = self.tasks.add_param(task_param)
+            self.tasks.add_param(tid, task_param)
         except TaskError as e:
             raise YDLManagerError(e.msg)
 
@@ -166,6 +169,10 @@ class ydl_manger():
         task = ydl_task(param, desc, ydl_opts)
 
         self.tasks.add_object(tid, task)
+
+        self.db.execute('INSERT OR IGNORE INTO task_param (tid, url) VALUES (?, ?)',
+                         (tid, task_param['url']))
+        self.conn.commit()
 
         return tid
 

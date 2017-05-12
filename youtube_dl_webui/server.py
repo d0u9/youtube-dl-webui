@@ -31,10 +31,6 @@ def not_found(error):
 @app.route('/')
 def index():
     db = server.get_db()
-    print(db)
-    db.execute('insert into entries (title, text) values (?, ?)',
-                     ['123', '666666666'])
-    db.commit()
 
     return render_template('index.html')
 
