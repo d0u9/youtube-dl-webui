@@ -189,8 +189,13 @@ class ydl_manger():
     def resume_task(self, tid):
         try:
             task = self.tasks.get_object(tid)
+            desc = self.tasks.get_desc(tid)
         except TaskError as e:
             raise YDLManagerError(e.msg)
+
+        if desc.get_status_item('state') is task_desc.state_index['finished']:
+            raise YDLManagerError('Already finished', tid=tid)
+
         task.resume_dl()
 
 
