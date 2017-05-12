@@ -201,10 +201,16 @@ class ydl_manger():
         except TaskError as e:
             raise YDLManagerError(e.msg)
 
-        file_name = desc.get_info_item('filename')
+        if desc.get_status_item('state') == 'finished':
+            file_name = desc.get_item('filename')
+        else:
+            file_name = desc.get_item('tmpfilename')
 
         if del_data is True:
-            os.remove(file_name)
+            try:
+                os.remove(file_name)
+            except FileNotFoundError:
+                pass
 
 
     def list_tasks(self, state='all', exerpt=True):

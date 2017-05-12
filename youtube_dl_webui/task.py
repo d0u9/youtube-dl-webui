@@ -13,8 +13,8 @@ from .downloader import downloader
 
 
 class task_desc():
+    state_index = {'downloading': 1, 'paused': 2, 'finished': 3}
     def __init__(self, url, opts, params={}):
-        self.state_index = {'downloading': 1, 'paused': 2, 'finished': 3}
         self.tid = sha1(url.encode()).hexdigest()
         self.info = {
                         'tid': self.tid,
@@ -39,7 +39,7 @@ class task_desc():
                    'elapsed': 0,
                 'start_time': time(),
                 'pause_time': time(),
-                     'state': self.state_index['paused'],
+                     'state': task_desc.state_index['paused'],
                       'log' : deque(maxlen=opts['log_size'])
                 }
 
@@ -113,10 +113,10 @@ class task_desc():
 
 
     def set_state(self, state):
-        if state not in self.state_index:
+        if state not in task_desc.state_index:
             return False
 
-        return self.set_status_item('state', self.state_index[state])
+        return self.set_status_item('state', task_desc.state_index[state])
 
 
     def push_log(self, log_type, log):
