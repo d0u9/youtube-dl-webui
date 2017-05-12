@@ -84,7 +84,6 @@ class downloader(Process):
     def intercept_ydl_opts(self):
 #        self.ydl_opts['logger'] = self.log_filter
         self.ydl_opts['progress_hooks'] = [ydl_hook.dispatcher]
-#        self.ydl_opts['progress_hooks'] = [hook]
 
 
     def run(self):
@@ -142,7 +141,7 @@ class downloader(Process):
         elapsed = desc.get_status_item('elapsed')
         elapsed += cur_time - start_time
         desc.set_status_item('elapsed', elapsed)
-        desc.set_status_item('pause_time', cur_time())
+        desc.set_status_item('pause_time', cur_time)
 
 
     def update_ydl_conf(self, key, val):
@@ -151,4 +150,5 @@ class downloader(Process):
 
     def stop(self):
         self.terminate()
+        downloader.calc_stop_time(self.desc)
         self.join()
