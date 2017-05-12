@@ -47,6 +47,7 @@ class task_status():
 
         return exerpt
 
+
     def update_from_info_dict(self, info_dict):
         self._data_['title'] = info_dict['title']
         self._data_['format'] = info_dict['format']
@@ -94,16 +95,16 @@ class task_status():
 
 
 class ydl_task():
-    def __init__(self, desc, status, ydl_opts={}):
-        self.tid = desc['tid']
-        self.desc =desc
+    def __init__(self, param, status, ydl_opts={}):
+        self.tid = param['tid']
+        self.param = param
         self.status = status
         self.ydl_opts = copy.deepcopy(ydl_opts.dict())
         self.downloader = None
 
 
     def delegate(self):
-        self.downloader = downloader(self.desc, self.status, self.ydl_opts)
+        self.downloader = downloader(self.param, self.status, self.ydl_opts)
 
 
     def start_dl(self):
