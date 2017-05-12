@@ -8,15 +8,18 @@ from multiprocessing.managers import BaseManager
 
 from .task import ydl_task, task_desc
 
+
 class share_manager(BaseManager):
     pass
 
 
 class tasks():
     def __init__(self, conf):
+        share_manager.register('task_desc', task_desc)
+
+        # variables
         self._data_ = {}
         self.conf = conf
-        share_manager.register('task_desc', task_desc)
         self.share_manager = share_manager()
         self.share_manager.start()
 
@@ -44,13 +47,14 @@ class tasks():
         return self._data_.get(tid).get('param')
 
 
-    def add_status(self, tid):
+    def add_desc(self, tid):
         url = self._data_[tid]['param']['url']
         opts = {'log_size': self.conf.dl_log_size}
+
         self._data_[tid]['desc'] = self.share_manager.task_desc(url, opts)
 
 
-    def get_status(self, tid):
+    def get_desc(self, tid):
         return self._data_.get(tid).get('desc')
 
 
@@ -106,23 +110,8 @@ class tasks():
 
     def delete_task(self, tid):
         task = self._data_.pop(tid)
-        status = task.get('desc')
-        return status
-
-
-def create_dl_dir(dl_dir):
-    # create download dir
-    if os.path.exists(dl_dir) and not os.path.isdir(dl_dir):
-        print ('[ERROR] The {} exists, but not a valid directory'.format(dl_dir))
-        raise Exception('The download directory is not valid')
-
-
-    if os.path.exists(dl_dir) and not os.access(dl_dir, os.W_OK | os.X_OK):
-        print ('[ERROR] The download directory: {} is not writable'.format(dl_dir))
-        raise Exception('The download directory is not writable')
-
-    if not os.path.exists(dl_dir):
-        os.makedirs(dl_dir)
+        desc = task.get('desc')
+        return desc
 
 
 class ydl_manger():
@@ -142,12 +131,13 @@ class ydl_manger():
 
     def create_task(self, task_param):
         tid = self.tasks.add_param(task_param)
-        self.tasks.add_status(tid)
+        self.tasks.add_desc(tid)
 
         param = task_param
-        status = self.tasks.get_status(tid)
+        desc = self.tasks.get_desc(tid)
         ydl_opts = self.conf.ydl_opts
-        task = ydl_task(param, status, ydl_opts)
+        task = ydl_task(param, desc, ydl_opts)
+
         self.tasks.add_object(tid, task)
 
         return tid
@@ -169,19 +159,12 @@ class ydl_manger():
 
 
     def delete_task(self, tid, del_data=False):
-        state_index = {'downloading': 1, 'paused': 2, 'finished': 3}
         self.pause_task(tid)
         status = self.tasks.delete_task(tid)
-        file_name = status.get_item('file')
-        state = status.get_item('state')
+        file_name = status.get_item('filename')
 
         if del_data is True:
             os.remove(file_name)
-
-
-    def get_task_desc(self, tid):
-        s = self.tasks.get_status(tid).get_status()
-        return s
 
 
     def list_tasks(self, state='all', exerpt=True):
@@ -191,7 +174,8 @@ class ydl_manger():
 
 
     def query_task(self, tid, exerpt=False):
-        return self.tasks.query_task(tid, exerpt)
+        task_desc = self.tasks.get_desc(tid)
+        return task_desc.query_task(tid, exerpt)
 
 
     def state_list(self):
