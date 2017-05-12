@@ -10,7 +10,7 @@ from time import time
 
 import youtube_dl
 
-status_global = None
+G_desc = None
 
 class ydl_hook():
     @classmethod
@@ -25,23 +25,24 @@ class ydl_hook():
 
     @classmethod
     def finished(cls, d):
-        global status_global
+        global G_desc
+        downloader.calc_stop_time(G_desc)
         print('Done downloading, now converting ...')
 
 
     @classmethod
     def downloading(cls, d):
-        global status_global
-        status_global.set_item('filename', d['filename'])
-        status_global.set_item('tmpfilename', d['tmpfilename'])
-        status_global.set_item('downloaded_bytes', d['downloaded_bytes'])
+        global G_desc
+        G_desc.set_item('filename', d['filename'])
+        G_desc.set_item('tmpfilename', d['tmpfilename'])
+        G_desc.set_item('downloaded_bytes', d['downloaded_bytes'])
         if 'total_bytes' in d:
-            status_global.set_item('total_bytes', d['total_bytes'])
+            G_desc.set_item('total_bytes', d['total_bytes'])
         else:
-            status_global.set_item('total_bytes_estimate', d['total_bytes_estimate'])
-        status_global.set_item('eta', d['eta'])
-        status_global.set_item('speed', d['speed'])
-        status_global.set_item('percent', d['_percent_str'])
+            G_desc.set_item('total_bytes_estimate', d['total_bytes_estimate'])
+        G_desc.set_item('eta', d['eta'])
+        G_desc.set_item('speed', d['speed'])
+        G_desc.set_item('percent', d['_percent_str'])
 
 
     @classmethod
@@ -76,8 +77,8 @@ class downloader(Process):
 
         self.log_filter = log_filter(desc)
 
-        global status_global
-        status_global = desc
+        global G_desc
+        G_desc = desc
 
 
     def intercept_ydl_opts(self):
@@ -89,6 +90,8 @@ class downloader(Process):
     def run(self):
         print ('start downloading... {}'.format(self.desc.get_status()))
         pp = pprint.PrettyPrinter(indent=4)
+
+        downloader.calc_start_time(self.desc)
 
         # For tests below, delete after use
         info_dict = {'title': 'this is a test title', 'format': 'test format'}
@@ -105,8 +108,8 @@ class downloader(Process):
             t -= 1
             sleep(1)
 
+        downloader.calc_stop_time(self.desc)
         # For tests above, delete after use
-
 
         """
 
@@ -125,16 +128,26 @@ class downloader(Process):
         self.desc.set_state('finished')
         print ('download finished {}'.format(self.desc.get_status()))
 
+
+    @staticmethod
+    def calc_start_time(desc):
         cur_time = time()
-        start_time = self.desc.get_item('start_time')
-        elapsed = self.desc.get_item('elapsed')
+        desc.set_status_item('start_time', cur_time)
+
+
+    @staticmethod
+    def calc_stop_time(desc):
+        cur_time = time()
+        start_time = desc.get_status_item('start_time')
+        elapsed = desc.get_status_item('elapsed')
         elapsed += cur_time - start_time
-        self.desc.set_item('finishe_time', cur_time)
-        self.desc.set_item('elapsed', elapsed)
+        desc.set_status_item('elapsed', elapsed)
+        desc.set_status_item('pause_time', cur_time())
 
 
     def update_ydl_conf(self, key, val):
         self.ydl_conf[key] = val
+
 
     def stop(self):
         self.terminate()
