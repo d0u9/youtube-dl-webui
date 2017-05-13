@@ -70,6 +70,11 @@ if __name__ == '__main__':
     else:
         name = 'test url'
     r = task_add(name)
+    print(r)
+    if r['status'] == 'error':
+        from sys import exit
+        exit(1)
+
     tid = r['tid']
     print(r)
     sleep(1)
@@ -84,29 +89,29 @@ if __name__ == '__main__':
     print (r)
     sleep(1)
 
-#    print('--------- pause a task')
-#    r = task_act(tid, 'pause')
-#    print(r)
-#    sleep(2)
+    print('--------- pause a task')
+    r = task_act(tid, 'pause')
+    print(r)
+    sleep(2)
 
     print('--------- list tasks')
     r = task_list()
     print(r)
     sleep(1)
 
-#    print('--------- resume a task')
-#    r = task_act(tid, 'resume')
-#    print(r)
+    print('--------- resume a task')
+    r = task_act(tid, 'resume')
+    print(r)
 
     print('--------- get status')
     r = task_query(tid, True)
     print (r)
     sleep(1)
 
-#    sleep(3)
-#    print('--------- delete a task')
-#    r = task_delete(tid)
-#    sleep(1)
+    sleep(3)
+    print('--------- delete a task')
+    r = task_delete(tid)
+    sleep(1)
 
     print('--------- list tasks')
     r = list_state()
