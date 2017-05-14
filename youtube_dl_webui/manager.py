@@ -25,7 +25,93 @@ class tasks():
         self.conf = conf
         self.share_manager = share_manager()
         self.share_manager.start()
+        self.conn = self.conf.public.conn
+        self.db = self.conf.public.db
 
+        self.load_from_db()
+
+
+    def load_status_from_db(self, status):
+        tasks_dict = {}
+        keys = status[0].keys()
+        for row in status:
+            tid = row['tid']
+            tasks_dict[tid] = {}
+            tasks_dict[tid]['status'] = {}
+            for key in keys:
+                tasks_dict[tid]['status'][key] = row[key]
+
+        return tasks_dict
+
+
+    def load_info_from_db(self, info, tasks_dict):
+        keys = info[0].keys()
+        for row in info:
+            tid = row['tid']
+            if tid not in tasks_dict:
+                continue
+            tasks_dict[tid]['info'] = {}
+            for key in keys:
+                tasks_dict[tid]['info'][key] = row[key]
+
+        return tasks_dict
+
+
+    def load_param_from_db(self, param, tasks_dict):
+        keys = param[0].keys()
+        for row in param:
+            tid = row['tid']
+            if tid not in tasks_dict:
+                continue
+            tasks_dict[tid]['param'] = {}
+            for key in keys:
+                tasks_dict[tid]['param'][key] = row[key]
+
+        return tasks_dict
+
+
+    def load_param_from_db(self, ydl_opt, tasks_dict):
+        for row in ydl_opt:
+            tid = row['tid']
+            if tid not in tasks_dict:
+                continue
+            tasks_dict[tid]['ydl_opt'] = json.loads(row['opt'])
+
+        return tasks_dict
+
+
+    def load_from_db(self):
+        self.db.execute('SELECT * FROM task_status WHERE state!=?', (task_desc.state_index['finished'], ))
+        status = self.db.fetchall()
+        if status is None or len(status) is 0:
+            return
+        tasks_dict = self.load_status_from_db(status)
+
+        self.db.execute('SELECT * FROM task_info')
+        info = self.db.fetchall()
+        if info is None:
+            return
+        tasks_dict = self.load_info_from_db(info, tasks_dict)
+
+        self.db.execute('SELECT * FROM task_param')
+        param = self.db.fetchall()
+        if param is None:
+            return
+        tasks_dict = self.load_param_from_db(param, tasks_dict)
+
+        self.db.execute('SELECT * FROM task_ydl_opt')
+        ydl_opt = self.db.fetchall()
+        if ydl_opt is None:
+            return
+        tasks_dict = self.load_ydl_opt_from_db(ydl_opt, tasks_dict)
+
+        for tid, val in tasks_dict.items():
+            self._data_[tid] = {}
+            self.add_param(tid, val['param'])
+            desc = self.add_desc(tid)
+            desc.load_from_db_dict(val)
+            task = ydl_task(val['param'], desc, val['ydl_opt'])
+            self.add_object(tid, task)
 
 
     def create_task(self, param):

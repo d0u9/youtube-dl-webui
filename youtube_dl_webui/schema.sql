@@ -34,5 +34,6 @@ CREATE TABLE task_status (
 
 DROP TABLE IF EXISTS task_ydl_opt;
 CREATE TABLE task_ydl_opt (
-    tid     TEXT    PRIMARY KEY NOT NULL
+    tid     TEXT    PRIMARY KEY NOT NULL,
+    opt     TEXT    NOT NULL DEFAULT '{}'
 );

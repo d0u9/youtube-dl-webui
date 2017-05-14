@@ -34,7 +34,7 @@ class task_desc():
                 'tmpfilename': '',
            'downloaded_bytes': 0,
                 'total_bytes': 0,
-       'total_bytes_estimate': 0,
+          'total_bytes_estmt': 0,
                       'speed': 0,
                         'eta': 0,
                     'elapsed': 0,
@@ -42,6 +42,18 @@ class task_desc():
                  'pause_time': time(),
                        'log' : deque(maxlen=opts['log_size'])
                 }
+
+
+    def load_from_db_dict(self, task_dict):
+        info = task_dict['info']
+        status = task_dict['status']
+        for key, val in self.info.items():
+            if info.get(key, None) is not None:
+                self.info[key] = info.get(key)
+
+        for key, val in self.status.items():
+            if status.get(key, None) is not None:
+                self.status[key] = status.get(key)
 
 
     def get_exerpt(self):
