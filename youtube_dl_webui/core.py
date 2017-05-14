@@ -2,6 +2,32 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
+import sqlite3
+
+class DataBase(object):
+    def __init__(self, db_path):
+        if os.path.exists(db_path) and not os.path.isfile(db_path):
+            print('[ERROR] The db_path: {} is not a regular file'.format(db_path))
+            raise Exception('The db_path is not valid')
+
+        if os.path.exists(db_path) and not os.access(db_path, os.W_OK):
+            print('[ERROR] The db_path: {} is not writable'.format(db_path))
+            raise Exception('The db_path is not valid')
+
+        # first time to create db
+        if not os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            db = conn.cursor()
+            with open('./schema.sql', mode='r') as f:
+                conn.executescript(f.read())
+        else:
+            conn = sqlite3.connect(db_path)
+            db = conn.cursor()
+
+        self.db = db
+        self.conn = conn
+
 
 class Core(object):
     def __init__(self, args=None):
@@ -12,6 +38,8 @@ class Core(object):
             self.load_cmd_args(args)
 
         self.load_conf_file()
+
+        self.db = DataBase(self.conf['db_path'])
 
 
     def load_cmd_args(self, args):
