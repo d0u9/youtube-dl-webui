@@ -7,8 +7,9 @@ from hashlib import sha1
 from multiprocessing.managers import BaseManager
 
 from .task import ydl_task, task_desc
-from .utils import TaskError
 from .utils import YDLManagerError
+from .utils import TaskError
+from .utils import TaskExistenceError, TaskFinishedError, TaskInexistenceError
 
 
 class share_manager(BaseManager):
@@ -26,53 +27,69 @@ class tasks():
         self.share_manager.start()
 
 
+
+    def create_task(self, param):
+        if 'url' not in param:
+            print ('[ERROR] Can not find url in task param')
+            raise TaskError('No url in task parameters')
+
+
+        url = param.get('url')
+        tid =  sha1(url.encode()).hexdigest()
+
+        if tid in self._data_:
+            raise TaskExistenceError('Task already exists', url=url)
+
+        self._data_[tid] = {}
+
+        self.add_param(tid, param)
+        desc = self.add_desc(tid)
+        ydl_opts = self.conf.ydl_opts
+        task = ydl_task(param, desc, ydl_opts)
+        self.add_object(tid, task)
+
+        return tid
+
+
     def add_param(self, tid, param):
         # Combine default config with the current task param
         pass
 
-        if tid in self._data_:
-            raise TaskError('Task exists', url=url)
-
         param['tid'] = tid
-        self._data_[tid] = {}
         self._data_[tid]['param'] = param
         self._data_[tid]['desc'] = None
 
 
     def get_param(self, tid):
         if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
+            raise TaskInexistenceError('Task does not exist', tid=tid)
 
         return self._data_.get(tid).get('param')
 
 
     def add_desc(self, tid):
-        if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
-
         url = self._data_[tid]['param']['url']
         opts = {'log_size': self.conf.dl_log_size}
 
         self._data_[tid]['desc'] = self.share_manager.task_desc(url, opts)
 
+        return self._data_[tid]['desc']
+
 
     def get_desc(self, tid):
         if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
+            raise TaskInexistenceError('Task does not exist', tid=tid)
 
         return self._data_.get(tid).get('desc')
 
 
     def add_object(self, tid, task):
-        if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
-
         self._data_[tid]['object'] = task
 
 
     def get_object(self, tid):
         if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
+            raise TaskInexistenceError('Task does not exist', tid=tid)
 
         return self._data_.get(tid).get('object')
 
@@ -109,7 +126,7 @@ class tasks():
 
     def query_task(self, tid, exerpt=False):
         if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
+            raise TaskInexistenceError('Task does not exist', tid=tid)
 
         if exerpt:
             return self._data_.get(tid).get('desc').get_exerpt()
@@ -121,7 +138,7 @@ class tasks():
 
     def delete_task(self, tid):
         if tid not in self._data_:
-            raise TaskError('Task does not exist', tid=tid)
+            raise TaskInexistenceError('Task does not exist', tid=tid)
 
         task = self._data_.pop(tid)
         desc = task.get('desc')
@@ -145,26 +162,10 @@ class ydl_manger():
 
 
     def create_task(self, task_param):
-        if 'url' not in task_param:
-            print ('[ERROR] Can not find url in task param')
-            raise YDLManagerError('No url in task parameters')
-
-        url = task_param.get('url')
-        tid =  sha1(url.encode()).hexdigest()
-
         try:
-            self.tasks.add_param(tid, task_param)
+            tid = self.tasks.create_task(task_param)
         except TaskError as e:
             raise YDLManagerError(e.msg)
-
-        self.tasks.add_desc(tid)
-
-        param = task_param
-        desc = self.tasks.get_desc(tid)
-        ydl_opts = self.conf.ydl_opts
-        task = ydl_task(param, desc, ydl_opts)
-
-        self.tasks.add_object(tid, task)
 
         return tid
 
@@ -174,6 +175,7 @@ class ydl_manger():
             task = self.tasks.get_object(tid)
         except TaskError as e:
             raise YDLManagerError(e.msg)
+
         task.start_dl()
 
 

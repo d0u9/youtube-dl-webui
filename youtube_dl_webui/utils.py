@@ -35,7 +35,7 @@ class TaskFinishedError(TaskError):
 
 class TaskInexistenceError(TaskError):
     def __init__(self, msg, tid=None, url=None, state=None):
-        msg = 'Task already finished'
+        msg = 'Task does not exist'
         if tid:
             msg += ' tid={}'.format(tid)
         if url:
@@ -49,7 +49,7 @@ class TaskInexistenceError(TaskError):
 
 class TaskExistenceError(TaskError):
     def __init__(self, msg, tid=None, url=None, state=None):
-        msg = 'Task already finished'
+        msg = 'Task already exists'
         if tid:
             msg += ' tid={}'.format(tid)
         if url:
