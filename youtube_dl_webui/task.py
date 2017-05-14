@@ -140,12 +140,18 @@ class task_desc():
 
 
 class ydl_task():
-    def __init__(self, param, desc, ydl_opts={}):
+    def __init__(self, param, desc, ydl_opts={}, db_lock=None):
         self.tid = param['tid']
         self.param = param
         self.desc = desc
         self.ydl_opts = copy.deepcopy(ydl_opts)
         self.downloader = None
+        self.db_lock = db_lock
+
+
+    def bind_db(self, conn, db):
+        self.db = db
+        self.conn = conn
 
 
     def delegate(self):
@@ -154,6 +160,9 @@ class ydl_task():
 
     def start_dl(self):
         self.desc.set_state('downloading')
+        self.db_lock.acquire()
+        self.db.execute('UPDATE task_status SET state=? WHERE tid=(?)', (task_desc.state_index['downloading'], self.tid))
+        self.db_lock.release()
         self.delegate()
         self.desc.set_status_item('start_time', time())
         self.downloader.start()

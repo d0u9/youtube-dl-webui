@@ -5,7 +5,7 @@ import os
 import json
 
 from hashlib import sha1
-from multiprocessing.managers import BaseManager
+from multiprocessing.managers import SyncManager
 
 from .task import ydl_task, task_desc
 from .utils import YDLManagerError
@@ -13,7 +13,7 @@ from .utils import TaskError
 from .utils import TaskExistenceError, TaskFinishedError, TaskInexistenceError
 
 
-class share_manager(BaseManager):
+class share_manager(SyncManager):
     pass
 
 
@@ -26,6 +26,7 @@ class tasks():
         self.conf = conf
         self.share_manager = share_manager()
         self.share_manager.start()
+        self.db_lock = self.share_manager.Lock()
         self.conn = self.conf.public.conn
         self.db = self.conf.public.db
 
@@ -82,6 +83,8 @@ class tasks():
 
 
     def load_from_db(self):
+        self.db_lock.acquire()
+
         self.db.execute('SELECT * FROM task_status WHERE state!=?', (task_desc.state_index['finished'], ))
         status = self.db.fetchall()
         if status is None or len(status) is 0:
@@ -106,12 +109,15 @@ class tasks():
             return
         tasks_dict = self.load_ydl_opt_from_db(ydl_opt, tasks_dict)
 
+        self.db_lock.release()
+
         for tid, val in tasks_dict.items():
             self._data_[tid] = {}
             self.add_param(tid, val['param'])
             desc = self.add_desc(tid)
             desc.load_from_db_dict(val)
-            task = ydl_task(val['param'], desc, val['ydl_opt'])
+            task = ydl_task(val['param'], desc, val['ydl_opt'], db_lock=self.db_lock)
+            task.bind_db(self.conn, self.db)
             self.add_object(tid, task)
 
 
@@ -132,14 +138,23 @@ class tasks():
         self.add_param(tid, param)
         desc = self.add_desc(tid)
         ydl_opts = self.conf.ydl_opts
-        task = ydl_task(param, desc, ydl_opts.dict())
+        task = ydl_task(param, desc, ydl_opts.dict(), db_lock=self.db_lock)
+        task.bind_db(self.conn, self.db)
         self.add_object(tid, task)
 
+
+        self.db_lock.acquire()
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        if self.db.fetchone() is not None:
+            self.db_lock.release()
+            raise TaskExistenceError('Already exists')
+
+        self.db.execute('INSERT INTO task_status (tid) VALUES (?)', (tid, ))
         self.db.execute('INSERT INTO task_param (tid, url) VALUES (?, ?)', (tid, url))
         self.db.execute('INSERT INTO task_info (tid, url) VALUES (?, ?)', (tid, url))
-        self.db.execute('INSERT INTO task_status (tid) VALUES (?)', (tid, ))
         self.db.execute('INSERT INTO task_ydl_opt (tid) VALUES (?)', (tid, ))
         self.conn.commit()
+        self.db_lock.release()
 
         return tid
 
