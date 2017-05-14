@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import json
 
 from hashlib import sha1
 from multiprocessing.managers import BaseManager
@@ -70,7 +71,7 @@ class tasks():
         return tasks_dict
 
 
-    def load_param_from_db(self, ydl_opt, tasks_dict):
+    def load_ydl_opt_from_db(self, ydl_opt, tasks_dict):
         for row in ydl_opt:
             tid = row['tid']
             if tid not in tasks_dict:
@@ -131,8 +132,14 @@ class tasks():
         self.add_param(tid, param)
         desc = self.add_desc(tid)
         ydl_opts = self.conf.ydl_opts
-        task = ydl_task(param, desc, ydl_opts)
+        task = ydl_task(param, desc, ydl_opts.dict())
         self.add_object(tid, task)
+
+        self.db.execute('INSERT INTO task_param (tid, url) VALUES (?, ?)', (tid, url))
+        self.db.execute('INSERT INTO task_info (tid, url) VALUES (?, ?)', (tid, url))
+        self.db.execute('INSERT INTO task_status (tid) VALUES (?)', (tid, ))
+        self.db.execute('INSERT INTO task_ydl_opt (tid) VALUES (?)', (tid, ))
+        self.conn.commit()
 
         return tid
 

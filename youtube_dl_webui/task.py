@@ -144,7 +144,7 @@ class ydl_task():
         self.tid = param['tid']
         self.param = param
         self.desc = desc
-        self.ydl_opts = copy.deepcopy(ydl_opts.dict())
+        self.ydl_opts = copy.deepcopy(ydl_opts)
         self.downloader = None
 
 
