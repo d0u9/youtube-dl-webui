@@ -28,19 +28,19 @@ class task_desc():
 
         self.status = {
                         'tid': self.tid,
-                   'percent': '0.0',
-                  'filename': '',
-               'tmpfilename': '',
-          'downloaded_bytes': 0,
-               'total_bytes': 0,
-      'total_bytes_estimate': 0,
-                     'speed': 0,
-                       'eta': 0,
-                   'elapsed': 0,
-                'start_time': time(),
-                'pause_time': time(),
-                     'state': task_desc.state_index['paused'],
-                      'log' : deque(maxlen=opts['log_size'])
+                      'state': task_desc.state_index['paused'],
+                    'percent': '0.0%',
+                   'filename': '',
+                'tmpfilename': '',
+           'downloaded_bytes': 0,
+                'total_bytes': 0,
+       'total_bytes_estimate': 0,
+                      'speed': 0,
+                        'eta': 0,
+                    'elapsed': 0,
+                 'start_time': time(),
+                 'pause_time': time(),
+                       'log' : deque(maxlen=opts['log_size'])
                 }
 
 

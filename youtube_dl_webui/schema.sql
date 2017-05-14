@@ -1,23 +1,38 @@
-drop table if exists task_param;
-create table task_param (
-  tid varchar primary key not null,
-  url text not null
+DROP TABLE IF EXISTS task_param;
+CREATE TABLE task_param (
+    tid     TEXT    PRIMARY KEY NOT NULL,
+    url     TEXT    NOT NULL
 );
 
-drop table if exists task_info;
-create table task_info (
-  id integer primary key autoincrement,
-  title text not null
+DROP TABLE IF EXISTS task_info;
+CREATE TABLE task_info (
+    tid     TEXT    PRIMARY KEY NOT NULL,
+    url     TEXT    NOT NULL,
+    title   TEXT,
+    filename    TEXT,
+    create_time REAL    DEFAULT 0.0,
+    finish_time REAL    DEFAULT 0.0,
+    format  TEXT
 );
 
-drop table if exists task_status;
-create table task_status (
-  id integer primary key autoincrement,
-  title text not null
+DROP TABLE IF EXISTS task_status;
+CREATE TABLE task_status (
+    tid     TEXT    PRIMARY KEY NOT NULL,
+    state   INTEGER NOT NULL DEFAULT 2,
+    percent TEXT    NOT NULL DEFAULT '0.0%',
+    tmpfilename TEXT,
+    downloaded_bytes    INTEGER DEFAULT 0,
+    total_bytes         INTEGER DEFAULT 0,
+    total_bytes_estmt   INTEGER DEFAULT 0,
+    speed   INTEGER DEFAULT 0,
+    eta     INTEGER DEFAULT 0,
+    elapsed INTEGER DEFAULT 0,
+    start_time  REAL DEFAULT 0.0,
+    pause_time  REAL DEFAULT 0.0,
+    log     TEXT
 );
 
-drop table if exists task_ydl_opt;
-create table task_ydl_opt (
-  id integer primary key autoincrement,
-  title text not null
+DROP TABLE IF EXISTS task_ydl_opt;
+CREATE TABLE task_ydl_opt (
+    tid     TEXT    PRIMARY KEY NOT NULL
 );

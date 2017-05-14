@@ -131,11 +131,13 @@ class config(object):
         # first time to create db
         if not os.path.exists(db_path):
             conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
             db = conn.cursor()
             with open('./schema.sql', mode='r') as f:
                 conn.executescript(f.read())
         else:
             conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
             db = conn.cursor()
 
         self.public.bind_sqlite_handler(conn, db)

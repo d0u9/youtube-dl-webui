@@ -152,10 +152,6 @@ class ydl_manger():
         url = task_param.get('url')
         tid =  sha1(url.encode()).hexdigest()
 
-        self.db.execute("SELECT * FROM task_param WHERE tid=(?)", (tid,))
-        if self.db.fetchone() is not None:
-            raise YDLManagerError('Task exists', url=url)
-
         try:
             self.tasks.add_param(tid, task_param)
         except TaskError as e:
@@ -169,10 +165,6 @@ class ydl_manger():
         task = ydl_task(param, desc, ydl_opts)
 
         self.tasks.add_object(tid, task)
-
-        self.db.execute('INSERT OR IGNORE INTO task_param (tid, url) VALUES (?, ?)',
-                         (tid, task_param['url']))
-        self.conn.commit()
 
         return tid
 
