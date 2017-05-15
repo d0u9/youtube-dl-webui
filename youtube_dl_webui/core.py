@@ -160,6 +160,7 @@ class Core(object):
     def server_request(self, data):
         msg_internal_error = {'status': 'error', 'errmsg': 'Internal Error'}
         msg_task_existence_error = {'status': 'error', 'errmsg': 'URL is already added'}
+        msg_task_inexistence_error = {'status': 'error', 'errmsg': 'Task does not exist'}
         if data['command'] == 'create':
             try:
                 tid = self.create_task(data['param'], {})
@@ -196,9 +197,9 @@ class Core(object):
         if data['command'] == 'query':
             tid = data['tid']
             try:
-                print('get {}'.format(data['exerpt']))
-            except:
-                pass
+                ret = self.db.query_task(tid)
+            except TaskInexistenceError:
+                return msg_task_inexistence_error
 
-            return {'status': 'success', 'detail': 'fsadfsaf'}
+            return {'status': 'success', 'detail': ret}
 

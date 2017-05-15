@@ -151,3 +151,17 @@ class DataBase(object):
         self.db.execute('DELETE FROM task_ydl_opt WHERE tid=(?)', (tid, ))
         self.conn.commit()
 
+
+    def query_task(self, tid):
+        self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=(?)', (tid, ))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
+        ret = {}
+        for key in row.keys():
+            ret[key] = row[key]
+
+        return ret
+
+
