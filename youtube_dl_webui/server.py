@@ -19,7 +19,6 @@ MSG_INVALID_REQUEST = {'status': 'error', 'errmsg': 'invalid request'}
 
 @app.route('/')
 def index():
-    WQ.put('get index.html')
     return render_template('index.html')
 
 
