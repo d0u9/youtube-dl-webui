@@ -73,12 +73,13 @@ if __name__ == '__main__':
     else:
         act = sys.argv[1]
         p1 = sys.argv[2]
+        p2 = None
         l = len(sys.argv)
         if len(sys.argv) >= 4:
             p2 = sys.argv[3]
 
     if act == '-h':
-        print('create | del | act')
+        print('create | del | act | query')
 
     if act == 'create':
         ret = task_add(p1)
@@ -90,6 +91,14 @@ if __name__ == '__main__':
 
     if act == 'act':
         ret = task_act(p1, p2)
+        print(ret)
+
+    if act == 'query':
+        if p2 is None:
+            ret = task_query(p1, False)
+        else:
+            ret = task_query(p1, True)
+
         print(ret)
 
 

@@ -73,6 +73,23 @@ def manipulate_task(tid):
     return json.dumps(RQ.get())
 
 
+@app.route('/task/tid/<tid>/status', methods=['GET'])
+def query_task(tid):
+    wqd = deepcopy(WQ_DICT)
+    wqd['command'] = 'query'
+    wqd['tid'] = tid
+
+    exerpt = request.args.get('exerpt', None)
+
+    if exerpt is None:
+        wqd['exerpt'] = True
+    else:
+        wqd['exerpt'] = False
+
+    WQ.put(wqd)
+    return json.dumps(RQ.get())
+
+
 
 class Server(Process):
     def __init__(self, rqueue, wqueue):

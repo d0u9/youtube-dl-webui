@@ -193,3 +193,12 @@ class Core(object):
 
             return {'status': 'success'}
 
+        if data['command'] == 'query':
+            tid = data['tid']
+            try:
+                print('get {}'.format(data['exerpt']))
+            except:
+                pass
+
+            return {'status': 'success', 'detail': 'fsadfsaf'}
+
