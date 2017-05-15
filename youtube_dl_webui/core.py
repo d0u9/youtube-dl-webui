@@ -4,14 +4,19 @@
 import json
 import os
 
+from multiprocessing import Process, Queue
+
 from .db import DataBase
 from .utils import TaskInexistenceError
 from .utils import TaskRunningError
+from .server import Server
 
 class Core(object):
     def __init__(self, args=None):
         self.cmd_args = {}
         self.conf = {'server': {}, 'ydl': {}}
+        self.sq = Queue()
+        self.server = Server(self.sq)
         self.worker = {}
 
         if args is not None:
@@ -22,6 +27,9 @@ class Core(object):
         self.db = DataBase(self.conf['db_path'])
 
         self.launch_unfinished()
+        self.server.start()
+
+        print(self.sq.get())
 
 
     def launch_unfinished(self):
