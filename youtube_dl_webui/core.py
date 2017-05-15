@@ -3,36 +3,16 @@
 
 import json
 import os
-import sqlite3
 
-class DataBase(object):
-    def __init__(self, db_path):
-        if os.path.exists(db_path) and not os.path.isfile(db_path):
-            print('[ERROR] The db_path: {} is not a regular file'.format(db_path))
-            raise Exception('The db_path is not valid')
-
-        if os.path.exists(db_path) and not os.access(db_path, os.W_OK):
-            print('[ERROR] The db_path: {} is not writable'.format(db_path))
-            raise Exception('The db_path is not valid')
-
-        # first time to create db
-        if not os.path.exists(db_path):
-            conn = sqlite3.connect(db_path)
-            db = conn.cursor()
-            with open('./schema.sql', mode='r') as f:
-                conn.executescript(f.read())
-        else:
-            conn = sqlite3.connect(db_path)
-            db = conn.cursor()
-
-        self.db = db
-        self.conn = conn
-
+from .db import DataBase
+from .utils import TaskInexistenceError
+from .utils import TaskRunningError
 
 class Core(object):
     def __init__(self, args=None):
         self.cmd_args = {}
         self.conf = {'server': {}, 'ydl': {}}
+        self.worker = {}
 
         if args is not None:
             self.load_cmd_args(args)
@@ -40,6 +20,63 @@ class Core(object):
         self.load_conf_file()
 
         self.db = DataBase(self.conf['db_path'])
+
+        self.launch_unfinished()
+
+
+    def launch_unfinished(self):
+        tlist = self.db.get_unfinished()
+        for t in tlist:
+            self.start_task(t)
+
+
+    def create_task(self, param, ydl_opts):
+        if 'url' not in param:
+            raise KeyError
+
+        self.db.create_task(param, ydl_opts)
+
+
+    def start_task(self, tid):
+        try:
+            param = self.db.get_param(tid)
+            ydl_opts = self.db.get_opts(tid)
+        except TaskInexistenceError as e:
+            print('task oops!')
+            return
+
+        self.db.start_task(tid)
+        self.launch_worker(tid)
+
+
+    def pause_task(self, tid):
+        try:
+            self.cancel_worker(tid)
+            self.db.pause_task(tid)
+        except TaskRunningError as e:
+            pass
+        except KeyError as e:
+            pass
+
+
+    def delete_task(self, tid):
+        self.cancel_worker(tid)
+        self.db.delete_task(tid)
+
+
+    def launch_worker(self, tid):
+        print(tid)
+        if tid in self.worker:
+            raise TaskRunningError('task already running')
+
+        self.worker[tid] = 'worker'
+
+
+    def cancel_worker(self, tid):
+        if tid not in self.worker:
+            raise TaskRunningError('task not running')
+
+        del self.worker[tid]
 
 
     def load_cmd_args(self, args):

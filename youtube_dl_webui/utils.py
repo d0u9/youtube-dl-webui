@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+state_index={'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
+
 class YoutubeDLWebUI(Exception):
     """Base exception for YoutubeDL errors."""
     pass
@@ -17,6 +19,20 @@ class TaskError(YoutubeDLWebUI):
 
     def __str__(self):
         return repr(self.msg)
+
+
+class TaskRunningError(TaskError):
+    def __init__(self, msg, tid=None, url=None, state=None):
+        msg = 'Task running error'
+        if tid:
+            msg += ' tid={}'.format(tid)
+        if url:
+            msg += ' url={}'.format(url)
+        if state:
+            msg += ' state={}'.format(state)
+
+        super(TaskRunningError, self).__init__(msg)
+        self.msg = msg
 
 
 class TaskFinishedError(TaskError):

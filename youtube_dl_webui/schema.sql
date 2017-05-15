@@ -1,12 +1,14 @@
 DROP TABLE IF EXISTS task_param;
 CREATE TABLE task_param (
     tid     TEXT    PRIMARY KEY NOT NULL,
+    state   INTEGER NOT NULL DEFAULT 2,
     url     TEXT    NOT NULL
 );
 
 DROP TABLE IF EXISTS task_info;
 CREATE TABLE task_info (
     tid     TEXT    PRIMARY KEY NOT NULL,
+    state   INTEGER NOT NULL DEFAULT 2,
     url     TEXT    NOT NULL,
     title   TEXT,
     filename    TEXT,
@@ -35,5 +37,6 @@ CREATE TABLE task_status (
 DROP TABLE IF EXISTS task_ydl_opt;
 CREATE TABLE task_ydl_opt (
     tid     TEXT    PRIMARY KEY NOT NULL,
+    state   INTEGER NOT NULL DEFAULT 2,
     opt     TEXT    NOT NULL DEFAULT '{}'
 );
