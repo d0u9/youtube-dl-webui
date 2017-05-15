@@ -20,6 +20,19 @@ class TaskError(YoutubeDLWebUI):
     def __str__(self):
         return repr(self.msg)
 
+class TaskPausedError(TaskError):
+    def __init__(self, msg, tid=None, url=None, state=None):
+        msg = 'Task running error'
+        if tid:
+            msg += ' tid={}'.format(tid)
+        if url:
+            msg += ' url={}'.format(url)
+        if state:
+            msg += ' state={}'.format(state)
+
+        super(TaskPausedError, self).__init__(msg)
+        self.msg = msg
+
 
 class TaskRunningError(TaskError):
     def __init__(self, msg, tid=None, url=None, state=None):

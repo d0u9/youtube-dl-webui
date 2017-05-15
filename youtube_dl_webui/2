@@ -15,7 +15,6 @@ RQ = None
 WQ = None
 
 WQ_DICT = {'from': 'server'}
-MSG_INVALID_REQUEST = {'status': 'error', 'errmsg': 'invalid request'}
 
 @app.route('/')
 def index():
@@ -30,8 +29,9 @@ def add_task():
     wqd['param'] = {'url': request.form['url']}
     wqd['ydl_opts'] = {}
 
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    WQ.put(sqd)
+    ret = RQ.get()
+    return json.dumps(ret)
 
 
 @app.route('/task/list', methods=['GET'])
@@ -46,31 +46,7 @@ def list_state():
 
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'delete'
-    wqd['tid'] = tid
-
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
-
-
-@app.route('/task/tid/<tid>', methods=['PUT'])
-def manipulate_task(tid):
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'manipulate'
-    wqd['tid'] = tid
-
-    act = request.args.get('act', None)
-
-    if act == 'pause':
-        wqd['act'] = 'pause'
-    elif act == 'resume':
-        wqd['act'] = 'resume'
-    else:
-        return json.dumps(MSG_INVALID_REQUEST)
-
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    WQ.put({'
 
 
 

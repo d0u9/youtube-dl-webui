@@ -15,7 +15,8 @@ def task_add(url):
 
 def task_act(tid, act):
     url = 'http://127.0.0.1:5000/task/tid/{}?act={}'.format(tid, act)
-    if act is 'pause' or act is 'resume':
+    if act == 'pause' or act == 'resume':
+        print(act)
         r = requests.put(url)
         print('status: {}'.format(r.status_code))
         j = json.loads(r.text)
@@ -64,55 +65,74 @@ def list_state():
     return j
 
 if __name__ == '__main__':
-    print('add a new task')
-    if len(sys.argv) is not 1:
-        name = sys.argv[1]
+    default_url = 'https://www.youtube.com/watch?v=RPvP9wL81qs'
+
+    if len(sys.argv) == 1:
+        act='create'
+        p1 = default_url
     else:
-        name = 'test url'
-    r = task_add(name)
-    print(r)
-    if r['status'] == 'error':
-        from sys import exit
-        exit(1)
+        act = sys.argv[1]
+        p1 = sys.argv[2]
+        l = len(sys.argv)
+        if len(sys.argv) >= 4:
+            p2 = sys.argv[3]
 
-    tid = r['tid']
-    print(r)
-    sleep(1)
+    if act == '-h':
+        print('create | del | act')
 
-    print('--------- list tasks')
-    r = task_list()
-    print(r)
-    sleep(1)
+    if act == 'create':
+        ret = task_add(p1)
+        print(ret)
 
-    print('--------- get status')
-    r = task_query(tid)
-    print (r)
-    sleep(1)
+    if act == 'del':
+        ret = task_delete(p1)
+        print (ret)
 
-    print('--------- pause a task')
-    r = task_act(tid, 'pause')
-    print(r)
-    sleep(2)
+    if act == 'act':
+        ret = task_act(p1, p2)
+        print(ret)
 
-    print('--------- list tasks')
-    r = task_list()
-    print(r)
-    sleep(1)
 
-    print('--------- resume a task')
-    r = task_act(tid, 'resume')
-    print(r)
+    #  tid = r['tid']
+    #  print(r)
+    #  sleep(1)
 
-    print('--------- get status')
-    r = task_query(tid, True)
-    print (r)
-    sleep(1)
+    #  print('--------- list tasks')
+    #  r = task_list()
+    #  print(r)
+    #  sleep(1)
 
-    sleep(3)
-    print('--------- delete a task')
-    r = task_delete(tid)
-    sleep(1)
+    #  print('--------- get status')
+    #  r = task_query(tid)
+    #  print (r)
+    #  sleep(1)
 
+    #  print('--------- pause a task')
+    #  r = task_act(tid, 'pause')
+    #  print(r)
+    #  sleep(2)
+
+    #  print('--------- list tasks')
+    #  r = task_list()
+    #  print(r)
+    #  sleep(1)
+
+    #  print('--------- resume a task')
+    #  r = task_act(tid, 'resume')
+    #  print(r)
+
+    #  print('--------- get status')
+    #  r = task_query(tid, True)
+    #  print (r)
+    #  sleep(1)
+
+    #  sleep(3)
+    #  print('--------- delete a task')
+    #  r = task_delete(tid)
+    #  print(r)
+    #  sleep(1)
+
+"""
     print('--------- list tasks')
     r = list_state()
     print(r)
@@ -123,3 +143,4 @@ if __name__ == '__main__':
         r = task_query(tid)
         print(r)
         sleep(1)
+"""

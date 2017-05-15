@@ -11,6 +11,8 @@ from time import time
 from .utils import state_index
 from .utils import TaskExistenceError
 from .utils import TaskInexistenceError
+from .utils import TaskPausedError
+from .utils import TaskRunningError
 
 class DataBase(object):
     def __init__(self, db_path):
@@ -88,6 +90,8 @@ class DataBase(object):
         self.db.execute('INSERT INTO task_ydl_opt (tid, opt) VALUES (?, ?)', (tid, ydl_opt_str))
         self.conn.commit()
 
+        return tid
+
 
     def set_state(self, tid, state):
         if state not in state_index:
@@ -106,6 +110,9 @@ class DataBase(object):
         if row is None:
             raise TaskInexistenceError('')
 
+        if row['state'] == state_index['paused']:
+            raise TaskPausedError('')
+
         cur_time = time()
         elapsed = row['elapsed']
         start_time = row['start_time']
@@ -120,7 +127,15 @@ class DataBase(object):
         self.conn.commit()
 
 
-    def start_task(self, tid):
+    def start_task(self, tid, ignore_state=False):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
+        if row['state'] == state_index['downloading'] and ignore_state is False:
+            raise TaskRunningError('')
+
         state = state_index['downloading']
         self.db.execute('UPDATE task_status SET state=?, start_time=? WHERE tid=(?)', (state, time(), tid))
         self.db.execute('UPDATE task_param SET state=? WHERE tid=(?)', (state, tid))

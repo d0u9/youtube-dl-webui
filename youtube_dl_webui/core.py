@@ -9,14 +9,17 @@ from multiprocessing import Process, Queue
 from .db import DataBase
 from .utils import TaskInexistenceError
 from .utils import TaskRunningError
+from .utils import TaskExistenceError
+from .utils import TaskPausedError
 from .server import Server
 
 class Core(object):
     def __init__(self, args=None):
         self.cmd_args = {}
         self.conf = {'server': {}, 'ydl': {}}
-        self.sq = Queue()
-        self.server = Server(self.sq)
+        self.rq = Queue()
+        self.wq = Queue()
+        self.server = Server(self.wq, self.rq)
         self.worker = {}
 
         if args is not None:
@@ -29,46 +32,59 @@ class Core(object):
         self.launch_unfinished()
         self.server.start()
 
-        print(self.sq.get())
 
+    def worker_request(self, data):
+        pass
+
+
+    def run(self):
+        while True:
+            data = self.rq.get()
+            if data['from'] == 'server':
+                ret = self.server_request(data)
+            else:
+                ret = self.worker_request(data)
+
+            self.wq.put(ret)
 
     def launch_unfinished(self):
         tlist = self.db.get_unfinished()
         for t in tlist:
-            self.start_task(t)
+            self.start_task(t, ignore_state=True)
 
 
     def create_task(self, param, ydl_opts):
         if 'url' not in param:
             raise KeyError
 
-        self.db.create_task(param, ydl_opts)
+        tid = self.db.create_task(param, ydl_opts)
+        return tid
 
 
-    def start_task(self, tid):
+    def start_task(self, tid, ignore_state=False):
         try:
             param = self.db.get_param(tid)
             ydl_opts = self.db.get_opts(tid)
         except TaskInexistenceError as e:
-            print('task oops!')
-            return
+            raise TaskInexistenceError(e.msg)
 
-        self.db.start_task(tid)
+        self.db.start_task(tid, ignore_state)
         self.launch_worker(tid)
 
 
     def pause_task(self, tid):
         try:
             self.cancel_worker(tid)
-            self.db.pause_task(tid)
-        except TaskRunningError as e:
+        except:
             pass
-        except KeyError as e:
-            pass
+        self.db.pause_task(tid)
 
 
     def delete_task(self, tid):
-        self.cancel_worker(tid)
+        try:
+            self.cancel_worker(tid)
+        except:
+            pass
         self.db.delete_task(tid)
 
 
@@ -139,3 +155,41 @@ class Core(object):
         for opt in valid_opts:
             if opt in ydl_opts:
                 self.conf['ydl'][opt] = ydl_opts.get(opt, None)
+
+
+    def server_request(self, data):
+        msg_internal_error = {'status': 'error', 'errmsg': 'Internal Error'}
+        msg_task_existence_error = {'status': 'error', 'errmsg': 'URL is already added'}
+        if data['command'] == 'create':
+            try:
+                tid = self.create_task(data['param'], {})
+                self.start_task(tid)
+            except TaskExistenceError:
+                return msg_task_existence_error
+            except TaskInexistenceError:
+                return msg_internal_error
+
+            return {'status': 'success', 'tid': tid}
+
+        if data['command'] == 'delete':
+            try:
+                self.delete_task(data['tid'])
+            except:
+                pass
+
+            return {'status': 'success'}
+
+        if data['command'] == 'manipulate':
+            tid = data['tid']
+            try:
+                if data['act'] == 'pause':
+                    self.pause_task(tid)
+                elif data['act'] == 'resume':
+                    self.start_task(tid)
+            except TaskPausedError:
+                return {'status': 'error', 'errmsg': 'task paused already'}
+            except TaskRunningError:
+                return {'status': 'error', 'errmsg': 'task running already'}
+
+            return {'status': 'success'}
+
