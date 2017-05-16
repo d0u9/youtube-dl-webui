@@ -104,7 +104,7 @@ class DataBase(object):
         self.conn.commit()
 
 
-    def cancel_task(self,tid):
+    def cancel_task(self,tid, log=None):
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
@@ -124,6 +124,13 @@ class DataBase(object):
         self.db.execute('UPDATE task_param SET state=? WHERE tid=(?)', (state, tid))
         self.db.execute('UPDATE task_info SET state=? WHERE tid=(?)', (state, tid))
         self.db.execute('UPDATE task_ydl_opt SET state=? WHERE tid=(?)', (state, tid))
+
+
+        if log is not None:
+            log_list = [l for l in log]
+            log_str = json.dumps(log_list)
+            self.db.execute('UPDATE task_status SET log=(?)', (log_str, ))
+
         self.conn.commit()
 
 

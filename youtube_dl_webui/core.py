@@ -123,9 +123,9 @@ class Core(object):
         if tid not in self.worker:
             raise TaskPausedError('task not running')
 
-        self.db.cancel_task(tid)
-        w = self.worker[tid]['obj']
-        w.stop()
+        w = self.worker[tid]
+        self.db.cancel_task(tid, log=w['log'])
+        w['obj'].stop()
         del self.worker[tid]
 
 
