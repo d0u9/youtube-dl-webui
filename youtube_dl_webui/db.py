@@ -85,7 +85,7 @@ class DataBase(object):
         self.db.execute('INSERT INTO task_status (tid) VALUES (?)', (tid, ))
         self.db.execute('INSERT INTO task_param (tid, url) VALUES (?, ?)', (tid, url))
         self.db.execute('INSERT INTO task_info (tid, url, create_time) VALUES (?, ?, ?)',
-                        (tid, time(), url))
+                        (tid, url, time()))
         ydl_opt_str = json.dumps(ydl_opts)
         self.db.execute('INSERT INTO task_ydl_opt (tid, opt) VALUES (?, ?)', (tid, ydl_opt_str))
         self.conn.commit()
@@ -167,5 +167,28 @@ class DataBase(object):
         ret['log'] = json.loads(ret['log'])
 
         return ret
+
+    def list_task(self):
+        self.db.execute('SELECT * FROM task_status, task_info')
+        rows = self.db.fetchall()
+
+        ret = []
+        if len(rows) == 0:
+            return ret
+
+        keys = rows[0].keys()
+        for row in rows:
+            t = {}
+            for key in keys:
+                t[key] = row[key]
+            t['log'] = json.loads(t['log'])
+            ret.append(t)
+
+        return ret
+
+
+
+
+
 
 

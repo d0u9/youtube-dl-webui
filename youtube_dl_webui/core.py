@@ -15,6 +15,8 @@ from .utils import TaskPausedError
 from .server import Server
 
 class Core(object):
+    exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title']
+
     def __init__(self, args=None):
         self.cmd_args = {}
         self.conf = {'server': {}, 'ydl': {}}
@@ -206,6 +208,25 @@ class Core(object):
                 ret = self.db.query_task(tid)
             except TaskInexistenceError:
                 return msg_task_inexistence_error
+
+            detail = {}
+            if data['exerpt'] is True:
+                for k in Core.exerpt_keys:
+                    detail[k] = ret[k]
+            else:
+                detail = ret
+
+            return {'status': 'success', 'detail': detail}
+
+        if data['command'] == 'list':
+            ret = self.db.list_task()
+
+            detail = {}
+            if data['exerpt'] is True:
+                for k in Core.exerpt_keys:
+                    detail[k] = ret[k]
+            else:
+                detail = ret
 
             return {'status': 'success', 'detail': ret}
 

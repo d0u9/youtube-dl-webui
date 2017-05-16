@@ -35,7 +35,18 @@ def add_task():
 
 @app.route('/task/list', methods=['GET'])
 def list_task():
-    pass
+    wqd = deepcopy(WQ_DICT)
+    wqd['command'] = 'list'
+
+    exerpt = request.args.get('exerpt', None)
+
+    if exerpt is None:
+        wqd['exerpt'] = True
+    else:
+        wqd['exerpt'] = False
+
+    WQ.put(wqd)
+    return json.dumps(RQ.get())
 
 
 @app.route('/task/state_counter', methods=['GET'])
@@ -81,9 +92,9 @@ def query_task(tid):
     exerpt = request.args.get('exerpt', None)
 
     if exerpt is None:
-        wqd['exerpt'] = True
-    else:
         wqd['exerpt'] = False
+    else:
+        wqd['exerpt'] = True
 
     WQ.put(wqd)
     return json.dumps(RQ.get())

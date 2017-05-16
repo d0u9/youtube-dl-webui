@@ -72,14 +72,15 @@ if __name__ == '__main__':
         p1 = default_url
     else:
         act = sys.argv[1]
-        p1 = sys.argv[2]
-        p2 = None
-        l = len(sys.argv)
-        if len(sys.argv) >= 4:
+        try:
+            p1 = sys.argv[2]
             p2 = sys.argv[3]
+            p3 = sys.argv[4]
+        except:
+            pass
 
     if act == '-h':
-        print('create | del | act | query')
+        print('create | del | act | query | list')
 
     if act == 'create':
         ret = task_add(p1)
@@ -94,11 +95,15 @@ if __name__ == '__main__':
         print(ret)
 
     if act == 'query':
-        if p2 is None:
+        if p2 == 'E':
             ret = task_query(p1, False)
         else:
             ret = task_query(p1, True)
 
+        print(ret)
+
+    if act == 'list':
+        ret = task_list()
         print(ret)
 
 
