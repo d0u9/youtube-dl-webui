@@ -14,6 +14,7 @@ from .utils import TaskRunningError
 from .utils import TaskExistenceError
 from .utils import TaskPausedError
 from .server import Server
+from .worker import Worker
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title']
@@ -38,7 +39,7 @@ class Core(object):
 
 
     def worker_request(self, data):
-        pass
+        print(data)
 
 
     def run(self):
@@ -96,10 +97,15 @@ class Core(object):
         if tid in self.worker:
             raise TaskRunningError('task already running')
 
-        self.worker[tid] ={'obj': 'obj', 'log': deque(maxlen=10)}
+        self.worker[tid] ={'obj': None, 'log': deque(maxlen=10)}
 
         for l in log_list:
             self.worker[tid]['log'].append(l)
+
+        # launch worker process
+        w = Worker(tid, self.rq, param=param, ydl_opts=ydl_opts)
+        w.start()
+        self.worker[tid]['obj'] = w
 
 
     def cancel_worker(self, tid):
