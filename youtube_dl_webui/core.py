@@ -5,6 +5,7 @@ import json
 import os
 
 from multiprocessing import Process, Queue
+from collections import deque
 
 from .db import DataBase
 from .utils import TaskInexistenceError
@@ -68,8 +69,8 @@ class Core(object):
         except TaskInexistenceError as e:
             raise TaskInexistenceError(e.msg)
 
-        self.db.start_task(tid, ignore_state)
-        self.launch_worker(tid)
+        log_list = self.db.start_task(tid, ignore_state)
+        self.launch_worker(tid, log_list, param=param, ydl_opts=ydl_opts)
 
 
     def pause_task(self, tid):
@@ -88,12 +89,17 @@ class Core(object):
         self.db.delete_task(tid)
 
 
-    def launch_worker(self, tid):
+    def launch_worker(self, tid, log_list, param=None, ydl_opts={}):
         print(tid)
         if tid in self.worker:
             raise TaskRunningError('task already running')
 
-        self.worker[tid] = 'worker'
+        self.worker[tid] ={'obj': 'obj', 'log': deque(maxlen=10)}
+
+        for l in log_list:
+            self.worker[tid]['log'].append(l)
+
+        print(self.worker)
 
 
     def cancel_worker(self, tid):

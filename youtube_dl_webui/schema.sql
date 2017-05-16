@@ -31,7 +31,7 @@ CREATE TABLE task_status (
     elapsed INTEGER DEFAULT 0,
     start_time  REAL DEFAULT 0.0,
     pause_time  REAL DEFAULT 0.0,
-    log     TEXT
+    log     TEXT    NOT NULL DEFAULT '[]'
 );
 
 DROP TABLE IF EXISTS task_ydl_opt;

@@ -143,6 +143,8 @@ class DataBase(object):
         self.db.execute('UPDATE task_ydl_opt SET state=? WHERE tid=(?)', (state, tid))
         self.conn.commit()
 
+        return json.loads(row['log'])
+
 
     def delete_task(self, tid):
         self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
