@@ -18,6 +18,7 @@ from .worker import Worker
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title']
+    valid_opts = ['proxy']
 
     def __init__(self, args=None):
         self.cmd_args = {}
@@ -102,10 +103,21 @@ class Core(object):
         for l in log_list:
             self.worker[tid]['log'].append(l)
 
+        opts = self.add_ydl_conf_file_opts(ydl_opts)
+
         # launch worker process
-        w = Worker(tid, self.rq, param=param, ydl_opts=ydl_opts)
+        w = Worker(tid, self.rq, param=param, ydl_opts=opts)
         w.start()
         self.worker[tid]['obj'] = w
+
+
+    def add_ydl_conf_file_opts(self, ydl_opts={}):
+        conf_opts = self.conf.get('ydl', {})
+
+        # filter out unvalid options
+        d = {k: ydl_opts[k] for k in ydl_opts if k in Core.valid_opts}
+
+        return {**conf_opts, **d}
 
 
     def cancel_worker(self, tid):
@@ -160,11 +172,9 @@ class Core(object):
 
 
     def load_ydl_conf(self, ydl_opts):
-        valid_opts = ['proxy']
-
         ydl_opts = {} if ydl_opts is None else ydl_opts
 
-        for opt in valid_opts:
+        for opt in Core.valid_opts:
             if opt in ydl_opts:
                 self.conf['ydl'][opt] = ydl_opts.get(opt, None)
 
