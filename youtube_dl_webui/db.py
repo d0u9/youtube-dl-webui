@@ -57,7 +57,7 @@ class DataBase(object):
         if row is None:
             raise TaskInexistenceError('task does not exist')
 
-        return {'tid', row['tid'], 'url', row['url']}
+        return {'tid': row['tid'], 'url': row['url']}
 
 
     def get_opts(self, tid):
