@@ -17,4 +17,15 @@
 | 11 |   GET  | /task/state_coutner                                | get number of tasks in each state    |
 |----+--------+----------------------------------------------------+--------------------------------------|
 
+Note:
+
+Server always replies json formated data to browser in which field 'status' must be contained to indicate
+that if the previous operation is successful or not.
+
+Valid values for field 'status' are 'success' and 'error'.
+
+When 'error' status occurs, another filed 'errmsg' is included to points out what happened.
+
+
+
 
