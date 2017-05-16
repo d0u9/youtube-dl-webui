@@ -230,3 +230,7 @@ class Core(object):
 
             return {'status': 'success', 'detail': detail, 'state_counter': counter}
 
+        if data['command'] == 'state':
+            return self.db.list_state()
+
+

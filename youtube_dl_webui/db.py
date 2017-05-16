@@ -198,9 +198,14 @@ class DataBase(object):
 
         return ret, state_counter
 
+    def list_state(self):
+        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0}
 
+        self.db.execute('SELECT state, count(*) as NUM FROM task_status GROUP BY state')
+        rows = self.db.fetchall()
 
+        for r in rows:
+            state_counter[state_name[r['state']]] = r['NUM']
 
-
-
+        return state_counter
 

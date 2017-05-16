@@ -57,7 +57,7 @@ def task_list():
 
 
 def list_state():
-    url = 'http://127.0.0.1:5000/task/state_coutner'
+    url = 'http://127.0.0.1:5000/task/state_counter'
     r = requests.get(url)
 
     print('status: {}'.format(r.status_code))
@@ -80,7 +80,7 @@ if __name__ == '__main__':
             pass
 
     if act == '-h':
-        print('create | del | act | query | list')
+        print('create | del | act | query | list | state')
 
     if act == 'create':
         ret = task_add(p1)
@@ -104,6 +104,10 @@ if __name__ == '__main__':
 
     if act == 'list':
         ret = task_list()
+        print(ret)
+
+    if act == 'state':
+        ret = list_state()
         print(ret)
 
 

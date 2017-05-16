@@ -51,7 +51,11 @@ def list_task():
 
 @app.route('/task/state_counter', methods=['GET'])
 def list_state():
-    pass
+    wqd = deepcopy(WQ_DICT)
+    wqd['command'] = 'state'
+
+    WQ.put(wqd)
+    return json.dumps(RQ.get())
 
 
 @app.route('/task/tid/<tid>', methods=['DELETE'])
