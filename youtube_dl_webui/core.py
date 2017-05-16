@@ -7,6 +7,7 @@ import os
 from multiprocessing import Process, Queue
 from collections import deque
 
+from .utils import state_name
 from .db import DataBase
 from .utils import TaskInexistenceError
 from .utils import TaskRunningError
@@ -220,7 +221,11 @@ class Core(object):
             return {'status': 'success', 'detail': detail}
 
         if data['command'] == 'list':
-            ret, counter = self.db.list_task()
+            state = data['state']
+            if state not in state_name:
+                return {'status': 'error', 'errmsg': 'invalid query state'}
+
+            ret, counter = self.db.list_task(state)
 
             detail = []
             if data['exerpt'] is True:

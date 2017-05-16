@@ -164,14 +164,14 @@ class DataBase(object):
         for key in row.keys():
             if key == 'state':
                 ret[key] = state_name[row[key]]
-            if key == 'log':
+            elif key == 'log':
                 ret['log'] = json.loads(row['log'])
             else:
                 ret[key] = row[key]
 
         return ret
 
-    def list_task(self):
+    def list_task(self, qstate):
         self.db.execute('SELECT * FROM task_status, task_info')
         rows = self.db.fetchall()
 
@@ -188,11 +188,13 @@ class DataBase(object):
                     state = row[key]
                     t[key] = state_name[state]
                     state_counter[state_name[state]] += 1
-                if key == 'log':
+                elif key == 'log':
                     t['log'] = json.loads(row['log'])
                 else:
                     t[key] = row[key]
-            ret.append(t)
+
+            if qstate == 'all' or qstate == t['state']:
+                ret.append(t)
 
         print(ret)
 

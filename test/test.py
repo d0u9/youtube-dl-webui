@@ -47,8 +47,18 @@ def task_query(tid, exerpt=False):
     return j
 
 
-def task_list():
-    url = 'http://127.0.0.1:5000/task/list'
+def task_list(state=None, exerpt=None):
+    print(state)
+    print(exerpt)
+    if state is not None and exerpt is not None:
+        url = 'http://127.0.0.1:5000/task/list?state={}&exerpt={}'.format(state, exerpt)
+    elif state is not None and exerpt is None:
+        url = 'http://127.0.0.1:5000/task/list?state={}'.format(state)
+    elif state is None and exerpt is not None:
+        url = 'http://127.0.0.1:5000/task/list?exerpt={}'.format(exerpt)
+    else:
+        url = 'http://127.0.0.1:5000/task/list'
+
     r = requests.get(url)
 
     print('status: {}'.format(r.status_code))
@@ -74,10 +84,18 @@ if __name__ == '__main__':
         act = sys.argv[1]
         try:
             p1 = sys.argv[2]
+        except:
+            p1 = None
+
+        try:
             p2 = sys.argv[3]
+        except:
+            p2 = None
+
+        try:
             p3 = sys.argv[4]
         except:
-            pass
+            p3 = None
 
     if act == '-h':
         print('create | del | act | query | list | state')
@@ -103,7 +121,7 @@ if __name__ == '__main__':
         print(ret)
 
     if act == 'list':
-        ret = task_list()
+        ret = task_list(p1, p2)
         print(ret)
 
     if act == 'state':

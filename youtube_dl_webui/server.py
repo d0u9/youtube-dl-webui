@@ -39,11 +39,13 @@ def list_task():
     wqd['command'] = 'list'
 
     exerpt = request.args.get('exerpt', None)
-
     if exerpt is None:
         wqd['exerpt'] = True
     else:
         wqd['exerpt'] = False
+
+    state = request.args.get('state', 'all')
+    wqd['state'] = state
 
     WQ.put(wqd)
     return json.dumps(RQ.get())
