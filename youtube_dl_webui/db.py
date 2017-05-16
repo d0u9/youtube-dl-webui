@@ -196,8 +196,6 @@ class DataBase(object):
             if qstate == 'all' or qstate == t['state']:
                 ret.append(t)
 
-        print(ret)
-
         return ret, state_counter
 
     def list_state(self):

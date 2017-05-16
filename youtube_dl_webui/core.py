@@ -93,7 +93,6 @@ class Core(object):
 
 
     def launch_worker(self, tid, log_list, param=None, ydl_opts={}):
-        print(tid)
         if tid in self.worker:
             raise TaskRunningError('task already running')
 
@@ -101,8 +100,6 @@ class Core(object):
 
         for l in log_list:
             self.worker[tid]['log'].append(l)
-
-        print(self.worker)
 
 
     def cancel_worker(self, tid):
