@@ -43,11 +43,14 @@ class Core(object):
     def run(self):
         while True:
             data = self.rq.get()
-            if data['from'] == 'server':
+            data_from = data.get('from', None)
+            if data_from == 'server':
                 ret = self.server_request(data)
                 self.wq.put(ret)
-            elif data['from'] == 'worker':
+            elif data_from == 'worker':
                 ret = self.worker_request(data)
+            else:
+                print(data)
 
 
     def launch_unfinished(self):
