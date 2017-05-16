@@ -7,6 +7,7 @@ import os
 from multiprocessing import Process, Queue
 from collections import deque
 from sys import exit
+from time import time
 
 from .utils import state_name
 from .db import DataBase
@@ -102,6 +103,9 @@ class Core(object):
         for l in log_list:
             self.worker[tid]['log'].append(l)
 
+        self.worker[tid]['log'].append({'time': int(time()), 'type': 'debug', 'msg': 'Task starts...'})
+        self.db.update_log(tid, self.worker[tid]['log'])
+
         opts = self.add_ydl_conf_file_opts(ydl_opts)
 
         # launch worker process
@@ -126,6 +130,9 @@ class Core(object):
         w = self.worker[tid]
         self.db.cancel_task(tid, log=w['log'])
         w['obj'].stop()
+        self.worker[tid]['log'].append({'time': int(time()), 'type': 'debug', 'msg': 'Task stops...'})
+        self.db.update_log(tid, self.worker[tid]['log'])
+
         del self.worker[tid]
 
 
@@ -269,3 +276,14 @@ class Core(object):
 
         if msgtype == 'info_dict':
             self.db.update_from_info_dict(tid, data['data'])
+            return
+
+        if msgtype == 'log':
+            if tid not in self.worker:
+                return
+
+            self.worker[tid]['log'].append(data['data'])
+            self.db.update_log(tid, self.worker[tid]['log'])
+            print(data['data'])
+
+            return

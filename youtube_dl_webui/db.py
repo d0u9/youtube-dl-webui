@@ -227,3 +227,15 @@ class DataBase(object):
                         (info_dict['title'], info_dict['format'], info_dict['ext'], tid))
         self.conn.commit()
 
+
+    def update_log(self, tid, log):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
+        log_str = json.dumps([l for l in log])
+        self.db.execute('UPDATE task_status SET log = (?) WHERE tid=(?)', (log_str, tid))
+        self.conn.commit()
+
+

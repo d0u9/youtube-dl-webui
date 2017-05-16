@@ -4,6 +4,7 @@
 import youtube_dl
 
 from multiprocessing import Process
+from time import time
 from copy import deepcopy
 
 WQ_DICT = {'from': 'worker'}
@@ -24,21 +25,32 @@ class log_filter(object):
     def __init__(self, tid, wqueue):
         self.tid = tid
         self.wq = wqueue
+        self.wqd = deepcopy(WQ_DICT)
+        self.wqd['tid'] = self.tid
+        self.wqd['msgtype'] = 'log'
+        self.data = {'time': None, 'type': None, 'msg': None}
+        self.wqd['data'] = self.data
 
 
     def debug(self, msg):
-        d = {'DEBUG': msg}
-        self.wq.put(d)
+        self.data['time'] = int(time())
+        self.data['type'] = 'debug'
+        self.data['msg'] = msg
+        self.wq.put(self.wqd)
 
 
     def warning(self, msg):
-        d = {'WARN': msg}
-        self.wq.put(d)
+        self.data['time'] = int(time())
+        self.data['type'] = 'warning'
+        self.data['msg'] = msg
+        self.wq.put(self.wqd)
 
 
     def error(self, msg):
-        d = {'ERROR': msg}
-        self.wq.put(d)
+        self.data['time'] = int(time())
+        self.data['type'] = 'error'
+        self.data['msg'] = msg
+        self.wq.put(self.wqd)
 
 
 class Worker(Process):
