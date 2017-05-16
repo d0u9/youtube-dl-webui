@@ -63,7 +63,7 @@ class Core(object):
         return tid
 
 
-    def start_task(self, tid, ignore_state=False):
+    def start_task(self, tid, ignore_state=False, first_run=False):
         try:
             param = self.db.get_param(tid)
             ydl_opts = self.db.get_opts(tid)
@@ -71,7 +71,7 @@ class Core(object):
             raise TaskInexistenceError(e.msg)
 
         log_list = self.db.start_task(tid, ignore_state)
-        self.launch_worker(tid, log_list, param=param, ydl_opts=ydl_opts)
+        self.launch_worker(tid, log_list, param=param, ydl_opts=ydl_opts, first_run=first_run)
 
 
     def pause_task(self, tid):
@@ -90,7 +90,7 @@ class Core(object):
         self.db.delete_task(tid)
 
 
-    def launch_worker(self, tid, log_list, param=None, ydl_opts={}):
+    def launch_worker(self, tid, log_list, param=None, ydl_opts={}, first_run=False):
         if tid in self.worker:
             raise TaskRunningError('task already running')
 
@@ -102,7 +102,7 @@ class Core(object):
         opts = self.add_ydl_conf_file_opts(ydl_opts)
 
         # launch worker process
-        w = Worker(tid, self.rq, param=param, ydl_opts=opts)
+        w = Worker(tid, self.rq, param=param, ydl_opts=opts, first_run=first_run)
         w.start()
         self.worker[tid]['obj'] = w
 
@@ -182,7 +182,7 @@ class Core(object):
         if data['command'] == 'create':
             try:
                 tid = self.create_task(data['param'], {})
-                self.start_task(tid)
+                self.start_task(tid, first_run=True)
             except TaskExistenceError:
                 return msg_task_existence_error
             except TaskInexistenceError:
