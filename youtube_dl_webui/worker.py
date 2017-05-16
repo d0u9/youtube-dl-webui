@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import youtube_dl
+
 from multiprocessing import Process
+from copy import deepcopy
+
+WQ_DICT = {'from': 'worker'}
 
 class Worker(Process):
     def __init__(self, tid, wqueue, param=None, ydl_opts=None):
@@ -11,12 +16,14 @@ class Worker(Process):
         self.param = param
         self.ydl_opts = ydl_opts
 
+
     def run(self):
-        from time import sleep
-        while True:
-            sleep(1)
-            print('hello')
-            self.wq.put({'from': 'worker', 'tid': self.tid})
-            print(self.param)
-            print(self.ydl_opts)
+        with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            info_dict = ydl.extract_info(self.param['url'], download=False)
+            wqd = deepcopy(WQ_DICT)
+            wqd['tid'] = self.tid
+            wqd['msgtype'] = 'info_dict'
+            wqd['data'] = info_dict
+            self.wq.put(wqd)
+
 

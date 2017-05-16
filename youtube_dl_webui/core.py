@@ -39,19 +39,15 @@ class Core(object):
         self.server.start()
 
 
-    def worker_request(self, data):
-        print(data)
-
-
     def run(self):
         while True:
             data = self.rq.get()
             if data['from'] == 'server':
                 ret = self.server_request(data)
-            else:
+                self.wq.put(ret)
+            elif data['from'] == 'worker':
                 ret = self.worker_request(data)
 
-            self.wq.put(ret)
 
     def launch_unfinished(self):
         tlist = self.db.get_unfinished()
@@ -254,3 +250,9 @@ class Core(object):
             return self.db.list_state()
 
 
+    def worker_request(self, data):
+        tid = data['tid']
+        msgtype = data['msgtype']
+
+        if msgtype == 'info_dict':
+            self.db.update_from_info_dict(tid, data['data'])

@@ -209,3 +209,9 @@ class DataBase(object):
 
         return state_counter
 
+
+    def update_from_info_dict(self, tid, info_dict):
+        self.db.execute('UPDATE task_info SET title=(?), format=(?), ext=(?) WHERE tid=(?)',
+                        (info_dict['title'], info_dict['format'], info_dict['ext'], tid))
+        self.conn.commit()
+
