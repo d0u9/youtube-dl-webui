@@ -211,22 +211,22 @@ class Core(object):
 
             detail = {}
             if data['exerpt'] is True:
-                for k in Core.exerpt_keys:
-                    detail[k] = ret[k]
+                detail = {k: ret[k] for k in ret if k in Core.exerpt_keys}
             else:
                 detail = ret
 
             return {'status': 'success', 'detail': detail}
 
         if data['command'] == 'list':
-            ret = self.db.list_task()
+            ret, counter = self.db.list_task()
 
-            detail = {}
+            detail = []
             if data['exerpt'] is True:
-                for k in Core.exerpt_keys:
-                    detail[k] = ret[k]
+                for each in ret:
+                    d = {k: each[k] for k in each if k in Core.exerpt_keys}
+                    detail.append(d)
             else:
                 detail = ret
 
-            return {'status': 'success', 'detail': ret}
+            return {'status': 'success', 'detail': detail, 'state_counter': counter}
 

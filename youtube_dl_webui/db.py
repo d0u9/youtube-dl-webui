@@ -8,7 +8,7 @@ import sqlite3
 from hashlib import sha1
 from time import time
 
-from .utils import state_index
+from .utils import state_index, state_name
 from .utils import TaskExistenceError
 from .utils import TaskInexistenceError
 from .utils import TaskPausedError
@@ -162,9 +162,12 @@ class DataBase(object):
 
         ret = {}
         for key in row.keys():
-            ret[key] = row[key]
-
-        ret['log'] = json.loads(ret['log'])
+            if key == 'state':
+                ret[key] = state_name[row[key]]
+            if key == 'log':
+                ret['log'] = json.loads(row['log'])
+            else:
+                ret[key] = row[key]
 
         return ret
 
@@ -173,18 +176,27 @@ class DataBase(object):
         rows = self.db.fetchall()
 
         ret = []
+        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0}
         if len(rows) == 0:
-            return ret
+            return ret, state_counter
 
         keys = rows[0].keys()
         for row in rows:
             t = {}
             for key in keys:
-                t[key] = row[key]
-            t['log'] = json.loads(t['log'])
+                if key == 'state':
+                    state = row[key]
+                    t[key] = state_name[state]
+                    state_counter[state_name[state]] += 1
+                if key == 'log':
+                    t['log'] = json.loads(row['log'])
+                else:
+                    t[key] = row[key]
             ret.append(t)
 
-        return ret
+        print(ret)
+
+        return ret, state_counter
 
 
 
