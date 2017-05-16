@@ -180,7 +180,7 @@ class DataBase(object):
         if len(rows) == 0:
             return ret, state_counter
 
-        keys = rows[0].keys()
+        keys = set(rows[0].keys())
         for row in rows:
             t = {}
             for key in keys:

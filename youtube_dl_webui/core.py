@@ -199,6 +199,8 @@ class Core(object):
                 return {'status': 'error', 'errmsg': 'task paused already'}
             except TaskRunningError:
                 return {'status': 'error', 'errmsg': 'task running already'}
+            except TaskInexistenceError:
+                return msg_task_inexistence_error
 
             return {'status': 'success'}
 
