@@ -6,6 +6,7 @@ import os
 
 from multiprocessing import Process, Queue
 from collections import deque
+from sys import exit
 
 from .utils import state_name
 from .db import DataBase
@@ -154,6 +155,13 @@ class Core(object):
         for pair in valid_conf:
             self.conf[pair[0]] = general.get(pair[0], pair[1])
 
+        dl_dir = general['download_dir']
+        try:
+            os.makedirs(dl_dir, exist_ok=True)
+            os.chdir(dl_dir)
+        except PermissionError:
+            print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
+            exit(1)
 
 
     def load_server_conf(self, server_conf):
