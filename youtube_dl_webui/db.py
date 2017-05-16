@@ -104,7 +104,7 @@ class DataBase(object):
         self.conn.commit()
 
 
-    def pause_task(self,tid):
+    def cancel_task(self,tid):
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
@@ -147,6 +147,11 @@ class DataBase(object):
 
 
     def delete_task(self, tid):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
         self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
         self.db.execute('DELETE FROM task_info WHERE tid=(?)', (tid, ))
         self.db.execute('DELETE FROM task_param WHERE tid=(?)', (tid, ))

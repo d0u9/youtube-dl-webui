@@ -76,6 +76,7 @@ class Worker(Process):
 
 
     def stop(self):
+        print('Terminating Process ...')
         self.terminate()
         self.join()
 

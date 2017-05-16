@@ -79,18 +79,17 @@ class Core(object):
 
 
     def pause_task(self, tid):
-        try:
-            self.cancel_worker(tid)
-        except:
-            pass
-        self.db.pause_task(tid)
+        self.cancel_worker(tid)
 
 
     def delete_task(self, tid):
         try:
             self.cancel_worker(tid)
+        except TaskInexistenceError as e:
+            raise e
         except:
             pass
+
         self.db.delete_task(tid)
 
 
@@ -122,8 +121,11 @@ class Core(object):
 
     def cancel_worker(self, tid):
         if tid not in self.worker:
-            raise TaskRunningError('task not running')
+            raise TaskPausedError('task not running')
 
+        self.db.cancel_task(tid)
+        w = self.worker[tid]['obj']
+        w.stop()
         del self.worker[tid]
 
 
@@ -204,8 +206,8 @@ class Core(object):
         if data['command'] == 'delete':
             try:
                 self.delete_task(data['tid'])
-            except:
-                pass
+            except TaskInexistenceError:
+                return msg_task_inexistence_error
 
             return {'status': 'success'}
 
