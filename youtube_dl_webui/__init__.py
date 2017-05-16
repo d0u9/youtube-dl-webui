@@ -2,17 +2,29 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from argparse import ArgumentParser
 
-from flask import Flask
-from flask import render_template
+from .core import Core
 
-app = Flask(__name__)
+def getopt(argv):
+    parser = ArgumentParser(description='Another webui for youtube-dl')
 
-@app.route("/")
-def hello():
-    return render_template('index.html')
+    parser.add_argument('-c', '--config', metavar="CONFIG_FILE", required=True, help="config file")
+    parser.add_argument('--host', metavar="ADDR", help="the address server listens on")
+    parser.add_argument('--port', metavar="PORT", help="the port server listens on")
+
+    return vars(parser.parse_args())
 
 
 def main(argv=None):
-    app.run(host='0.0.0.0')
+    from os import getpid
+
+    print("pid is {}".format(getpid()))
+    print("-----------------------------------")
+
+    cmd_args = getopt(argv)
+    core = Core(args=cmd_args)
+    core.run()
+
+    core.create_task({'url': '1322af23123x'}, {'proxy': 'localhsot'})
 
