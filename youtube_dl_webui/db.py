@@ -164,6 +164,8 @@ class DataBase(object):
         for key in row.keys():
             ret[key] = row[key]
 
+        ret['log'] = json.loads(ret['log'])
+
         return ret
 
 
