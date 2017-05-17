@@ -14,11 +14,15 @@ class ydl_hook(object):
     def __init__(self, tid, wqueue):
         self.tid = tid
         self.wq = wqueue
+        self.wqd = deepcopy(WQ_DICT)
+        self.wqd['tid'] = self.tid
+        self.wqd['msgtype'] = 'progress'
+        self.wqd['data'] = None
 
 
     def dispatcher(self, d):
-        v = {'HOOK': d}
-        self.wq.put(v)
+        self.wqd['data'] = d
+        self.wq.put(self.wqd)
 
 
 class log_filter(object):

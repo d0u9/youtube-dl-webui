@@ -27,6 +27,7 @@ class DataBase(object):
         # first time to create db
         if not os.path.exists(db_path):
             conn = sqlite3.connect(db_path)
+            #  conn = sqlite3.connect(":memory:")
             conn.row_factory = sqlite3.Row
             db = conn.cursor()
             with open('./schema.sql', mode='r') as f:
@@ -237,5 +238,34 @@ class DataBase(object):
         log_str = json.dumps([l for l in log])
         self.db.execute('UPDATE task_status SET log = (?) WHERE tid=(?)', (log_str, tid))
         self.conn.commit()
+
+
+    def downloading_update(self, tid, d):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
+        elapsed = row['elapsed'] + d['elapsed']
+
+        if 'total_bytes' in d:
+            d['total_bytes_estmt'] = d['total_bytes']
+        else:
+            d['total_bytes'] = '0'
+
+        sql = ("UPDATE task_status SET "
+               "percent='{percent}',            filename='{filename}', "
+               "tmpfilename='{tmpfilename}',   downloaded_bytes='{downloaded_bytes}', "
+               "total_bytes='{total_bytes}',   total_bytes_estmt='{total_bytes_estmt}', "
+               "speed='{speed}', eta='{eta}',  elapsed='{elapsed}' WHERE tid='{tid}'"
+              ).format  \
+              ( percent=d['_percent_str'],      filename=d['filename'],                     \
+                tmpfilename=d['tmpfilename'],   downloaded_bytes=d['downloaded_bytes'],     \
+                total_bytes=d['total_bytes'],   total_bytes_estmt=d['total_bytes_estmt'],   \
+                speed=d['speed'],               eta=d['eta'],                               \
+                elapsed=elapsed,                tid=tid
+              )
+
+        self.db.execute(sql)
 
 

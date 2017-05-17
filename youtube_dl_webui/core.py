@@ -37,6 +37,14 @@ class Core(object):
 
         self.db = DataBase(self.conf['db_path'])
 
+        dl_dir = self.conf['download_dir']
+        try:
+            os.makedirs(dl_dir, exist_ok=True)
+            os.chdir(dl_dir)
+        except PermissionError:
+            print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
+            exit(1)
+
         self.launch_unfinished()
         self.server.start()
 
@@ -167,14 +175,6 @@ class Core(object):
         for pair in valid_conf:
             self.conf[pair[0]] = general.get(pair[0], pair[1])
 
-        dl_dir = general['download_dir']
-        try:
-            os.makedirs(dl_dir, exist_ok=True)
-            os.chdir(dl_dir)
-        except PermissionError:
-            print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
-            exit(1)
-
 
     def load_server_conf(self, server_conf):
         valid_conf = [  ('host', '127.0.0.1'),
@@ -287,3 +287,11 @@ class Core(object):
             print(data['data'])
 
             return
+
+        if msgtype == 'progress':
+            tid = data['tid']
+            d = data['data']
+
+            if d['status'] == 'downloading':
+                self.db.downloading_update(tid, d)
+
