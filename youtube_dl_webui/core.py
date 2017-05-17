@@ -289,9 +289,14 @@ class Core(object):
             return
 
         if msgtype == 'progress':
-            tid = data['tid']
             d = data['data']
 
             if d['status'] == 'downloading':
-                self.db.downloading_update(tid, d)
+                self.db.progress_update(tid, d)
+
+            if d['statis'] == 'finished':
+                self.cancel_worker(tid)
+                self.db.progress_update(tid, d)
+                self.db.set_state(tid, 'finished')
+
 

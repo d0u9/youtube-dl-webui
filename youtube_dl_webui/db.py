@@ -240,7 +240,7 @@ class DataBase(object):
         self.conn.commit()
 
 
-    def downloading_update(self, tid, d):
+    def progress_update(self, tid, d):
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
@@ -267,5 +267,6 @@ class DataBase(object):
               )
 
         self.db.execute(sql)
-
+        self.db.execute('UPDATE task_info SET finish_time=? WHERE tid=(?)', (time(), tid))
+        self.conn.commit()
 
