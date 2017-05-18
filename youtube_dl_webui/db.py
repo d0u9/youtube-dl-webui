@@ -29,7 +29,9 @@ class DataBase(object):
             conn = sqlite3.connect(db_path)
             conn.row_factory = sqlite3.Row
             db = conn.cursor()
-            with open('./schema.sql', mode='r') as f:
+            db_path = os.path.dirname(os.path.abspath(__file__))
+            db_file = db_path + '/schema.sql'
+            with open(db_file, mode='r') as f:
                 conn.executescript(f.read())
         else:
             conn = sqlite3.connect(db_path)
