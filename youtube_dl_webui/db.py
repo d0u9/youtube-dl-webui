@@ -174,7 +174,7 @@ class DataBase(object):
         return ret
 
     def list_task(self, qstate):
-        self.db.execute('SELECT * FROM task_status, task_info')
+        self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=task_info.tid')
         rows = self.db.fetchall()
 
         ret = []
