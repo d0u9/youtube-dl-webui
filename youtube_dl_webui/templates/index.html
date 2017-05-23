@@ -93,7 +93,7 @@
        </div>
       <modal v-if="showModal" @close="showModal = false" @confirm="addTask">
          <h3 slot="header">please type in download url</h3>
-         <h3 slot="body"><label>url: <input type="text"></input></label></h3>
+         <h3 slot="body"><label>url: <input type="text" v-model="modalData.url"></input></label></h3>
       </modal>
     </div>
     <footer>
@@ -106,6 +106,7 @@
     </footer> 
     </div>
     <script type="text/javascript" src="../static/js/vue.min.js"></script>
+    <script type="text/javascript" src="../static/js/vue-resource.min.js"></script>
     <script type="text/javascript" src="../static/js/global.js"></script>
   </body>
 </html>
