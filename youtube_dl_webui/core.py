@@ -294,7 +294,7 @@ class Core(object):
             if d['status'] == 'downloading':
                 self.db.progress_update(tid, d)
 
-            if d['statis'] == 'finished':
+            if d['status'] == 'finished':
                 self.cancel_worker(tid)
                 self.db.progress_update(tid, d)
                 self.db.set_state(tid, 'finished')
