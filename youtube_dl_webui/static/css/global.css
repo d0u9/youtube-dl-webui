@@ -66,6 +66,9 @@ table tbody tr{
   background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);;
   height: 25px;
 }
+tr.selected{
+   background: #d2cde8;
+}
 table tbody tr td{
   border:0;padding:0;
 }

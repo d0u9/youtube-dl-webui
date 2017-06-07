@@ -79,11 +79,11 @@
                 </tr>
              </thead>
              <tbody>
-                <tr v-for="(video, index) in videoList">
+                <tr v-for="(video, index) in videoList" @click="selected(index)" :class="{'selected': currentSelected === index}">
                    <td width="10%">{{"{{index + 1}}"}}</td>
-                   <td width="30%">{{"{{video.name}}"}}</td>
-                   <td width="10%">{{"{{video.size}}"}}</td>
-                   <td width="20%">{{"{{video.Progress}}"}}</td>
+                   <td width="30%">{{"{{video.title}}"}}</td>
+                   <td width="10%">{{"{{video.total_bytes}}"}}</td>
+                   <td width="20%">{{"{{video.percent}}"}}</td>
                    <td width="10%">{{"{{video.downSpeed}}"}}</td>
                    <td width="10%">{{"{{video.upSpeed}}"}}</td>
                    <td width="10%">{{"{{video.eta}}"}}</td>

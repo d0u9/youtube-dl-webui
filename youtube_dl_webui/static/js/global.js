@@ -8,12 +8,12 @@ var videoDownload = (function (Vue, extendAM){
                 tablist: ['status', 'details', 'files', 'peers', 'options'],
                 showTab: 'status',
                 stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0 },
-                modalData: { url: '' }
+                modalData: { url: '' },
+                currentSelected: false
         };
         videoDownload.updateVm = function(res) {
                 var that = this;
                 if(that.vm){
-                        that.vm.updated();
                         return false;
                 }
                 that.vm = new Vue({
@@ -23,8 +23,8 @@ var videoDownload = (function (Vue, extendAM){
                               'modal': {template: '#modal-template'}
                         },
                         watch:{
-                                stateCounter: function(){
-                                        stateCounter.all = stateCounter.downloading + stateCounter.finished + stateCounter.paused;
+                                stateCounter: function(val){
+                                        val.all = val.downloading + val.finished + val.paused;
                                 }
                         },
                         methods: {
@@ -37,6 +37,13 @@ var videoDownload = (function (Vue, extendAM){
                                         }, function(err){
                                                 console.log(err);
                                         });
+                                },
+                                removeTask: function(){
+                                        var _self = this;
+                                },
+                                selected: function(index){
+                                       this.currentSelected = index;
+                                       console.log(this.currentSelected === index ? 'selected' : '');
                                 }
                         }
                 });
@@ -49,6 +56,7 @@ var videoDownload = (function (Vue, extendAM){
                         var resData = JSON.parse(res.body);
                         that.tasksData.videoList = resData.detail;
                         that.tasksData.stateCounter = resData.state_counter;
+                        that.tasksData.stateCounter.all = that.tasksData.stateCounter.downloading + that.tasksData.stateCounter.finished + that.tasksData.stateCounter.paused;
                         that.updateVm(res);
                 }, function(err){
                         console.log(err)
