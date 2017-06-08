@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import youtube_dl
+from youtube_dl import YoutubeDL
+from youtube_dl import DownloadError
 
 from multiprocessing import Process
 from time import time
@@ -57,6 +58,25 @@ class log_filter(object):
         self.wq.put(self.wqd)
 
 
+class fatal_event(object):
+    def __init__(self, tid, wqueue):
+        self.tid = tid
+        self.wq = wqueue
+        self.wqd = deepcopy(WQ_DICT)
+        self.wqd['tid'] = self.tid
+        self.wqd['msgtype'] = 'fatal'
+        self.data = {'time': None, 'type': None, 'msg': None}
+        self.wqd['data'] = self.data
+
+
+    def invalid_url(self, url):
+        self.data['time'] = int(time())
+        self.data['type'] = 'invalid_url'
+        self.data['url'] = url;
+        self.data['msg'] = 'invalid url: {}'.format(url)
+        self.wq.put(self.wqd)
+
+
 class Worker(Process):
     def __init__(self, tid, wqueue, param=None, ydl_opts=None, first_run=False):
         super(Worker, self).__init__()
@@ -78,17 +98,22 @@ class Worker(Process):
     def run(self):
         self.intercept_ydl_opts()
 
-        with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
-            if self.first_run:
-                info_dict = ydl.extract_info(self.url, download=False)
-                wqd = deepcopy(WQ_DICT)
-                wqd['tid'] = self.tid
-                wqd['msgtype'] = 'info_dict'
-                wqd['data'] = info_dict
-                self.wq.put(wqd)
+        with YoutubeDL(self.ydl_opts) as ydl:
+            try:
+                if self.first_run:
+                    info_dict = ydl.extract_info(self.url, download=False)
+                    wqd = deepcopy(WQ_DICT)
+                    wqd['tid'] = self.tid
+                    wqd['msgtype'] = 'info_dict'
+                    wqd['data'] = info_dict
+                    self.wq.put(wqd)
 
-            print('start downloading ...')
-            ydl.download([self.url])
+                print('start downloading ...')
+                ydl.download([self.url])
+            except DownloadError as e:
+                # url error
+                event_handle = fatal_event(self.tid, self.wq)
+                event_handle.invalid_url(self.url);
 
 
     def stop(self):

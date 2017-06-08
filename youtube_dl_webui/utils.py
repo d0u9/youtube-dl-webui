@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-state_index={'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3}
-state_name=['all', 'downloading', 'paused', 'finished']
+state_index={'all': 0, 'downloading': 1, 'paused': 2, 'finished': 3, 'invalid': 4}
+state_name=['all', 'downloading', 'paused', 'finished', 'invalid']
 
 class YoutubeDLWebUI(Exception):
     """Base exception for YoutubeDL errors."""

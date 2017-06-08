@@ -299,4 +299,10 @@ class Core(object):
                 self.db.progress_update(tid, d)
                 self.db.set_state(tid, 'finished')
 
+        if msgtype == 'fatal':
+            d = data['data']
+
+            if d['type'] == 'invalid_url':
+                print("Can't start downloading {}, url is invalid".format(d['url']))
+                self.db.set_state(tid, 'invalid')
 

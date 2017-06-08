@@ -42,7 +42,8 @@ class DataBase(object):
 
 
     def get_unfinished(self):
-        self.db.execute('SELECT tid FROM task_status WHERE state!=?', (state_index['finished'], ))
+        self.db.execute('SELECT tid FROM task_status WHERE state not in (?,?)',
+                (state_index['finished'], state_index['invalid']))
         rows = self.db.fetchall()
 
         ret = []
@@ -52,7 +53,8 @@ class DataBase(object):
         return ret
 
     def get_param(self, tid):
-        self.db.execute('SELECT * FROM task_param WHERE tid=(?) and state!=?', (tid, state_index['finished']))
+        self.db.execute('SELECT * FROM task_param WHERE tid=(?) and state not in (?,?)',
+                (tid, state_index['finished'], state_index['invalid']))
         row = self.db.fetchone()
 
         if row is None:
@@ -62,7 +64,8 @@ class DataBase(object):
 
 
     def get_opts(self, tid):
-        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state!=?', (tid, state_index['finished']))
+        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
+                (tid, state_index['finished'], state_index['invalid']))
         row = self.db.fetchone()
 
         if row is None:
@@ -189,7 +192,7 @@ class DataBase(object):
         rows = self.db.fetchall()
 
         ret = []
-        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0}
+        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0, 'invalid': 0}
         if len(rows) == 0:
             return ret, state_counter
 
@@ -212,7 +215,7 @@ class DataBase(object):
         return ret, state_counter
 
     def list_state(self):
-        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0}
+        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0, 'invalid': 0}
 
         self.db.execute('SELECT state, count(*) as NUM FROM task_status GROUP BY state')
         rows = self.db.fetchall()
