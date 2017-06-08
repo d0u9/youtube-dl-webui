@@ -27,12 +27,12 @@ class Core(object):
         self.conf = {'server': {}, 'ydl': {}}
         self.rq = Queue()
         self.wq = Queue()
-        self.server = Server(self.wq, self.rq)
         self.worker = {}
 
         self.load_cmd_args(args)
         self.load_conf_file()
 
+        self.server = Server(self.wq, self.rq, self.cmd_args['host'], self.cmd_args['port'])
         self.db = DataBase(self.conf['db_path'])
 
         dl_dir = self.conf['download_dir']
