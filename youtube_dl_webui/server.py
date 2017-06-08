@@ -108,7 +108,7 @@ def query_task(tid):
 
 
 class Server(Process):
-    def __init__(self, rqueue, wqueue):
+    def __init__(self, rqueue, wqueue, host, port):
         super(Server, self).__init__()
         self.rq = rqueue
         self.wq = wqueue
@@ -118,7 +118,10 @@ class Server(Process):
         RQ = rqueue
         WQ = wqueue
 
+        self.host = host
+        self.port = port
+
     def run(self):
-        app.run(use_reloader=False)
+        app.run(host=self.host, port=self.port, use_reloader=False)
 
 

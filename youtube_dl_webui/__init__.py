@@ -25,6 +25,3 @@ def main(argv=None):
     cmd_args = getopt(argv)
     core = Core(args=cmd_args)
     core.run()
-
-    core.create_task({'url': '1322af23123x'}, {'proxy': 'localhsot'})
-
