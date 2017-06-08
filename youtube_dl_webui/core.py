@@ -6,6 +6,8 @@ import os
 
 from multiprocessing import Process, Queue
 from collections import deque
+from sys import exit
+from time import time
 
 from .utils import state_name
 from .db import DataBase
@@ -14,9 +16,11 @@ from .utils import TaskRunningError
 from .utils import TaskExistenceError
 from .utils import TaskPausedError
 from .server import Server
+from .worker import Worker
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title']
+    valid_opts = ['proxy']
 
     def __init__(self, args=None):
         self.cmd_args = {}
@@ -33,23 +37,30 @@ class Core(object):
 
         self.db = DataBase(self.conf['db_path'])
 
+        dl_dir = self.conf['download_dir']
+        try:
+            os.makedirs(dl_dir, exist_ok=True)
+            os.chdir(dl_dir)
+        except PermissionError:
+            print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
+            exit(1)
+
         self.launch_unfinished()
         self.server.start()
-
-
-    def worker_request(self, data):
-        pass
 
 
     def run(self):
         while True:
             data = self.rq.get()
-            if data['from'] == 'server':
+            data_from = data.get('from', None)
+            if data_from == 'server':
                 ret = self.server_request(data)
-            else:
+                self.wq.put(ret)
+            elif data_from == 'worker':
                 ret = self.worker_request(data)
+            else:
+                print(data)
 
-            self.wq.put(ret)
 
     def launch_unfinished(self):
         tlist = self.db.get_unfinished()
@@ -65,7 +76,7 @@ class Core(object):
         return tid
 
 
-    def start_task(self, tid, ignore_state=False):
+    def start_task(self, tid, ignore_state=False, first_run=False):
         try:
             param = self.db.get_param(tid)
             ydl_opts = self.db.get_opts(tid)
@@ -73,38 +84,62 @@ class Core(object):
             raise TaskInexistenceError(e.msg)
 
         log_list = self.db.start_task(tid, ignore_state)
-        self.launch_worker(tid, log_list, param=param, ydl_opts=ydl_opts)
+        self.launch_worker(tid, log_list, param=param, ydl_opts=ydl_opts, first_run=first_run)
 
 
     def pause_task(self, tid):
-        try:
-            self.cancel_worker(tid)
-        except:
-            pass
-        self.db.pause_task(tid)
+        self.cancel_worker(tid)
 
 
     def delete_task(self, tid):
         try:
             self.cancel_worker(tid)
+        except TaskInexistenceError as e:
+            raise e
         except:
             pass
+
         self.db.delete_task(tid)
 
 
-    def launch_worker(self, tid, log_list, param=None, ydl_opts={}):
+    def launch_worker(self, tid, log_list, param=None, ydl_opts={}, first_run=False):
         if tid in self.worker:
             raise TaskRunningError('task already running')
 
-        self.worker[tid] ={'obj': 'obj', 'log': deque(maxlen=10)}
+        self.worker[tid] ={'obj': None, 'log': deque(maxlen=10)}
 
         for l in log_list:
             self.worker[tid]['log'].append(l)
 
+        self.worker[tid]['log'].append({'time': int(time()), 'type': 'debug', 'msg': 'Task starts...'})
+        self.db.update_log(tid, self.worker[tid]['log'])
+
+        opts = self.add_ydl_conf_file_opts(ydl_opts)
+
+        # launch worker process
+        w = Worker(tid, self.rq, param=param, ydl_opts=opts, first_run=first_run)
+        w.start()
+        self.worker[tid]['obj'] = w
+
+
+    def add_ydl_conf_file_opts(self, ydl_opts={}):
+        conf_opts = self.conf.get('ydl', {})
+
+        # filter out unvalid options
+        d = {k: ydl_opts[k] for k in ydl_opts if k in Core.valid_opts}
+
+        return {**conf_opts, **d}
+
 
     def cancel_worker(self, tid):
         if tid not in self.worker:
-            raise TaskRunningError('task not running')
+            raise TaskPausedError('task not running')
+
+        w = self.worker[tid]
+        self.db.cancel_task(tid, log=w['log'])
+        w['obj'].stop()
+        self.worker[tid]['log'].append({'time': int(time()), 'type': 'debug', 'msg': 'Task stops...'})
+        self.db.update_log(tid, self.worker[tid]['log'])
 
         del self.worker[tid]
 
@@ -141,7 +176,6 @@ class Core(object):
             self.conf[pair[0]] = general.get(pair[0], pair[1])
 
 
-
     def load_server_conf(self, server_conf):
         valid_conf = [  ('host', '127.0.0.1'),
                         ('port', '5000')
@@ -154,11 +188,9 @@ class Core(object):
 
 
     def load_ydl_conf(self, ydl_opts):
-        valid_opts = ['proxy']
-
         ydl_opts = {} if ydl_opts is None else ydl_opts
 
-        for opt in valid_opts:
+        for opt in Core.valid_opts:
             if opt in ydl_opts:
                 self.conf['ydl'][opt] = ydl_opts.get(opt, None)
 
@@ -170,7 +202,7 @@ class Core(object):
         if data['command'] == 'create':
             try:
                 tid = self.create_task(data['param'], {})
-                self.start_task(tid)
+                self.start_task(tid, first_run=True)
             except TaskExistenceError:
                 return msg_task_existence_error
             except TaskInexistenceError:
@@ -181,8 +213,8 @@ class Core(object):
         if data['command'] == 'delete':
             try:
                 self.delete_task(data['tid'])
-            except:
-                pass
+            except TaskInexistenceError:
+                return msg_task_inexistence_error
 
             return {'status': 'success'}
 
@@ -237,4 +269,40 @@ class Core(object):
         if data['command'] == 'state':
             return self.db.list_state()
 
+
+    def worker_request(self, data):
+        tid = data['tid']
+        msgtype = data['msgtype']
+
+        if msgtype == 'info_dict':
+            self.db.update_from_info_dict(tid, data['data'])
+            return
+
+        if msgtype == 'log':
+            if tid not in self.worker:
+                return
+
+            self.worker[tid]['log'].append(data['data'])
+            self.db.update_log(tid, self.worker[tid]['log'])
+            print(data['data'])
+
+            return
+
+        if msgtype == 'progress':
+            d = data['data']
+
+            if d['status'] == 'downloading':
+                self.db.progress_update(tid, d)
+
+            if d['status'] == 'finished':
+                self.cancel_worker(tid)
+                self.db.progress_update(tid, d)
+                self.db.set_state(tid, 'finished')
+
+        if msgtype == 'fatal':
+            d = data['data']
+
+            if d['type'] == 'invalid_url':
+                print("Can't start downloading {}, url is invalid".format(d['url']))
+                self.db.set_state(tid, 'invalid')
 
