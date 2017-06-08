@@ -30,9 +30,7 @@ class Core(object):
         self.server = Server(self.wq, self.rq)
         self.worker = {}
 
-        if args is not None:
-            self.load_cmd_args(args)
-
+        self.load_cmd_args(args)
         self.load_conf_file()
 
         self.db = DataBase(self.conf['db_path'])
@@ -151,8 +149,12 @@ class Core(object):
 
 
     def load_conf_file(self):
-        with open(self.cmd_args['conf']) as f:
-            conf_dict = json.load(f)
+        try:
+            with open(self.cmd_args['conf']) as f:
+                conf_dict = json.load(f)
+        except FileNotFoundError as e:
+            print("Config file ({}) doesn't exist".format(self.cmd_args['conf']))
+            exit(1)
 
         general = conf_dict.get('general', None)
         self.load_general_conf(general)
