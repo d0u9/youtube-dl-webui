@@ -31,8 +31,9 @@ class Core(object):
 
         self.load_cmd_args(args)
         self.load_conf_file()
+        self.override_conf()
 
-        self.server = Server(self.wq, self.rq, self.cmd_args['host'], self.cmd_args['port'])
+        self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
         self.db = DataBase(self.conf['db_path'])
 
         dl_dir = self.conf['download_dir']
@@ -195,6 +196,14 @@ class Core(object):
         for opt in Core.valid_opts:
             if opt in ydl_opts:
                 self.conf['ydl'][opt] = ydl_opts.get(opt, None)
+
+
+    def override_conf(self):
+        if self.cmd_args['host'] is not None:
+            self.conf['server']['host'] = self.cmd_args['host']
+
+        if self.cmd_args['port'] is not None:
+            self.conf['server']['port'] = self.cmd_args['port']
 
 
     def server_request(self, data):
