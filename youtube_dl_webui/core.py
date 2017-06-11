@@ -19,7 +19,7 @@ from .server import Server
 from .worker import Worker
 
 class Core(object):
-    exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title']
+    exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
     valid_opts = ['proxy']
 
     def __init__(self, args=None):
