@@ -1,6 +1,9 @@
 html, body{
   height: 100%;
 }
+[v-cloak]{
+  display: none!important;
+}
 td {
   text-align: center;
 }
