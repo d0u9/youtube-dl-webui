@@ -21,7 +21,45 @@ class ydl_hook(object):
         self.wqd['data'] = None
 
 
+    def finished(self, d):
+        print('finished status')
+        print(d)
+        d['_percent_str'] = '100%'
+        d['speed'] = '0'
+        d['elapsed'] = 0
+        d['eta'] = 0
+        d['downloaded_bytes'] = d['total_bytes']
+
+        return d
+
+
+    def downloading(self, d):
+        print('downloading status')
+        print(d)
+        d['_percent_str'] = '100%'
+        return d
+
+
+    def error(self, d):
+        print('error status')
+        print(d)
+        d['_percent_str'] = '100%'
+        return d
+
+
     def dispatcher(self, d):
+        if 'total_bytes_estimate' not in d:
+            d['total_bytes_estimate'] = 0
+        if 'tmpfilename' not in d:
+            d['tmpfilename'] = ''
+
+        if d['status'] == 'finished':
+            d = self.finished(d)
+        elif d['status'] == 'downloading':
+            d = self.downloading(d)
+        elif d['error'] == 'error':
+            d = self.error(d)
+
         self.wqd['data'] = d
         self.wq.put(self.wqd)
 

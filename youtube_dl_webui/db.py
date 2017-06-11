@@ -264,10 +264,10 @@ class DataBase(object):
                "total_bytes='{total_bytes}',   total_bytes_estmt='{total_bytes_estmt}', "
                "speed='{speed}', eta='{eta}',  elapsed='{elapsed}' WHERE tid='{tid}'"
               ).format  \
-              ( percent=d['_percent_str'],      filename=d['filename'],                     \
-                tmpfilename=d['tmpfilename'],   downloaded_bytes=d['downloaded_bytes'],     \
-                total_bytes=d['total_bytes'],   total_bytes_estmt=d['total_bytes_estmt'],   \
-                speed=d['speed'],               eta=d['eta'],                               \
+              ( percent=d['_percent_str'],      filename=d['filename'],                         \
+                tmpfilename=d['tmpfilename'],   downloaded_bytes=d['downloaded_bytes'],         \
+                total_bytes=d['total_bytes'],   total_bytes_estmt=d['total_bytes_estimate'],    \
+                speed=d['speed'],               eta=d['eta'],                                   \
                 elapsed=elapsed,                tid=tid
               )
 
