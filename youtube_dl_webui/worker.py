@@ -36,7 +36,6 @@ class ydl_hook(object):
     def downloading(self, d):
         print('downloading status')
         print(d)
-        d['_percent_str'] = '100%'
         return d
 
 
