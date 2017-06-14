@@ -11,6 +11,7 @@ var videoDownload = (function (Vue, extendAM){
                 stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
                 modalData: { url: '' },
                 currentSelected: null,
+                taskDetails: {},
                 status: 'all'
         };
         videoDownload.updateVm = function(res) {
@@ -74,7 +75,8 @@ var videoDownload = (function (Vue, extendAM){
                                        console.log(this.currentSelected === index ? 'selected' : '');
                                        var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '/status';
                                        Vue.http.get(url).then(function(res){
-                                           console.log(res);
+                                           console.log(typeof res.data);
+                                           _self.taskDetails = JSON.parse(res.data).detail;
                                        }, function(err){
                                            alert(err);
                                        });
@@ -85,7 +87,14 @@ var videoDownload = (function (Vue, extendAM){
                                     videoDownload.getTaskList();
                                 },
                                 bitesToHuman: function(value){
-                                    return (value/1048576).toFixed(2);
+                                    var tmp = value, count = 0;
+                                    var metricList = ['B', 'KB', 'M', 'G', 'T','P','E','Z'];
+
+                                    while(tmp/1024 > 1){
+                                        tmp = tmp/1024;
+                                        count++;
+                                    }
+                                    return tmp.toFixed(2) + metricList[count];
                                 }
                         }
                 });

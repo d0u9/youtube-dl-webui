@@ -94,3 +94,22 @@ ul.taskInfo li{
     height: 25px;
     cursor: pointer;
 }
+.tabpane dl{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 400px;
+  margin-left: 10px;
+}
+
+.tabpane dt{
+  width: 100px;
+  margin-bottom:5px;
+}
+
+.tabpane dd{
+  list-style: none;
+  margin-left: 0;
+  margin-bottom: 5px;
+  width: 300px;
+}
