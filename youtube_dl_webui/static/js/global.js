@@ -74,9 +74,11 @@ var videoDownload = (function (Vue, extendAM){
                                        this.currentSelected = index;
                                        console.log(this.currentSelected === index ? 'selected' : '');
                                        var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '/status';
+                                       console.log(url);
                                        Vue.http.get(url).then(function(res){
-                                           console.log(typeof res.data);
+                                           console.log(res.data);
                                            _self.taskDetails = JSON.parse(res.data).detail;
+                                           console.log(_self.taskDetails);
                                        }, function(err){
                                            alert(err);
                                        });

@@ -100,7 +100,7 @@
           <li v-for="tab in tablist" :class="tab" @click="showTab = tab" v-cloak>{{"{{tab}}"}}</li>
        </ul>
        <div class="tabpane">
-          <dl v-show="showTab === 0]" v-cloak>
+          <dl v-show="showTab === 'status'" v-cloak>
             <dt>title:</dt><dd>{{"{{taskDetails.title}}"}}</dd>
             <dt>ext:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
             <dt>format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
