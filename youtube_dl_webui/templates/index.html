@@ -3,12 +3,9 @@
   <head>
     <title>This is a test template</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../static/css/global.css">
-    <link rel="stylesheet" type="text/css" href="../static/css/modalComponent.css">
     <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.css">
-    <!--<script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>-->
-    <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">-->
-    <!--<script type="text/javascript" src="{{ url_for('static', filename='js/global.js') }}"></script>-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/modalComponent.css') }}">
   </head>
   <body>
 <script type="text/x-template" id="modal-template">
@@ -61,9 +58,9 @@
           <ul>
              <li v-cloak @click="filterTasks('all')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
              <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
-             <li v-cloak @click="filterTasks('finished')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
-             <li v-cloak @click="filterTasks('paused')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
-             <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
+             <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
+             <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
+             <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
           </ul>
        </div>
        <div  class="videoList-wrapper">
@@ -110,8 +107,8 @@
        </div>
     </footer> 
     </div>
-    <script type="text/javascript" src="../static/js/vue.min.js"></script>
-    <script type="text/javascript" src="../static/js/vue-resource.min.js"></script>
-    <script type="text/javascript" src="../static/js/global.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/vue-resource.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/global.js') }}"></script>
   </body>
 </html>
