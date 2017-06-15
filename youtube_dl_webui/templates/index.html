@@ -82,7 +82,7 @@
                    <td width="10%" v-cloak>{{"{{bitesToHuman(video.total_bytes)}}"}}</td>
                    <td width="20%" v-cloak>{{"{{video.percent}}"}}</td>
                    <td width="10%" v-cloak>{{"{{bitesToHuman(video.speed)}}"}} /s</td>
-                   <td width="10%" v-cloak>{{"{{video.eta}}"}}</td>
+                   <td width="10%" v-cloak>{{"{{secondsToHuman(video.eta)}}"}}</td>
                 </tr>
              </tbody>
           </table>
@@ -102,7 +102,7 @@
             <dt>ext:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
             <dt>format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
             <dt>create_time:</dt><dd>{{"{{new Date(taskDetails.create_time*1000)}}"}}</dd>
-            <dt>finish_time:</dt><dd>{{"{{taskDetails.finish_time}}"}}</dd>
+            <dt>finish_time:</dt><dd>{{"{{new Date(taskDetails.finish_time*1000)}}"}}</dd>
           </dl>
        </div>
     </footer> 

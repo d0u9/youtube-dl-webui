@@ -6,7 +6,8 @@ var videoDownload = (function (Vue, extendAM){
                 videoList: [],
                 videoListCopy: [],
                 showModal: false,
-                tablist: ['status', 'details', 'files', 'peers', 'options'],
+                // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
+                tablist: ['status'],
                 showTab: 'status',
                 stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
                 modalData: { url: '' },
@@ -97,7 +98,24 @@ var videoDownload = (function (Vue, extendAM){
                                         count++;
                                     }
                                     return tmp.toFixed(2) + metricList[count];
-                                }
+                                },
+                                secondsToHuman: function(value){
+                                    var tmp = '';
+                                    tmp = value % 60 + 's';
+                                    value = value/ 60;
+                                    if(value > 1){
+                                        tmp = parseInt(value % 60) + 'm' + tmp;
+                                        value = value / 60;
+                                        if(value > 1){
+                                            tmp = parseInt(value % 60) + 'h' + tmp;
+                                            value = value / 24;
+                                            if(value > 1){
+                                                tmp += parseInt(value % 24) + 'd' + tmp;
+                                            }
+                                        }
+                                    }
+                                    return tmp;
+                                },
                         }
                 });
         };
@@ -112,7 +130,10 @@ var videoDownload = (function (Vue, extendAM){
                         var resData = JSON.parse(res.body);
                         that.tasksData.videoList = resData.detail;
                         that.tasksData.stateCounter = resData.state_counter;
-                        that.tasksData.stateCounter.all = that.tasksData.stateCounter.downloading + that.tasksData.stateCounter.finished + that.tasksData.stateCounter.paused + that.tasksData.stateCounter.invalid;
+                        that.tasksData.stateCounter.all = that.tasksData.stateCounter.downloading +
+                                                          that.tasksData.stateCounter.finished +
+                                                          that.tasksData.stateCounter.paused +
+                                                          that.tasksData.stateCounter.invalid;
                         that.updateVm();
                 }, function(err){
                         console.log(err)
