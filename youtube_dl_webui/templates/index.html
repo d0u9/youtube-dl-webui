@@ -44,7 +44,7 @@
    <div id="videoWrapper">
     <header>
        <div class="operBtns">
-          <button @click="showModal=true"><i class="fa fa-plus" aria-hidden="true">Add</i></button>
+          <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true">Add</i></button>
           <button @click="removeTask"><i class="fa fa-minus" aria-hidden="true"></i>Remove</button>
           <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i>Pause</button>
           <button @click="resumeTask"><i class="fa fa-caret-right" aria-hidden="true"></i>Resume</button>
@@ -89,7 +89,7 @@
        </div>
       <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
          <h3 slot="header">please type in download url</h3>
-         <h3 slot="body" v-cloak><label v-cloak>url: <input type="text" v-model="modalData.url" v-cloak></input></label></h3>
+         <h3 slot="body" v-cloak><label v-cloak>url: <input type="text" ref="url" v-model="modalData.url" v-cloak></input></label></h3>
       </modal>
     </div>
     <footer>
