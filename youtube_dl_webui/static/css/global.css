@@ -1,5 +1,8 @@
 html, body{
     height: 100%;
+    font:normal 11px arial,tahoma,verdana,helvetica;
+    font-size: 15px;
+    display: flex; flex-flow: column;
 }
 
 [v-cloak]{
@@ -11,19 +14,39 @@ td {
 }
 
 #videoWrapper {
-    background-color: #d0d0d0;
-    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
     height: 100%;
-    display: flex; flex-flow: column;
 }
 
-.operBtns {
-    padding: 10px 0;
+header {
+    height: 33px;
+}
+
+.operBtns button {
+    color:#333;
+    font-size: 13px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 2px 5px 0 rgba(0, 0, 0, 0.19);
+    padding: 3px 10px 3px 10px;
+    border: 2px solid;
+    border-color: transparent;
+    background-color: #FFFFFF;
+    border-radius: 4px;
+}
+
+.operBtns button:focus {
+    outline: 0;
+}
+
+.operBtns button:active {
+    box-shadow: none;
+}
+
+.operBtns button:hover {
+    border: 2px solid grey;
 }
 
 .main-body {
     display: flex;
-    height: 60%;
+    height: calc(100% - (250px + 33px));
 }
 
 .main-body .sidebar-wrapper {
@@ -33,33 +56,39 @@ td {
     background-color: #fff;
 }
 
-.filter {
-    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
-    height: 25px;
-    border: 1px solid #fff;
+.filter-caption {
+    font-size: 17px;
+    background-image: linear-gradient(to top, #bfc7d9 0%, #ffffff 100%);
+    border: 0;
+    padding: 7px 9px 7px 9px;
+}
+
+.filter-list {
+    font-size: 16px;
+    padding: 7px 9px 7px 9px;
 }
 
 .state {
     background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
 }
 
-.main-body .sidebar-wrapper ul{
+.main-body .sidebar-wrapper ul {
     list-style: none;
     height: 100%;
     margin:0; padding-left:0;:
 }
 
-.main-body .sidebar-wrapper ul li{
+.main-body .sidebar-wrapper ul li {
     padding:5px 0;
     display: block;
     cursor: pointer;
 }
 
-.main-body .sidebar-wrapper ul li:hover{
+.main-body .sidebar-wrapper ul li:hover {
     background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
 }
 
-.main-body .videoList-wrapper{
+.main-body .videoList-wrapper {
     margin-left:5px;
     border: 2px solid #b0b0b5;
     border-radius: 5px;
@@ -69,39 +98,73 @@ td {
 }
 
 table.videoList {
+    border: 0;
     width:100%;
 }
 
-table thead tr{
-    background-image: linear-gradient(to top, #accbee 0%, #e7f0fd 100%);
-    height: 25px;
+table thead th {
+    font-size: 16px;
+    background-image: linear-gradient(to top, #bfc7d9 0%, #ffffff 100%);
+    border: 0;
+    padding: 7px 9px 7px 9px;
 }
 
-table tbody tr{
-    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);;
+table tbody tr {
+    font-size: 14px;
+    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
     height: 25px;
+    overflow: hidden;
 }
 
-tr.selected{
+table tbody tr:hover td {
+    background-color: #dfe3ec;
+}
+
+tr .progress-bar {
+    position: relative;
+}
+
+tr .progress-bar .string {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    right: 0;
+    margin: auto auto;
+}
+
+tr .progress-bar .bar-container {
+    margin: 3px;
+}
+
+tr .progress-bar .bar {
+    height: 19px;
+    width: 70%;
+    background: linear-gradient(to top, #9fabc6, #60739f, #9fabc6);
+}
+
+tr.selected {
     background: #d2cde8;
+    pointer-events: none;
 }
 
-table tbody tr td{
+table tbody tr td {
     border:0;padding:0;
 }
 
-footer{
-    height:calc(40% - 25px);
+footer {
+    margin-top: 10px;
+    height: 240px;
     border: solid 2px #b0b0b5; border-radius: 5px;
     background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
 }
 
-ul.taskInfo{
+ul.taskInfo {
     list-style: none;display: flex;
     padding: 0; margin:5px 0;
 }
 
-ul.taskInfo li{
+ul.taskInfo li {
     padding-left: 10px;
     margin-left: 2px;
     padding-right: 5px;
@@ -112,7 +175,7 @@ ul.taskInfo li{
     cursor: pointer;
 }
 
-.tabpane dl{
+.tabpane dl {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -120,12 +183,12 @@ ul.taskInfo li{
     margin-left: 10px;
 }
 
-.tabpane dt{
+.tabpane dt {
     width: 100px;
     margin-bottom:5px;
 }
 
-.tabpane dd{
+.tabpane dd {
     list-style: none;
     margin-left: 0;
     margin-bottom: 5px;
