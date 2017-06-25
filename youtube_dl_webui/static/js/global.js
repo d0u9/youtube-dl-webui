@@ -122,7 +122,6 @@ var videoDownload = (function (Vue, extendAM){
 
         videoDownload.getTaskList = function() {
                 var that = videoDownload;
-                that.tasksData.headPath = window.location.protocol + '//' + window.location.host + '/';
                 console.log(that.tasksData.headPath);
                 var url = that.tasksData.headPath + 'task/list';
                 url = url + '?state=' + that.tasksData.status;
@@ -142,6 +141,7 @@ var videoDownload = (function (Vue, extendAM){
 
         videoDownload.init = function(){
             var that = this;
+            that.tasksData.headPath = window.location.protocol + '//' + window.location.host + '/';
             setInterval(videoDownload.getTaskList, 3000);
         }
 
