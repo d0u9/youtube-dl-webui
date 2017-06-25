@@ -1,113 +1,113 @@
 <!doctype html>
 <html>
-  <head>
-    <title>This is a test template</title>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/modalComponent.css') }}">
-  </head>
-  <body>
-<script type="text/x-template" id="modal-template">
-  <transition name="modal">
-    <div class="modal-mask">
-      <div class="modal-wrapper">
-        <div class="modal-container">
+    <head>
+        <title>This is a test template</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="http://fontawesome.io/assets/font-awesome/css/font-awesome.css">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/modalComponent.css') }}">
+    </head>
+    <body>
+        <script type="text/x-template" id="modal-template">
+        <transition name="modal">
+            <div class="modal-mask">
+              <div class="modal-wrapper">
+                <div class="modal-container">
 
-          <div class="modal-header">
-            <slot name="header">
-              default header
-            </slot>
-          </div>
+                  <div class="modal-header">
+                    <slot name="header">
+                      default header
+                    </slot>
+                  </div>
 
-          <div class="modal-body">
-            <slot name="body">
-              default body
-            </slot>
-          </div>
+                  <div class="modal-body">
+                    <slot name="body">
+                      default body
+                    </slot>
+                  </div>
 
-          <div class="modal-footer">
-            <slot name="footer">
-              <button class="modal-default-button" @click="$emit('confirm')">
-                OK
-              </button>
-              <button class="modal-default-button" @click="$emit('close')">
-                CANCEL
-              </button>
-            </slot>
-          </div>
+                  <div class="modal-footer">
+                    <slot name="footer">
+                      <button class="modal-default-button" @click="$emit('confirm')">
+                        OK
+                      </button>
+                      <button class="modal-default-button" @click="$emit('close')">
+                        CANCEL
+                      </button>
+                    </slot>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </script>
+        <div id="videoWrapper">
+            <header>
+                <div class="operBtns">
+                    <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true"> Add</i></button>
+                    <button @click="removeTask"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
+                    <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
+                    <button @click="resumeTask"><i class="fa fa-caret-right" aria-hidden="true"></i> Resume</button>
+                </div>
+            </header>
+            <div class="main-body">
+                <div w3-include-html="modalComponent.html"></div>
+                <div class="sidebar-wrapper">
+                    <div class="filter">filter <i class="fa fa-chevron-circle-left" style="float: right"aria-hidden="true"></i></div>
+                    <ul>
+                        <li v-cloak @click="filterTasks('all')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
+                        <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
+                        <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
+                        <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
+                        <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
+                    </ul>
+                </div>
+                <div  class="videoList-wrapper">
+                    <table class="videoList">
+                        <thead>
+                            <tr>
+                                <th width="10%">#</th>
+                                <th width="30%">Name</th>
+                                <th width="10%">Size</th>
+                                <th width="20%">Progress</th>
+                                <th width="10%">Down Speed</th>
+                                <th width="10%">ETA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(video, index) in videoList" @click="selected(index)" :class="{'selected': currentSelected === index}">
+                                <td width="10%" v-cloak>{{"{{index + 1}}"}}</td>
+                                <td width="30%" v-cloak>{{"{{video.title}}"}}</td>
+                                <td width="10%" v-cloak>{{"{{bitesToHuman(video.total_bytes)}}"}}</td>
+                                <td width="20%" v-cloak>{{"{{video.percent}}"}}</td>
+                                <td width="10%" v-cloak>{{"{{bitesToHuman(video.speed)}}"}} /s</td>
+                                <td width="10%" v-cloak>{{"{{secondsToHuman(video.eta)}}"}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
+                <h3 slot="header">please type in download url</h3>
+                <h3 slot="body" v-cloak><label v-cloak>url: <input type="text" ref="url" v-model="modalData.url" v-cloak></input></label></h3>
+                </modal>
+            </div>
+            <footer>
+                <ul class="taskInfo">
+                    <li v-for="tab in tablist" :class="tab" @click="showTab = tab" v-cloak>{{"{{tab}}"}}</li>
+                </ul>
+                <div class="tabpane">
+                    <dl v-show="showTab === 'status'" v-cloak>
+                        <dt>title:</dt><dd>{{"{{taskDetails.title}}"}}</dd>
+                        <dt>ext:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
+                        <dt>format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
+                        <dt>create_time:</dt><dd>{{"{{new Date(taskDetails.create_time*1000)}}"}}</dd>
+                        <dt>finish_time:</dt><dd>{{"{{new Date(taskDetails.finish_time*1000)}}"}}</dd>
+                    </dl>
+                </div>
+            </footer> 
         </div>
-      </div>
-    </div>
-  </transition>
-</script>
-   <div id="videoWrapper">
-    <header>
-       <div class="operBtns">
-          <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true"> Add</i></button>
-          <button @click="removeTask"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
-          <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
-          <button @click="resumeTask"><i class="fa fa-caret-right" aria-hidden="true"></i> Resume</button>
-       </div>
-    </header>
-    <div class="main-body">
-       <div w3-include-html="modalComponent.html"></div>
-       <div class="sidebar-wrapper">
-          <div class="filter">filter <i class="fa fa-chevron-circle-left" style="float: right"aria-hidden="true"></i></div>
-          <ul>
-             <li v-cloak @click="filterTasks('all')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
-             <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
-             <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
-             <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
-             <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
-          </ul>
-       </div>
-       <div  class="videoList-wrapper">
-          <table class="videoList">
-             <thead>
-                <tr>
-                   <th width="10%">#</th>
-                   <th width="30%">Name</th>
-                   <th width="10%">Size</th>
-                   <th width="20%">Progress</th>
-                   <th width="10%">Down Speed</th>
-                   <th width="10%">ETA</th>
-                </tr>
-             </thead>
-             <tbody>
-                <tr v-for="(video, index) in videoList" @click="selected(index)" :class="{'selected': currentSelected === index}">
-                   <td width="10%" v-cloak>{{"{{index + 1}}"}}</td>
-                   <td width="30%" v-cloak>{{"{{video.title}}"}}</td>
-                   <td width="10%" v-cloak>{{"{{bitesToHuman(video.total_bytes)}}"}}</td>
-                   <td width="20%" v-cloak>{{"{{video.percent}}"}}</td>
-                   <td width="10%" v-cloak>{{"{{bitesToHuman(video.speed)}}"}} /s</td>
-                   <td width="10%" v-cloak>{{"{{secondsToHuman(video.eta)}}"}}</td>
-                </tr>
-             </tbody>
-          </table>
-       </div>
-      <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
-         <h3 slot="header">please type in download url</h3>
-         <h3 slot="body" v-cloak><label v-cloak>url: <input type="text" ref="url" v-model="modalData.url" v-cloak></input></label></h3>
-      </modal>
-    </div>
-    <footer>
-       <ul class="taskInfo">
-          <li v-for="tab in tablist" :class="tab" @click="showTab = tab" v-cloak>{{"{{tab}}"}}</li>
-       </ul>
-       <div class="tabpane">
-          <dl v-show="showTab === 'status'" v-cloak>
-            <dt>title:</dt><dd>{{"{{taskDetails.title}}"}}</dd>
-            <dt>ext:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
-            <dt>format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
-            <dt>create_time:</dt><dd>{{"{{new Date(taskDetails.create_time*1000)}}"}}</dd>
-            <dt>finish_time:</dt><dd>{{"{{new Date(taskDetails.finish_time*1000)}}"}}</dd>
-          </dl>
-       </div>
-    </footer> 
-    </div>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/vue-resource.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/global.js') }}"></script>
-  </body>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/vue-resource.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/global.js') }}"></script>
+    </body>
 </html>
