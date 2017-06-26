@@ -105,16 +105,18 @@
                 </modal>
             </div>
             <footer>
-                <ul class="taskInfo">
-                    <li v-for="tab in tablist" :class="tab" @click="showTab = tab" v-cloak>{{"{{tab}}"}}</li>
-                </ul>
+                <div class="info-tabs">
+                    <ul class="task-info">
+                        <li v-for="tab in tablist" class="tab" v-bind:class="{selected: showTab === tab}" @click="showTab = tab" v-cloak><span>{{"{{tab}}"}}</span></li>
+                    </ul>
+                </div>
                 <div class="tabpane">
-                    <dl v-show="showTab === 'status'" v-cloak>
-                        <dt>title:</dt><dd>{{"{{taskDetails.title}}"}}</dd>
-                        <dt>ext:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
-                        <dt>format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
-                        <dt>create_time:</dt><dd>{{"{{new Date(taskDetails.create_time*1000)}}"}}</dd>
-                        <dt>finish_time:</dt><dd>{{"{{new Date(taskDetails.finish_time*1000)}}"}}</dd>
+                    <dl v-show="showTab === 'Status'" v-cloak>
+                        <dt>Title:</dt><dd v-bind:title="taskDetails.title">{{"{{taskDetails.title}}"}}</dd>
+                        <dt>Extension:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
+                        <dt>Format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
+                        <dt>Create Time:</dt><dd>{{"{{tsToLocal(taskDetails.create_time)}}"}}</dd>
+                        <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
                     </dl>
                 </div>
             </footer> 

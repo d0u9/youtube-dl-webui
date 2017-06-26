@@ -7,14 +7,15 @@ var videoDownload = (function (Vue, extendAM){
         videoListCopy: [],
         showModal: false,
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
-        tablist: ['status'],
-        showTab: 'status',
+        tablist: ['Status'],
+        showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
         modalData: { url: '' },
         currentSelected: null,
         taskDetails: {},
         status: 'all'
     };
+
     videoDownload.updateVm = function(res) {
         var that = videoDownload;
         if(that.vm){
@@ -42,8 +43,7 @@ var videoDownload = (function (Vue, extendAM){
                 addTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task';
-                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){
-                        _self.showModal = false;
+                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){ _self.showModal = false;
                         that.init();
                     }, function(err){
                         console.log(err);
@@ -132,6 +132,18 @@ var videoDownload = (function (Vue, extendAM){
                         return {'icon': 'fa-check-circle-o', 'color': 'grey'};
                     else
                         return {'icon': 'fa-times-circle-o', 'color': 'red'};
+                },
+                tsToLocal: function(timeStamp) {
+                    if (typeof timeStamp == 'undefined' || Number(timeStamp) < 10)
+                        return '';
+
+                    var options = {
+                        year: "numeric", month: "short", hour12: false,
+                        day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"
+                    };
+                    var d = new Date(0);
+                    d.setUTCSeconds(timeStamp);
+                    return d.toLocaleString('en-US', options);
                 },
             }
         });
