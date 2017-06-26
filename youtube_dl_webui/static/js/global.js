@@ -7,7 +7,7 @@ var videoDownload = (function (Vue, extendAM){
         videoListCopy: [],
         showModal: false,
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
-        tablist: ['Status'],
+        tablist: ['Status', 'Details'],
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
         modalData: { url: '' },

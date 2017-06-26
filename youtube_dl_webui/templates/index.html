@@ -118,6 +118,9 @@
                         <dt>Create Time:</dt><dd>{{"{{tsToLocal(taskDetails.create_time)}}"}}</dd>
                         <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
                     </dl>
+                    <dl v-show="showTab === 'Details'" v-cloak>
+                        <dt>URL:</dt><dd>{{"{{taskDetails.url}}"}}</dd>
+                    </dl>
                 </div>
             </footer> 
         </div>
