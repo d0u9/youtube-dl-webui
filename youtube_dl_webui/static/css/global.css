@@ -129,13 +129,15 @@ table thead th {
 table tbody tr {
     font-size: 11px;
     font-weight: lighter;
-    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+    /* background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%); */
+    background-color: rgba(132, 132, 132, 0.3);
     height: 23px;
     overflow: hidden;
+    cursor: default;
 }
 
 table tbody tr:hover td {
-    background-color: #dfe3ec;
+    background-color: #bfbfbf;
 }
 
 tr .progress-bar {

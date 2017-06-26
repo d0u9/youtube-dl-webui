@@ -3,10 +3,9 @@
     <head>
         <title>This is a test template</title>
         <meta charset="utf-8">
-        <!-- <link rel="stylesheet" type="text/css" href="../static/font-awesome/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/modalComponent.css') }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
     </head>
     <body>
         <script type="text/x-template" id="modal-template">
