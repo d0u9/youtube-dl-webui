@@ -57,15 +57,15 @@ header {
 }
 
 .filter-caption {
-    font-size: 17px;
+    font-size: 13px;
     background-image: linear-gradient(to top, #bfc7d9 0%, #ffffff 100%);
     border: 0;
-    padding: 7px 9px 7px 9px;
+    padding: 4px 9px 4px 9px;
 }
 
 .filter-list {
-    font-size: 16px;
-    padding: 7px 9px 7px 9px;
+    font-size: 12px;
+    padding: 6px 9px 6px 9px;
 }
 
 .state {
@@ -103,16 +103,18 @@ table.videoList {
 }
 
 table thead th {
-    font-size: 16px;
+    font-size: 13px;
+    font-weight: normal;
     background-image: linear-gradient(to top, #bfc7d9 0%, #ffffff 100%);
     border: 0;
-    padding: 7px 9px 7px 9px;
+    padding: 4px 9px 3px 9px;
 }
 
 table tbody tr {
-    font-size: 14px;
+    font-size: 11px;
+    font-weight: lighter;
     background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
-    height: 25px;
+    height: 23px;
     overflow: hidden;
 }
 
