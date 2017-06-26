@@ -123,6 +123,16 @@ var videoDownload = (function (Vue, extendAM){
                     }
                     return tmp;
                 },
+                stateIcon: function(state) {
+                    if (state == 'downloading')
+                        return {'icon': 'fa-arrow-circle-o-down', 'color': 'blue'};
+                    else if (state == 'paused')
+                        return {'icon': 'fa-pause-circle-o', 'color': 'green'};
+                    else if (state == 'finished')
+                        return {'icon': 'fa-check-circle-o', 'color': 'grey'};
+                    else
+                        return {'icon': 'fa-times-circle-o', 'color': 'red'};
+                },
             }
         });
     };
@@ -137,9 +147,9 @@ var videoDownload = (function (Vue, extendAM){
             that.tasksData.videoList = resData.detail;
             that.tasksData.stateCounter = resData.state_counter;
             that.tasksData.stateCounter.all = that.tasksData.stateCounter.downloading +
-                that.tasksData.stateCounter.finished +
-                that.tasksData.stateCounter.paused +
-                that.tasksData.stateCounter.invalid;
+                                              that.tasksData.stateCounter.finished +
+                                              that.tasksData.stateCounter.paused +
+                                              that.tasksData.stateCounter.invalid;
             that.updateVm();
         }, function(err){
             console.log(err)

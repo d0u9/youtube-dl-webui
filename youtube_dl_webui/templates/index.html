@@ -68,6 +68,7 @@
                         <thead>
                             <tr>
                                 <th width="30px">#</th>
+                                <th width="25ox">State</th>
                                 <th>Name</th>
                                 <th width="90px">Size</th>
                                 <th width="230px">Progress</th>
@@ -78,6 +79,9 @@
                         <tbody>
                             <tr v-for="(video, index) in videoList" @click="selected(index)" :class="{'selected': currentSelected === index}">
                                 <td v-cloak>{{"{{index + 1}}"}}</td>
+                                <td v-clock style="font-size: 16px">
+                                    <i v-bind:style="{color: stateIcon(video.state).color}" v-bind:class="['fa', stateIcon(video.state).icon]" aria-hidden="true"></i>
+                                </td>
                                 <td>{{"{{video.title}}"}}</td>
                                 <td v-cloak>{{"{{bitesToHuman(video.total_bytes)}}"}}</td>
                                 <td v-cloak>

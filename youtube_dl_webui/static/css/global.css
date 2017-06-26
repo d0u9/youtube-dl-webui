@@ -1,11 +1,16 @@
-html, body{
+:root {
+    --border-color: #bfbfbf;
+}
+
+html, body {
     height: 100%;
     font:normal 11px arial,tahoma,verdana,helvetica;
     font-size: 15px;
+    color: #0d0d0d;
     display: flex; flex-flow: column;
 }
 
-[v-cloak]{
+[v-cloak] {
     display: none!important;
 }
 
@@ -22,6 +27,7 @@ header {
 }
 
 .operBtns button {
+    cursor: pointer;
     color:#333;
     font-size: 13px;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 2px 5px 0 rgba(0, 0, 0, 0.19);
@@ -51,25 +57,22 @@ header {
 
 .main-body .sidebar-wrapper {
     width: 200px; min-width: 150px;
-    border: 2px solid #b0b0b5;
+    border: 2px solid var(--border-color);
     border-radius: 5px;
     background-color: #fff;
 }
 
 .filter-caption {
-    font-size: 13px;
-    background-image: linear-gradient(to top, #bfc7d9 0%, #ffffff 100%);
+    font-size: 12px;
+    font-weight: bold;
+    background-image: linear-gradient(to top, #80b9ff, #99c7ff);
     border: 0;
-    padding: 4px 9px 4px 9px;
+    padding: 3px 9px 3px 9px;
 }
 
 .filter-list {
     font-size: 12px;
     padding: 6px 9px 6px 9px;
-}
-
-.state {
-    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
 }
 
 .main-body .sidebar-wrapper ul {
@@ -90,24 +93,28 @@ header {
 
 .main-body .videoList-wrapper {
     margin-left:5px;
-    border: 2px solid #b0b0b5;
+    border: 2px solid var(--border-color);
     border-radius: 5px;
     background-color: #fff;
     flex-grow:1;
     overflow: auto;
 }
 
-table.videoList {
-    border: 0;
+table {
     width:100%;
+    border-collapse: collapse;
+    border-style: hidden;
+}
+
+table td, table th {
+    border: 2px solid white;
 }
 
 table thead th {
-    font-size: 13px;
-    font-weight: normal;
-    background-image: linear-gradient(to top, #bfc7d9 0%, #ffffff 100%);
-    border: 0;
-    padding: 4px 9px 3px 9px;
+    font-size: 12px;
+    font-weight: bold;
+    background-image: linear-gradient(to top, #80b9ff, #99c7ff);
+    padding: 3px 9px 3px 9px;
 }
 
 table tbody tr {
@@ -150,14 +157,11 @@ tr.selected {
     pointer-events: none;
 }
 
-table tbody tr td {
-    border:0;padding:0;
-}
-
 footer {
-    margin-top: 10px;
-    height: 240px;
-    border: solid 2px #b0b0b5; border-radius: 5px;
+    margin-top: 5px;
+    height: 245px;
+    border: solid 2px var(--border-color);
+    border-radius: 5px;
     background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
 }
 
