@@ -91,14 +91,31 @@ var videoDownload = (function (Vue, extendAM){
                         alert(err);
                     });
                 },
-                filterTasks: function(filterStatus){
+                filterTasks: function(filterStatus) {
                     var _self = this;
                     _self.status = filterStatus;
                     videoDownload.getTaskList();
                 },
-                bitesToHuman: function(value){
+                speedConv: function(state, value) {
+                    if (state == 'paused' || state == 'invalid')
+                        return '0 B/s';
+                    else if (state == 'finished')
+                        return 'Done';
+                    return this.bitsToHuman(value) + '/s';
+                },
+                etaConv: function(state, value) {
+                    if (state == 'paused' || state == 'invalid' || state == 'finished')
+                        return 'NaN';
+                    return this.secondsToHuman(value);
+                },
+                progressConv: function(state, value) {
+                    if (state == 'finished')
+                        return 'Done';
+                    return value;
+                },
+                bitsToHuman: function(value) {
                     var tmp = value, count = 0;
-                    var metricList = ['B', 'KB', 'M', 'G', 'T','P','E','Z'];
+                    var metricList = [' B', ' KB', ' M', ' G', ' T',' P',' E',' Z'];
 
                     while(tmp/1024 > 1){
                         tmp = tmp/1024;
@@ -106,7 +123,7 @@ var videoDownload = (function (Vue, extendAM){
                     }
                     return tmp.toFixed(2) + metricList[count];
                 },
-                secondsToHuman: function(value){
+                secondsToHuman: function(value) {
                     var tmp = '';
                     tmp = value % 60 + 's';
                     value = value/ 60;

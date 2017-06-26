@@ -70,7 +70,7 @@
                                 <th width="30px">#</th>
                                 <th width="25ox">State</th>
                                 <th>Name</th>
-                                <th width="90px">Size</th>
+                                <th width="90px">Total Size</th>
                                 <th width="230px">Progress</th>
                                 <th width="100px">Down Speed</th>
                                 <th width="80px">ETA</th>
@@ -83,18 +83,18 @@
                                     <i v-bind:style="{color: stateIcon(video.state).color}" v-bind:class="['fa', stateIcon(video.state).icon]" aria-hidden="true"></i>
                                 </td>
                                 <td>{{"{{video.title}}"}}</td>
-                                <td v-cloak>{{"{{bitesToHuman(video.total_bytes)}}"}}</td>
+                                <td v-cloak>{{"{{bitsToHuman(video.total_bytes)}}"}}</td>
                                 <td v-cloak>
                                     <div class="progress-bar">
-                                        <div class="string">{{"{{video.percent}}"}}</div>
+                                        <div class="string">{{"{{progressConv(video.state, video.percent)}}"}}</div>
                                         <div class="bar-container">
                                             <div class="bar" :style="{width:video.percent}"></div>
                                         </div>
                                     </div>
                                     </div>
                                 </td>
-                                <td v-cloak>{{"{{bitesToHuman(video.speed)}}"}} /s</td>
-                                <td v-cloak>{{"{{secondsToHuman(video.eta)}}"}}</td>
+                                <td v-cloak>{{"{{speedConv(video.state, video.speed)}}"}}</td>
+                                <td v-cloak>{{"{{etaConv(video.state, video.eta)}}"}}</td>
                             </tr>
                         </tbody>
                     </table>
