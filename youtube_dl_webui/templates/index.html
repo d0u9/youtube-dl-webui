@@ -56,10 +56,10 @@
                     <div class="filter-list">
                         <ul>
                             <li v-cloak @click="filterTasks('all')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
-                            <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
-                            <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
-                            <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
-                            <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
+                            <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true" style="color:blue"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
+                            <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true" style="color:grey"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
+                            <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true" style="color:green"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
+                            <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:red"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
                         </ul>
                     </div>
                 </div>

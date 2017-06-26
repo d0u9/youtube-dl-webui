@@ -6,6 +6,10 @@
     --main-height: calc(100% - (var(--footer-height) + var(--header-height) + var(--footer-margin)));
     --tabpane-width: 500px;
     --tabpane-dt-width: 120px;
+    --state-finished-color: grey;
+    --state-downloading-color: blue;
+    --state-paused-color: green;
+    --state-invalid-color: red;
 }
 
 html, body {
@@ -79,8 +83,8 @@ header {
 }
 
 .filter-list {
-    font-size: 12px;
-    padding: 6px 9px 6px 9px;
+    font-size: 14px;
+    padding: 8px 9px 8px 9px;
 }
 
 .main-body .sidebar-wrapper ul {
