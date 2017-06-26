@@ -20,7 +20,7 @@ from .worker import Worker
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
-    valid_opts = ['proxy']
+    valid_opts = ['proxy', 'format', 'noplaylist']
 
     def __init__(self, args=None):
         self.cmd_args = {}
