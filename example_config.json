@@ -10,7 +10,7 @@
     },
     "youtube_dl": {
         "format": "bestaudio/best",
-        "no-playlist": "true",
+        "noplaylist": "false",
         "proxy": "socks5://127.0.0.1:1080"
     }
 }
