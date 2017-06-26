@@ -101,7 +101,7 @@
                 </div>
                 <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
                 <div slot="header">URL to download</div>
-                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak /></div>
+                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal=false" /></div>
                 </modal>
             </div>
             <footer>
