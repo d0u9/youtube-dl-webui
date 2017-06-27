@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/modalComponent.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vue-toast.css') }}">
     </head>
     <body>
         <script type="text/x-template" id="modal-template">
@@ -56,10 +57,10 @@
                     <div class="filter-list">
                         <ul>
                             <li v-cloak @click="filterTasks('all')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
-                            <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true" style="color:blue"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
-                            <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true" style="color:grey"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
-                            <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true" style="color:green"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
-                            <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:red"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
+                            <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
+                            <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
+                            <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
+                            <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
                         </ul>
                     </div>
                 </div>
@@ -101,8 +102,9 @@
                 </div>
                 <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
                 <div slot="header">URL to download</div>
-                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal=false" /></div>
+                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
                 </modal>
+                <vue-toast ref='toast'></vue-toast>
             </div>
             <footer>
                 <div class="info-tabs">
@@ -118,14 +120,12 @@
                         <dt>Create Time:</dt><dd>{{"{{tsToLocal(taskDetails.create_time)}}"}}</dd>
                         <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
                     </dl>
-                    <dl v-show="showTab === 'Details'" v-cloak>
-                        <dt>URL:</dt><dd>{{"{{taskDetails.url}}"}}</dd>
-                    </dl>
                 </div>
-            </footer> 
+            </footer>
         </div>
         <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/vue-resource.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/vue-toast.js') }}"></script>
         <script type="text/javascript" src="{{ url_for('static', filename='js/global.js') }}"></script>
     </body>
 </html>

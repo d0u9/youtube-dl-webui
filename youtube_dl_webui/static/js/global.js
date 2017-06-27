@@ -1,5 +1,6 @@
 var videoDownload = (function (Vue, extendAM){
     var videoDownload = {};
+    var VueToast = window.vueToasts ? window.vueToasts.default || window.vueToasts : window.vueToasts;
     videoDownload.vm = null;
     videoDownload.tasksData = {
         headPath: 'http://localhost:5000/',
@@ -13,7 +14,12 @@ var videoDownload = (function (Vue, extendAM){
         modalData: { url: '' },
         currentSelected: null,
         taskDetails: {},
-        status: 'all'
+        status: 'all',
+        maxToasts: 3,
+        position: 'top right',
+        theme: 'error',
+        timeLife: 3000,
+        closeBtn: true
     };
 
     videoDownload.updateVm = function(res) {
@@ -25,12 +31,16 @@ var videoDownload = (function (Vue, extendAM){
             el: '#videoWrapper',
             data: that.tasksData,
             components:{
-                'modal': {template: '#modal-template'}
+                'modal': {template: '#modal-template'},
+                VueToast
             },
             watch:{
                 stateCounter: function(val){
                     val.all = val.downloading + val.finished + val.paused + val.invalid;
                 }
+            },
+            mounted: function () {
+                this.resetOptions();
             },
             methods: {
                 showAddTaskModal: function(){
@@ -53,7 +63,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid;
                     Vue.http.delete(url).then(function(res){
-                        alert('deleted');
+                        _self.showAlertToast('deleted');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
                     }, function(err){
                         alert('delete failed');
@@ -63,7 +73,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '?act=pause';
                     Vue.http.put(url).then(function(res){
-                        alert('paused');
+                        _self.showAlertToast('paused');
                     }, function(err){
                         alert(err);
                     });
@@ -72,7 +82,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '?act=resume';
                     Vue.http.put(url).then(function(res){
-                        alert('resumed');
+                        _self.showAlertToast('resumed');
                     }, function(err){
                         alert(err);
                     });
@@ -162,6 +172,20 @@ var videoDownload = (function (Vue, extendAM){
                     d.setUTCSeconds(timeStamp);
                     return d.toLocaleString('en-US', options);
                 },
+                resetOptions() {
+                    this.$refs.toast.setOptions({
+                        delayOfJumps: this.delayOfJumps,
+                        maxToasts: this.maxToasts,
+                        position: this.position
+                    });
+                },
+                showAlertToast(msg) {
+                    this.$refs.toast.showToast(msg, {
+                        theme: this.theme,
+                        timeLife: this.timeLife,
+                        closeBtn: this.closeBtn
+                    });
+                }
             }
         });
     };
