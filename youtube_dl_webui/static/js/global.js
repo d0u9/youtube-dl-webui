@@ -61,7 +61,7 @@ var videoDownload = (function (Vue, extendAM){
                 },
                 removeTask: function(){
                     var _self = this;
-                    var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid;
+                    var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('deleted');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
@@ -71,7 +71,7 @@ var videoDownload = (function (Vue, extendAM){
                 },
                 pauseTask: function(){
                     var _self = this;
-                    var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '?act=pause';
+                    var url = _self.headPath + 'task/tid/' +  (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '?act=pause';
                     Vue.http.put(url).then(function(res){
                         _self.showAlertToast('paused');
                     }, function(err){
@@ -80,7 +80,7 @@ var videoDownload = (function (Vue, extendAM){
                 },
                 resumeTask: function(){
                     var _self = this;
-                    var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '?act=resume';
+                    var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '?act=resume';
                     Vue.http.put(url).then(function(res){
                         _self.showAlertToast('resumed');
                     }, function(err){
@@ -91,7 +91,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     this.currentSelected = index;
                     console.log(this.currentSelected === index ? 'selected' : '');
-                    var url = _self.headPath + 'task/tid/' + _self.videoList[_self.currentSelected].tid + '/status';
+                    var url = _self.headPath + 'task/tid/' +  (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '/status';
                     console.log(url);
                     Vue.http.get(url).then(function(res){
                         console.log(res.data);
