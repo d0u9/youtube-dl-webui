@@ -84,11 +84,15 @@ header {
 
 .filter-list {
     font-size: 14px;
-    padding: 8px 9px 8px 9px;
+    padding: 6px 0 0 0;
+}
+
+.filter-list li {
+    padding: 8px 12px 8px 12px !important;
 }
 
 .filter-list .active {
-    background-color: rgb(300, 0, 0);
+    background-color: rgb(166, 178, 212);
 }
 
 .main-body .sidebar-wrapper ul {
@@ -168,7 +172,7 @@ tr .progress-bar .bar-container {
 tr .progress-bar .bar {
     height: 19px;
     width: 70%;
-    background: linear-gradient(to top, #9fabc6, #60739f, #9fabc6);
+    background: linear-gradient(to top, rgba(96, 115, 159, 0.7), rgba(96, 115, 159, 0.9), rgba(96, 115, 159, 0.7));
 }
 
 tr.selected {

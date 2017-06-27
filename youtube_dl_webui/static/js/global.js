@@ -15,11 +15,11 @@ var videoDownload = (function (Vue, extendAM){
         currentSelected: null,
         taskDetails: {},
         status: 'all',
-        maxToasts: 3,
-        position: 'top right',
+        maxToasts: 4,
+        position: 'bottom right',
         theme: 'error',
         timeLife: 3000,
-        closeBtn: true
+        closeBtn: false
     };
 
     videoDownload.updateVm = function(res) {
@@ -63,28 +63,28 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
                     Vue.http.delete(url).then(function(res){
-                        _self.showAlertToast('deleted');
+                        _self.showAlertToast('Task Delete', 'info');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
                     }, function(err){
-                        alert('delete failed');
+                        _self.showAlertToast(err, 'error');
                     });
                 },
                 pauseTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' +  (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '?act=pause';
                     Vue.http.put(url).then(function(res){
-                        _self.showAlertToast('paused');
+                        _self.showAlertToast('Task Pause', 'info');
                     }, function(err){
-                        alert(err);
+                        _self.showAlertToast(err, 'error');
                     });
                 },
                 resumeTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '?act=resume';
                     Vue.http.put(url).then(function(res){
-                        _self.showAlertToast('resumed');
+                        _self.showAlertToast('Task Resume', 'info');
                     }, function(err){
-                        alert(err);
+                        _self.showAlertToast(err, 'error');
                     });
                 },
                 selected: function(index){
@@ -98,7 +98,7 @@ var videoDownload = (function (Vue, extendAM){
                         _self.taskDetails = JSON.parse(res.data).detail;
                         console.log(_self.taskDetails);
                     }, function(err){
-                        alert(err);
+                        _self.showAlertToast(err, 'error');
                     });
                 },
                 filterTasks: function(filterStatus) {
@@ -179,9 +179,9 @@ var videoDownload = (function (Vue, extendAM){
                         position: this.position
                     });
                 },
-                showAlertToast(msg) {
+                showAlertToast(msg, theme) {
                     this.$refs.toast.showToast(msg, {
-                        theme: this.theme,
+                        theme: theme,
                         timeLife: this.timeLife,
                         closeBtn: this.closeBtn
                     });

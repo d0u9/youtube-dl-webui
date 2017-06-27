@@ -25,10 +25,19 @@
 
 .vue-toast_container {
     position: absolute;
-    padding-bottom: 10px;
+    padding-top: 3px;
     transform: translateY(0);
     transition: transform .2s ease-out;
     backface-visibility: hidden;
+}
+
+.vue-toast_container::before {
+    content: '';
+    width: 8px;
+    height: calc(100% - 3px);
+    position: absolute;
+    bottom: 0;
+    background-color: rgba(200, 200, 200, 0.5);
 }
 
 .vue-toast_container._default .vue-toast_message {
@@ -65,10 +74,13 @@
 }
 
 .vue-toast_message {
-    padding: 15px 22px 15px 10px;
+    font-size: 14px;
+    text-align: center;
+    width: 200px;
+    padding: 12px 22px 12px 22px;
     color: white;
     font-family: arial, sans-serif;
-    border-radius: 5px;
+    /* border-radius: 5px; */
 }
 
 .vue-toast_close-btn {
