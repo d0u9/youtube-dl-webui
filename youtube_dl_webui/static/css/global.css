@@ -87,6 +87,10 @@ header {
     padding: 8px 9px 8px 9px;
 }
 
+.filter-list .active {
+    background-color: rgb(300, 0, 0);
+}
+
 .main-body .sidebar-wrapper ul {
     list-style: none;
     height: 100%;

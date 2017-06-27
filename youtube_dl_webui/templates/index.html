@@ -56,11 +56,11 @@
                     <div class="filter-caption">Filter <i class="fa fa-chevron-circle-left" style="float: right" aria-hidden="true"></i></div>
                     <div class="filter-list">
                         <ul>
-                            <li v-cloak @click="filterTasks('all')"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
-                            <li v-cloak @click="filterTasks('downloading')"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
-                            <li v-cloak @click="filterTasks('finished')"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
-                            <li v-cloak @click="filterTasks('paused')"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
-                            <li v-cloak @click="filterTasks('invalid')"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
+                          <li v-cloak @click="filterTasks('all')" v-bind:class="{'active': status === 'all'}"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
+                          <li v-cloak @click="filterTasks('downloading')" v-bind:class="{'active': status === 'downloading'}"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})</li>
+                          <li v-cloak @click="filterTasks('finished')" v-bind:class="{'active': status === 'finished'}"><i class="fa fa-check-circle" aria-hidden="true"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})</li>
+                          <li v-cloak @click="filterTasks('paused')" v-bind:class="{'active': status === 'paused'}"><i class="fa fa-pause-circle" aria-hidden="true"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})</li>
+                          <li v-cloak @click="filterTasks('invalid')" v-bind:class="{'active': status === 'invalid'}"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})</li>
                         </ul>
                     </div>
                 </div>
