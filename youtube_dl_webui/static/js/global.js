@@ -56,7 +56,7 @@ var videoDownload = (function (Vue, extendAM){
                     Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){ _self.showModal = false;
                         that.init();
                     }, function(err){
-                        console.log(err);
+                        _self.showAlertToast(err, 'error');
                     });
                 },
                 removeTask: function(){
@@ -206,6 +206,7 @@ var videoDownload = (function (Vue, extendAM){
             that.updateVm();
         }, function(err){
             console.log(err)
+            that.vm.showAlertToast('Network connection lost', 'error');
         });
     };
 
