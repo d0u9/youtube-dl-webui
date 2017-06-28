@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+
 from youtube_dl import YoutubeDL
 from youtube_dl import DownloadError
 
@@ -77,22 +79,29 @@ class log_filter(object):
     def debug(self, msg):
         self.data['time'] = int(time())
         self.data['type'] = 'debug'
-        self.data['msg'] = msg
+        self.data['msg'] = self.ansi_escape(msg)
         self.wq.put(self.wqd)
 
 
     def warning(self, msg):
         self.data['time'] = int(time())
         self.data['type'] = 'warning'
-        self.data['msg'] = msg
+        self.data['msg'] = self.ansi_escape(msg)
         self.wq.put(self.wqd)
 
 
     def error(self, msg):
         self.data['time'] = int(time())
         self.data['type'] = 'error'
-        self.data['msg'] = msg
+        self.data['msg'] = self.ansi_escape(msg)
         self.wq.put(self.wqd)
+
+        self.ansi_escape(msg)
+
+
+    def ansi_escape(self, msg):
+        reg = r'\x1b\[([0-9,A-Z]{1,2}(;[0-9]{1,2})?(;[0-9]{3})?)?[m|K]?'
+        return re.sub(reg, '', msg)
 
 
 class fatal_event(object):
