@@ -130,14 +130,9 @@ class DataBase(object):
         self.db.execute('UPDATE task_param SET state=? WHERE tid=(?)', (state, tid))
         self.db.execute('UPDATE task_info SET state=? WHERE tid=(?)', (state, tid))
         self.db.execute('UPDATE task_ydl_opt SET state=? WHERE tid=(?)', (state, tid))
-
-
-        if log is not None:
-            log_list = [l for l in log]
-            log_str = json.dumps(log_list)
-            self.db.execute('UPDATE task_status SET log=(?)', (log_str, ))
-
         self.conn.commit()
+
+        self.update_log(tid, log)
 
 
     def start_task(self, tid, ignore_state=False):
