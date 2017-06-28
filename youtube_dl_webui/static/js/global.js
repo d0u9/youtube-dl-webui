@@ -8,7 +8,7 @@ var videoDownload = (function (Vue, extendAM){
         videoListCopy: [],
         showModal: false,
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
-        tablist: ['Status', 'Details'],
+        tablist: ['Status', 'Details', 'Log'],
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
         modalData: { url: '' },
@@ -54,7 +54,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     var url = _self.headPath + 'task';
                     Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){ _self.showModal = false;
-                        that.init();
+                        that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
@@ -65,6 +65,7 @@ var videoDownload = (function (Vue, extendAM){
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('Task Delete', 'info');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
+                        that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
@@ -74,6 +75,7 @@ var videoDownload = (function (Vue, extendAM){
                     var url = _self.headPath + 'task/tid/' +  (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '?act=pause';
                     Vue.http.put(url).then(function(res){
                         _self.showAlertToast('Task Pause', 'info');
+                        that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
@@ -83,6 +85,7 @@ var videoDownload = (function (Vue, extendAM){
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '?act=resume';
                     Vue.http.put(url).then(function(res){
                         _self.showAlertToast('Task Resume', 'info');
+                        that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
@@ -104,7 +107,6 @@ var videoDownload = (function (Vue, extendAM){
                 filterTasks: function(filterStatus) {
                     var _self = this;
                     _self.status = filterStatus;
-                    videoDownload.getTaskList();
                 },
                 speedConv: function(state, value) {
                     if (state == 'paused' || state == 'invalid')

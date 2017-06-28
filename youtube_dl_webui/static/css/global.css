@@ -4,7 +4,8 @@
     --footer-margin: 5px;
     --footer-height: 195px;
     --main-height: calc(100% - (var(--footer-height) + var(--header-height) + var(--footer-margin)));
-    --tabpane-width: 500px;
+    --info-tab-height: 35px;
+    --tabpane-dl-width: 500px;
     --tabpane-dt-width: 120px;
     --state-finished-color: grey;
     --state-downloading-color: blue;
@@ -181,8 +182,11 @@ tr.selected {
 }
 
 footer {
+    display: flex;
+    flex-direction: column;
     margin-top: var(--footer-margin);
     height: var(--footer-height);
+    overflow: hidden;
     border: solid 2px var(--border-color);
     border-radius: 5px;
     overflow: hidden;
@@ -191,6 +195,7 @@ footer {
 footer div.info-tabs {
     background-color: #f5f6f9;
     width: 100%;
+    min-height: var(--info-tab-height);
     overflow: auto;
     padding: 3px 10px 3px 10px;
     border: #e6e7ec solid thin;
@@ -234,15 +239,17 @@ ul.task-info li:first-of-type {
 
 .tabpane {
     font-size: 13px;
-    padding: 10px;
+    /* padding: 10px; */
 }
 
 .tabpane dl {
-    width: var(--tabpane-width);
+    width: var(--tabpane-dl-width);
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     white-space:nowrap;
+    padding: 10px;
+    margin: 0;
 }
 
 .tabpane dt {
@@ -257,5 +264,17 @@ ul.task-info li:first-of-type {
     list-style: none;
     margin-left: 0;
     margin-bottom: 5px;
-    width: calc(var(--tabpane-width) - var(--tabpane-dt-width));
+    width: calc(var(--tabpane-dl-width) - var(--tabpane-dt-width));
+}
+
+.tabpane div.log-container {
+    flex-grow: 1;
+    margin: 5px 10px 5px 10px;
+    height: calc(var(--footer-height) - var(--info-tab-height) - 5px - 10px);
+    overflow: auto;
+}
+
+.tabpane div.log-container th,
+.tabpane div.log-container td {
+    font-size: 10px;
 }
