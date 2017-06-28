@@ -106,6 +106,7 @@ var videoDownload = (function (Vue, extendAM){
                 },
                 filterTasks: function(filterStatus) {
                     var _self = this;
+                    that.getTaskList();
                     _self.status = filterStatus;
                 },
                 speedConv: function(state, value) {
@@ -139,13 +140,13 @@ var videoDownload = (function (Vue, extendAM){
                     var tmp = '';
                     tmp = value % 60 + 's';
                     value = value/ 60;
-                    if(value > 1){
+                    if(value > 1) {
                         tmp = parseInt(value % 60) + 'm' + tmp;
                         value = value / 60;
-                        if(value > 1){
+                        if(value > 1) {
                             tmp = parseInt(value % 60) + 'h' + tmp;
                             value = value / 24;
-                            if(value > 1){
+                            if(value > 1) {
                                 tmp += parseInt(value % 24) + 'd' + tmp;
                             }
                         }
