@@ -105,7 +105,7 @@ var videoDownload = (function (Vue, extendAM){
                         _self.taskDetails = JSON.parse(res.data).detail;
                         console.log(_self.taskDetails);
                     }, function(err){
-                        _self.showAlertToast(err, 'error');
+                        _self.showAlertToast('Network connection lost', 'error');
                     });
                 },
                 filterTasks: function(filterStatus) {
