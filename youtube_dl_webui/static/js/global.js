@@ -14,6 +14,7 @@ var videoDownload = (function (Vue, extendAM){
         modalData: { url: '' },
         currentSelected: null,
         taskDetails: {},
+        taskInfoUrl: null,
         status: 'all',
         maxToasts: 4,
         position: 'bottom right',
@@ -93,10 +94,13 @@ var videoDownload = (function (Vue, extendAM){
                 selected: function(index){
                     var _self = this;
                     this.currentSelected = index;
-                    console.log(this.currentSelected === index ? 'selected' : '');
-                    var url = _self.headPath + 'task/tid/' +  (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '/status';
-                    console.log(url);
-                    Vue.http.get(url).then(function(res){
+                    _self.taskInfoUrl = _self.headPath + 'task/tid/' +  (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid) + '/status';
+                    _self.getTaskInfoById();
+                },
+                getTaskInfoById: function(){
+                    var _self = this;
+                    if(!_self.taskInfoUrl) return false;
+                    Vue.http.get(_self.taskInfoUrl).then(function(res){
                         console.log(res.data);
                         _self.taskDetails = JSON.parse(res.data).detail;
                         console.log(_self.taskDetails);
@@ -106,8 +110,8 @@ var videoDownload = (function (Vue, extendAM){
                 },
                 filterTasks: function(filterStatus) {
                     var _self = this;
-                    that.getTaskList();
                     _self.status = filterStatus;
+                    that.getTaskList();
                 },
                 speedConv: function(state, value) {
                     if (state == 'paused' || state == 'invalid')
@@ -213,11 +217,17 @@ var videoDownload = (function (Vue, extendAM){
         });
     };
 
+    videoDownload.timeOut = function(){
+        var that = videoDownload;
+        that.getTaskList();
+        that.vm && that.vm.getTaskInfoById();
+    };
+
     videoDownload.init = function(){
         var that = this;
         that.tasksData.headPath = window.location.protocol + '//' + window.location.host + '/';
         that.getTaskList();
-        setInterval(videoDownload.getTaskList, 3000);
+        setInterval(videoDownload.timeOut, 3000);
     }
 
     return videoDownload;
