@@ -252,6 +252,38 @@ ul.task-info li:first-of-type {
     margin: 0;
 }
 
+.tabpane div.details {
+    display: flex;
+    flex-direction: row;
+}
+
+.tabpane div.details div.col {
+    flex: 3 0;
+    margin: 10px;
+}
+
+.tabpane div.details div.row {
+    padding: 3px 0 3px 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.tabpane div.details .key {
+    min-width: 100px;
+    align-self: center;
+    display: inline-block;
+}
+
+.tabpane div.details .val {
+    overflow: hidden;
+    display: inline-block;
+}
+
+.tabpane div.details .auto-height {
+    height: auto !important;
+    padding: 6px 0 6px 0 !important;
+}
+
 .tabpane dt {
     display: inline-block;
     width: var(--tabpane-dt-width);

@@ -130,11 +130,25 @@
                             <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
                         </dl>
                     </div>
-                    <div v-show="showTab === 'Details'" v-cloak>
-                        <dl>
-                            <dt>URL:</dt><dd><a v-bind:title="taskDetails.url" :href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></dd>
-                            <dt>Thumbnail:</dt><dd><img style="margin: 5px 0 0 0" width="196x" height="110px" :src="taskDetails.thumbnail"></dd>
-                        </dl>
+                    <div class="details" v-show="showTab === 'Details'" v-cloak>
+                            <!-- <dt>Title:</dt><dd>{{"{{taskDetails.title}}"}}</dd> -->
+                            <!-- <dt>URL:</dt><dd><a v-bind:title="taskDetails.url" :href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></dd> -->
+                            <!-- <dt>Thumbnail:</dt><dd><img style="margin: 5px 0 0 0" height="90px" :src="taskDetails.thumbnail"></dd> -->
+                            <div class="col">
+                                <div class="row"><span class="key">Title:</span><span class="val">{{"{{taskDetails.title}}"}}</span></div>
+                                <div class="row"><span class="key">URL:</span><span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></span></div>
+                                <div class="row auto-height"><span class="key">Thumbnail:</span><span class="val" style="overflow:auto"><img height="90px" :src="taskDetails.thumbnail"></span></div>
+                            </div>
+                            <div class="col">
+                                <div class="row auto-height"><span class="key">Description:</span><span class="val">{{"{{taskDetails.description}}"}}</span></div>
+                            </div>
+                            <div class="col">
+                                <div class="row"><span class="key">Duration:</span><span class="val">{{"{{taskDetails.duration}}"}}</span></div>
+                                <div class="row"><span class="key">View Count:</span><span class="val">{{"{{taskDetails.view_count}}"}}</span></div>
+                                <div class="row"><span class="key">Like Count:</span><span class="val">{{"{{taskDetails.like_count}}"}}</span></div>
+                                <div class="row"><span class="key">Dislike Count:</span><span class="val">{{"{{taskDetails.dislike_count}}"}}</span></div>
+                                <div class="row"><span class="key">Average Rating:</span><span class="val">{{"{{taskDetails.average_rating}}"}}</span></div>
+                            </div>
                     </div>
                     <div v-show="showTab === 'Log'" class="log-container" v-cloak>
                         <table>
