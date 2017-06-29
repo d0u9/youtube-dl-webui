@@ -15,7 +15,13 @@ CREATE TABLE task_info (
     finish_time REAL    DEFAULT 0.0,
     format  TEXT,
     ext     TEXT    NOT NULL DEFAULT '',
-    thumbnail  TEXT     NOT NULL DEFAULT ''
+    thumbnail   TEXT    NOT NULL DEFAULT '',
+    duration    TEXT    NOT NULL DEFAULT '',
+    view_count  TEXT    NOT NULL DEFAULT '',
+    like_count  TEXT    NOT NULL DEFAULT '',
+    dislike_count   TEXT    NOT NULL DEFAULT '',
+    average_rating  TEXT    NOT NULL DEFAULT '',
+    description     TEXT    NOT NULL DEFAULT ''
 );
 
 DROP TABLE IF EXISTS task_status;
