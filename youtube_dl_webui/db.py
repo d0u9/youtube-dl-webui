@@ -224,8 +224,8 @@ class DataBase(object):
 
 
     def update_from_info_dict(self, tid, info_dict):
-        self.db.execute('UPDATE task_info SET title=(?), format=(?), ext=(?), thumbnail=(?) WHERE tid=(?)',
-                        (info_dict['title'], info_dict['format'], info_dict['ext'], info_dict['thumbnail'], tid))
+        self.db.execute('UPDATE task_info SET title=(?), format=(?), ext=(?), thumbnail=(?), duration=(?), view_count=(?), like_count=(?), dislike_count=(?), average_rating=(?), description=(?) WHERE tid=(?)',
+                        (info_dict['title'], info_dict['format'], info_dict['ext'], info_dict['thumbnail'], info_dict['duration'], info_dict['view_count'], info_dict['like_count'], info_dict['dislike_count'], info_dict['average_rating'], info_dict['description'], tid))
         self.conn.commit()
 
 
