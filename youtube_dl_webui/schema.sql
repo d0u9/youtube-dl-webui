@@ -14,7 +14,8 @@ CREATE TABLE task_info (
     create_time REAL    DEFAULT 0.0,
     finish_time REAL    DEFAULT 0.0,
     format  TEXT,
-    ext     TEXT    NOT NULL DEFAULT ''
+    ext     TEXT    NOT NULL DEFAULT '',
+    thumbnail  TEXT     NOT NULL DEFAULT ''
 );
 
 DROP TABLE IF EXISTS task_status;
