@@ -132,12 +132,11 @@
                     </div>
                     <div v-show="showTab === 'Details'" v-cloak>
                         <dl>
-                            <dt>URL:</dt><dd v-bind:title="taskDetails.url">{{"{{taskDetails.url}}"}}</dd>
+                            <dt>URL:</dt><dd><a v-bind:title="taskDetails.url" href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></dd>
+                            <dt>Thumbnail:</dt><dd><img style="margin: 5px 0 0 0" width="196x" height="110px" src="taskDetails.thumbnail"></dd>
                         </dl>
                     </div>
                     <div v-show="showTab === 'Log'" class="log-container" v-cloak>
-                        <!-- <div v-for="log in taskDetails.log" class="log" v-cloak> -->
-                        <!-- </div> -->
                         <table>
                             <thead>
                                 <tr>
