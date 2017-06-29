@@ -19,7 +19,7 @@ var videoDownload = (function (Vue, extendAM){
         maxToasts: 4,
         position: 'bottom right',
         theme: 'error',
-        timeLife: 3000,
+        timeLife: 3500,
         closeBtn: false
     };
 
