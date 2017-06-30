@@ -211,11 +211,6 @@ ul.task-info {
 }
 
 ul.task-info li {
-    /* padding-left: 10px; */
-    /* margin-left: 2px; */
-    /* padding-right: 5px; */
-    /* border-right: solid 2px gray; */
-    /* background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%); */
     margin-left: 10px;
     border: #d5d7df solid 1px;
     border-radius: 2px;
@@ -238,8 +233,7 @@ ul.task-info li:first-of-type {
 }
 
 .tabpane {
-    font-size: 13px;
-    /* padding: 10px; */
+    font-size: 12px;
 }
 
 .tabpane dl {
@@ -252,6 +246,22 @@ ul.task-info li:first-of-type {
     margin: 0;
 }
 
+.tabpane dl dt {
+    font-weight: bold;
+    display: inline-block;
+    width: var(--tabpane-dt-width);
+    margin-bottom:5px;
+}
+
+.tabpane dl dd {
+    display: inline-block;
+    overflow: hidden;
+    list-style: none;
+    margin-left: 0;
+    margin-bottom: 5px;
+    width: calc(var(--tabpane-dl-width) - var(--tabpane-dt-width));
+}
+
 .tabpane div.details {
     display: flex;
     flex-direction: row;
@@ -260,15 +270,21 @@ ul.task-info li:first-of-type {
 .tabpane div.details div.col {
     flex: 3 0;
     margin: 10px;
+    height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
+    overflow: hidden;
 }
 
 .tabpane div.details div.row {
+    --height: 15px;
+    height: var(--height);
+    line-height: var(--height);
     padding: 3px 0 3px 0;
     display: flex;
     flex-direction: row;
 }
 
 .tabpane div.details .key {
+    font-weight: bold;
     min-width: 100px;
     align-self: center;
     display: inline-block;
@@ -281,22 +297,11 @@ ul.task-info li:first-of-type {
 
 .tabpane div.details .auto-height {
     height: auto !important;
-    padding: 6px 0 6px 0 !important;
 }
 
-.tabpane dt {
-    display: inline-block;
-    width: var(--tabpane-dt-width);
-    margin-bottom:5px;
-}
-
-.tabpane dd {
-    display: inline-block;
-    overflow: hidden;
-    list-style: none;
-    margin-left: 0;
-    margin-bottom: 5px;
-    width: calc(var(--tabpane-dl-width) - var(--tabpane-dt-width));
+.tabpane div.details .description {
+    height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
+    overflow: auto;
 }
 
 .tabpane div.log-container {
@@ -306,7 +311,11 @@ ul.task-info li:first-of-type {
     overflow: auto;
 }
 
+.tabpane div.log-container th {
+    font-weight: bold;
+}
+
 .tabpane div.log-container th,
 .tabpane div.log-container td {
-    font-size: 10px;
+    font-size: 12px;
 }

@@ -131,16 +131,13 @@
                         </dl>
                     </div>
                     <div class="details" v-show="showTab === 'Details'" v-cloak>
-                            <!-- <dt>Title:</dt><dd>{{"{{taskDetails.title}}"}}</dd> -->
-                            <!-- <dt>URL:</dt><dd><a v-bind:title="taskDetails.url" :href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></dd> -->
-                            <!-- <dt>Thumbnail:</dt><dd><img style="margin: 5px 0 0 0" height="90px" :src="taskDetails.thumbnail"></dd> -->
                             <div class="col">
                                 <div class="row"><span class="key">Title:</span><span class="val">{{"{{taskDetails.title}}"}}</span></div>
                                 <div class="row"><span class="key">URL:</span><span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></span></div>
-                                <div class="row auto-height"><span class="key">Thumbnail:</span><span class="val" style="overflow:auto"><img height="90px" :src="taskDetails.thumbnail"></span></div>
+                                <div class="row auto-height"><span class="key">Thumbnail:</span><span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span></div>
                             </div>
                             <div class="col">
-                                <div class="row auto-height"><span class="key">Description:</span><span class="val">{{"{{taskDetails.description}}"}}</span></div>
+                                <div class="row auto-height"><span class="key">Description:</span><span class="val description">{{"{{taskDetails.description}}"}} {{"{{taskDetails.description}}"}} {{"{{taskDetails.description}}"}} </span></div>
                             </div>
                             <div class="col">
                                 <div class="row"><span class="key">Duration:</span><span class="val">{{"{{taskDetails.duration}}"}}</span></div>
@@ -154,8 +151,8 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 100px">Time</th>
-                                    <th style="width: 50px">Type</th>
+                                    <th style="width: 125px">Time</th>
+                                    <th style="width: 90px">Type</th>
                                     <th style="text-align: center; padding-left: 5px;">Message</th>
                                 </tr>
                             </thead>
