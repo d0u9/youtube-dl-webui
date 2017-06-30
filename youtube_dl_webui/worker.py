@@ -25,7 +25,6 @@ class ydl_hook(object):
 
     def finished(self, d):
         print('finished status')
-        print(d)
         d['_percent_str'] = '100%'
         d['speed'] = '0'
         d['elapsed'] = 0
@@ -37,13 +36,11 @@ class ydl_hook(object):
 
     def downloading(self, d):
         print('downloading status')
-        print(d)
         return d
 
 
     def error(self, d):
         print('error status')
-        print(d)
         d['_percent_str'] = '100%'
         return d
 
@@ -139,6 +136,7 @@ class Worker(Process):
     def intercept_ydl_opts(self):
         self.ydl_opts['logger'] = self.log_filter
         self.ydl_opts['progress_hooks'] = [self.ydl_hook.dispatcher]
+        self.ydl_opts['noplaylist'] = "false"
 
 
     def run(self):
@@ -148,6 +146,9 @@ class Worker(Process):
             try:
                 if self.first_run:
                     info_dict = ydl.extract_info(self.url, download=False)
+
+                    info_dict['description'] = info_dict['description'].replace('\n', '<br />');
+
                     wqd = deepcopy(WQ_DICT)
                     wqd['tid'] = self.tid
                     wqd['msgtype'] = 'info_dict'
