@@ -302,6 +302,7 @@ ul.task-info li:first-of-type {
 .tabpane div.details .description {
     height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
     overflow: auto;
+    white-space: normal;
 }
 
 .tabpane div.log-container {
