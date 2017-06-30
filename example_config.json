@@ -1,7 +1,7 @@
 {
     "general": {
-        "download_dir": "/tmp/ydl/youtube-dl",
-        "db_path": "/tmp/youtube_dl_webui.db",
+        "download_dir": "~/Downloads/youtube_dl",
+        "db_path": "~/Documents/youtube_dl_webui.db",
         "download_log_size": 10
     },
     "server": {
@@ -10,7 +10,6 @@
     },
     "youtube_dl": {
         "format": "bestaudio/best",
-        "noplaylist": "false",
         "proxy": "socks5://127.0.0.1:1080"
     }
 }

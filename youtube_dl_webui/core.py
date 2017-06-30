@@ -8,6 +8,7 @@ from multiprocessing import Process, Queue
 from collections import deque
 from sys import exit
 from time import time
+from os.path import expanduser
 
 from .utils import state_name
 from .db import DataBase
@@ -20,7 +21,7 @@ from .worker import Worker
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
-    valid_opts = ['proxy', 'format', 'noplaylist']
+    valid_opts = ['proxy', 'format']
 
     def __init__(self, args=None):
         self.cmd_args = {}
@@ -39,6 +40,7 @@ class Core(object):
         dl_dir = self.conf['download_dir']
         try:
             os.makedirs(dl_dir, exist_ok=True)
+            print(dl_dir)
             os.chdir(dl_dir)
         except PermissionError:
             print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
@@ -171,15 +173,18 @@ class Core(object):
 
 
     def load_general_conf(self, general):
-        valid_conf = [  ('download_dir', '/tmp/'),
-                        ('db_path', '/tmp/db.db'),
-                        ('task_log_size', 10),
+        valid_conf = [  ['download_dir', '~/Downloads/youtube-dl', expanduser],
+                        ['db_path', '~/.conf/youtube-dl-webui/db.db', expanduser],
+                        ['task_log_size', 10, None],
                      ]
 
         general = {} if general is None else general
 
-        for pair in valid_conf:
-            self.conf[pair[0]] = general.get(pair[0], pair[1])
+        for conf in valid_conf:
+            if conf[2] is None:
+                self.conf[conf[0]] = general.get(conf[0], conf[1])
+            else:
+                self.conf[conf[0]] = conf[2](general.get(conf[0], conf[1]))
 
 
     def load_server_conf(self, server_conf):
@@ -301,9 +306,6 @@ class Core(object):
 
             self.worker[tid]['log'].appendleft(data['data'])
             self.db.update_log(tid, self.worker[tid]['log'])
-            print(data['data'])
-
-            return
 
         if msgtype == 'progress':
             d = data['data']
