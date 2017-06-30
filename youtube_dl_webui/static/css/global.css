@@ -269,6 +269,7 @@ ul.task-info li:first-of-type {
 
 .tabpane div.details div.col {
     flex: 3 0;
+    border-right: rgb(185, 185, 185) solid thin;
     margin: 10px;
     height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
     overflow: hidden;
@@ -300,7 +301,8 @@ ul.task-info li:first-of-type {
 }
 
 .tabpane div.details .description {
-    height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
+    margin-top: 5px;
+    height: calc(var(--footer-height) - var(--info-tab-height) - 20px - 15px - 5px);
     overflow: auto;
     white-space: normal;
 }

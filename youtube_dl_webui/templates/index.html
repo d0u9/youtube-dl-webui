@@ -137,9 +137,12 @@
                                 <div class="row auto-height"><span class="key">Thumbnail:</span><span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span></div>
                             </div>
                             <div class="col">
-                                <div class="row auto-height"><span class="key">Description:</span><span class="val description">{{"{{taskDetails.description}}"}} {{"{{taskDetails.description}}"}} {{"{{taskDetails.description}}"}} </span></div>
+                                <div class="row auto-height" style="display:block; padding-right: 8px;">
+                                    <span class="key" style="text-align: center; width: 100%;">Description</span>
+                                    <div class="val description" v-html="taskDetails.description"></div>
+                                </div>
                             </div>
-                            <div class="col">
+                            <div class="col" style="flex-grow: 1; border: none">
                                 <div class="row"><span class="key">Duration:</span><span class="val">{{"{{taskDetails.duration}}"}}</span></div>
                                 <div class="row"><span class="key">View Count:</span><span class="val">{{"{{taskDetails.view_count}}"}}</span></div>
                                 <div class="row"><span class="key">Like Count:</span><span class="val">{{"{{taskDetails.like_count}}"}}</span></div>
