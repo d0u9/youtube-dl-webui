@@ -133,7 +133,7 @@
                     <div class="details" v-show="showTab === 'Details'" v-cloak>
                             <div class="col">
                                 <div class="row"><span class="key">Title:</span><span class="val">{{"{{taskDetails.title}}"}}</span></div>
-                                <div class="row"><span class="key">URL:</span><span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url">{{"{{taskDetails.url}}"}}</a></span></div>
+                                <div class="row"><span class="key">URL:</span><span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url" target="_blank">{{"{{taskDetails.url}}"}}</a></span></div>
                                 <div class="row auto-height"><span class="key">Thumbnail:</span><span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span></div>
                             </div>
                             <div class="col">
