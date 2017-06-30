@@ -1,6 +1,6 @@
 # youtube-dl-webui
 
-An other webui for youtube-dl.
+Another webui for youtube-dl powered by Flask.
 
 [youtube-dl][1] is a powerful command-line based tool aims to download videos
 from Youtube.com and a few more sites. However, it lacks a manager to control
