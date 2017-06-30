@@ -123,18 +123,28 @@
                 <div class="tabpane">
                     <div v-show="showTab === 'Status'" v-cloak>
                         <dl>
-                            <dt>Title:</dt><dd v-bind:title="taskDetails.title">{{"{{taskDetails.title}}"}}</dd>
+                            <dt>Title:</dt><dd v-bind:title="taskDetails.title" style="overflow:auto; white-space:normal">{{"{{taskDetails.title}}"}}</dd>
                             <dt>Extension:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
                             <dt>Format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
                             <dt>Create Time:</dt><dd>{{"{{tsToLocal(taskDetails.create_time)}}"}}</dd>
                             <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
+                            <dt>File Name:</dt><dd style="overflow:auto; white-space:normal;">{{"{{taskDetails.filename}}"}}</dd>
                         </dl>
                     </div>
                     <div class="details" v-show="showTab === 'Details'" v-cloak>
                             <div class="col">
-                                <div class="row"><span class="key">Title:</span><span class="val">{{"{{taskDetails.title}}"}}</span></div>
-                                <div class="row"><span class="key">URL:</span><span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url" target="_blank">{{"{{taskDetails.url}}"}}</a></span></div>
-                                <div class="row auto-height"><span class="key">Thumbnail:</span><span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span></div>
+                                <div class="row">
+                                    <span class="key">Title:</span>
+                                    <span class="val">{{"{{taskDetails.title}}"}}</span>
+                                </div>
+                                <div class="row">
+                                    <span class="key">URL:</span>
+                                    <span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url" target="_blank">{{"{{taskDetails.url}}"}}</a></span>
+                                </div>
+                                <div class="row auto-height">
+                                    <span class="key">Thumbnail:</span>
+                                    <span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span>
+                                </div>
                             </div>
                             <div class="col">
                                 <div class="row auto-height" style="display:block; padding-right: 8px;">
