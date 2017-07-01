@@ -50,9 +50,14 @@ After everything is ready, simply execute:
 
 A server will be started locally. The default port is **5000**.
 
+# Docker image
+
+There also exists a docker image to easy the deployment. Check [HERE] for more.
+
 ---
 
 [1]: https://github.com/rg3/youtube-dl
 [2]: https://github.com/avignat/Youtube-dl-WebUI
 [3]: https://github.com/pallets/flask
+[4]: https://hub.docker.com/r/d0u9/youtube-dl-webui/
 
