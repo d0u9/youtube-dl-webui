@@ -101,7 +101,11 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     if(!_self.taskInfoUrl) return false;
                     Vue.http.get(_self.taskInfoUrl).then(function(res){
-                        _self.taskDetails = JSON.parse(res.data).detail;
+                        var responseJSON = JSON.parse(res.data);
+                        if(responseJSON.status === 'error'){
+                            return false;
+                        }
+                        _self.taskDetails = responseJSON.detail;
                     }, function(err){
                         _self.showAlertToast('Network connection lost', 'error');
                     });
