@@ -101,9 +101,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     if(!_self.taskInfoUrl) return false;
                     Vue.http.get(_self.taskInfoUrl).then(function(res){
-                        console.log(res.data);
                         _self.taskDetails = JSON.parse(res.data).detail;
-                        console.log(_self.taskDetails);
                     }, function(err){
                         _self.showAlertToast('Network connection lost', 'error');
                     });
@@ -199,7 +197,6 @@ var videoDownload = (function (Vue, extendAM){
 
     videoDownload.getTaskList = function() {
         var that = videoDownload;
-        console.log(that.tasksData.headPath);
         var url = that.tasksData.headPath + 'task/list';
         url = url + '?state=' + that.tasksData.status;
         Vue.http.get(url).then(function(res){
@@ -212,7 +209,6 @@ var videoDownload = (function (Vue, extendAM){
                                               that.tasksData.stateCounter.invalid;
             that.updateVm();
         }, function(err){
-            console.log(err)
             that.vm.showAlertToast('Network connection lost', 'error');
         });
     };
