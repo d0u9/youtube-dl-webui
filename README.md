@@ -16,7 +16,7 @@ very 'light'.
 
 # Screenshot
 
-![screenshot1][screen_shot/1.gif]
+![screenshot1](screen_shot/1.gif)
 
 # Prerequisite
 
