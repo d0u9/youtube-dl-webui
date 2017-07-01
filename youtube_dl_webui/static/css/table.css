@@ -1,0 +1,55 @@
+.com-table table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 0;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+
+.com-table tbody tr.current {
+    background-color: #cce8c1;
+}
+
+.com-table tbody tr:not(.current):nth-of-type(2n) {
+    background-color: #edf0f5;
+}
+
+.com-table tbody tr:not(.current):hover {
+    background-color: #dff2f9;
+}
+
+.com-table th,
+.com-table td {
+    line-height: 18px;
+    padding: 12px;
+    color: #6b7684;
+    word-break: break-all;
+}
+
+.com-table thead {
+    background-color: #f6f6f6;
+}
+
+.com-table thead tr {
+    background-color: #b7bfc9;
+}
+
+.com-table thead td {
+    color: #FFF;
+}
+
+.com-table [v-cloak] {
+    display: none;
+}
+
+.com-table a {
+    display: inline-block;
+    padding: 2px 5px;
+    color: #2daaff;
+    border-radius: 3px;
+}
+
+.com-table a:hover {
+    color: #FFF;
+    background-color: #2daaff;
+}

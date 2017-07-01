@@ -1,0 +1,135 @@
+.vue-toast-manager_container {
+    position: fixed;
+    width: 100%;
+}
+
+.vue-toast-manager_container.__top {
+    top: 10px;
+}
+
+.vue-toast-manager_container.__bottom {
+    bottom: 10px;
+}
+
+.vue-toast-manager_container.__left {
+    left: 10px;
+}
+
+.vue-toast-manager_container.__right {
+    right: 10px;
+}
+
+.vue-toast-manager_toasts {
+    position: relative;
+}
+
+.vue-toast_container {
+    position: absolute;
+    padding-top: 3px;
+    transform: translateY(0);
+    transition: transform .2s ease-out;
+    backface-visibility: hidden;
+}
+
+.vue-toast_container::before {
+    content: '';
+    width: 8px;
+    height: calc(100% - 3px);
+    position: absolute;
+    bottom: 0;
+    background-color: rgba(200, 200, 200, 0.5);
+}
+
+.vue-toast_container._default .vue-toast_message {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.vue-toast_container._info .vue-toast_message {
+    background-color: rgba(49, 112, 143, 0.9);
+}
+.vue-toast_container._success .vue-toast_message {
+    background-color: rgba(60, 118, 61, 0.9);
+}
+.vue-toast_container._warning .vue-toast_message {
+    background-color: rgba(138, 109, 59, 0.9);
+}
+.vue-toast_container._error .vue-toast_message {
+    background-color: rgba(234, 79, 76, 0.9);
+}
+
+.vue-toast-manager_container.__top .vue-toast_container {
+    top: 0;
+}
+
+.vue-toast-manager_container.__bottom .vue-toast_container {
+    bottom: 0;
+}
+
+.vue-toast-manager_container.__left .vue-toast_container {
+    left: 0;
+}
+
+.vue-toast-manager_container.__right .vue-toast_container {
+    right: 0;
+}
+
+.vue-toast_message {
+    font-size: 14px;
+    text-align: center;
+    width: 200px;
+    padding: 12px 22px 12px 22px;
+    color: white;
+    font-family: arial, sans-serif;
+    /* border-radius: 5px; */
+}
+
+.vue-toast_close-btn {
+    cursor: pointer;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 14px;
+    height: 14px;
+    opacity: .7;
+    transition: opacity .15s ease-in-out;
+    backface-visibility: hidden;
+}
+
+.vue-toast_close-btn:hover {
+    opacity: .9;
+}
+
+.vue-toast_close-btn::before, .vue-toast_close-btn::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    width: 14px;
+    height: 2px;
+    background-color: white;
+}
+
+.vue-toast_close-btn::before {
+    transform: rotate(45deg);
+}
+
+.vue-toast_close-btn::after {
+    transform: rotate(-45deg);
+}
+
+.vue-toast-enter-active {
+    opacity: 0;
+    transition: all .2s ease-out;
+}
+
+.vue-toast-enter-to {
+    opacity: 1;
+}
+
+.vue-toast-leave-active {
+    opacity: 1;
+    transition: all .1s ease-out;
+}
+
+.vue-toast-leave-to {
+    opacity: 0;
+}

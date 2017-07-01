@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+    <head>
+        <title>youtube-dl-webUI</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/global.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/modalComponent.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/vue-toast.css') }}">
+    </head>
+    <body>
+        <script type="text/x-template" id="modal-template">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <slot name="header">
+                                default header
+                                </slot>
+                            </div>
+
+                            <div class="modal-body">
+                                <slot name="body">
+                                default body
+                                </slot>
+                            </div>
+
+                            <div class="modal-footer">
+                                <slot name="footer">
+                                <button class="modal-default-button" @click="$emit('confirm')">
+                                    OK
+                                </button>
+                                <button class="modal-default-button" @click="$emit('close')">
+                                    CANCEL
+                                </button>
+                                </slot>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </script>
+        <div id="videoWrapper">
+            <header>
+                <div class="operBtns">
+                    <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
+                    <button @click="removeTask"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
+                    <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
+                    <button @click="resumeTask"><i class="fa fa-play" aria-hidden="true"></i> Resume</button>
+                </div>
+            </header>
+            <div class="main-body">
+                <div w3-include-html="modalComponent.html"></div>
+                <div class="sidebar-wrapper">
+                    <div class="filter-caption">Filter <i class="fa fa-chevron-circle-left" style="float: right" aria-hidden="true"></i></div>
+                    <div class="filter-list">
+                        <ul>
+                          <li v-cloak @click="filterTasks('all')" v-bind:class="{'active': status === 'all'}"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
+                          <li v-cloak @click="filterTasks('downloading')" v-bind:class="{'active': status === 'downloading'}">
+                              <i class="fa fa-download" aria-hidden="true" style="color:blue"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})
+                          </li>
+                          <li v-cloak @click="filterTasks('finished')" v-bind:class="{'active': status === 'finished'}">
+                              <i class="fa fa-check-circle" aria-hidden="true" style="color:grey"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})
+                          </li>
+                          <li v-cloak @click="filterTasks('paused')" v-bind:class="{'active': status === 'paused'}">
+                              <i class="fa fa-pause-circle" aria-hidden="true" style="green"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})
+                          </li>
+                          <li v-cloak @click="filterTasks('invalid')" v-bind:class="{'active': status === 'invalid'}">
+                              <i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:red"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})
+                          </li>
+                        </ul>
+                    </div>
+                </div>
+                <div  class="videoList-wrapper">
+                    <table class="videoList">
+                        <thead>
+                            <tr>
+                                <th width="30px">#</th>
+                                <th width="25ox">State</th>
+                                <th>Name</th>
+                                <th width="90px">Total Size</th>
+                                <th width="230px">Progress</th>
+                                <th width="100px">Down Speed</th>
+                                <th width="80px">ETA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(video, index) in videoList" @click="selected(index)" :class="{'selected': currentSelected === index}">
+                                <td v-cloak>{{"{{index + 1}}"}}</td>
+                                <td v-clock style="font-size: 16px">
+                                    <i v-bind:style="{color: stateIcon(video.state).color}" v-bind:class="['fa', stateIcon(video.state).icon]" aria-hidden="true"></i>
+                                </td>
+                                <td>{{"{{video.title}}"}}</td>
+                                <td v-cloak>{{"{{bitsToHuman(video.total_bytes)}}"}}</td>
+                                <td v-cloak>
+                                    <div class="progress-bar">
+                                        <div class="string">{{"{{progressConv(video.state, video.percent)}}"}}</div>
+                                        <div class="bar-container">
+                                            <div class="bar" :style="{width:video.percent}"></div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </td>
+                                <td v-cloak>{{"{{speedConv(video.state, video.speed)}}"}}</td>
+                                <td v-cloak>{{"{{etaConv(video.state, video.eta)}}"}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
+                <div slot="header">URL to download</div>
+                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
+                </modal>
+                <vue-toast ref='toast'></vue-toast>
+            </div>
+            <footer>
+                <div class="info-tabs">
+                    <ul class="task-info">
+                        <li v-for="tab in tablist" class="tab" v-bind:class="{selected: showTab === tab}" @click="showTab = tab" v-cloak><span>{{"{{tab}}"}}</span></li>
+                    </ul>
+                </div>
+                <div class="tabpane">
+                    <div v-show="showTab === 'Status'" v-cloak>
+                        <dl>
+                            <dt>Title:</dt><dd v-bind:title="taskDetails.title" style="overflow:auto; white-space:normal">{{"{{taskDetails.title}}"}}</dd>
+                            <dt>Extension:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
+                            <dt>Format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
+                            <dt>Create Time:</dt><dd>{{"{{tsToLocal(taskDetails.create_time)}}"}}</dd>
+                            <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
+                            <dt>File Name:</dt><dd style="overflow:auto; white-space:normal;">{{"{{taskDetails.filename}}"}}</dd>
+                        </dl>
+                    </div>
+                    <div class="details" v-show="showTab === 'Details'" v-cloak>
+                            <div class="col">
+                                <div class="row">
+                                    <span class="key">Title:</span>
+                                    <span class="val">{{"{{taskDetails.title}}"}}</span>
+                                </div>
+                                <div class="row">
+                                    <span class="key">URL:</span>
+                                    <span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url" target="_blank">{{"{{taskDetails.url}}"}}</a></span>
+                                </div>
+                                <div class="row auto-height">
+                                    <span class="key">Thumbnail:</span>
+                                    <span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="row auto-height" style="display:block; padding-right: 8px;">
+                                    <span class="key" style="text-align: center; width: 100%;">Description</span>
+                                    <div class="val description" v-html="taskDetails.description"></div>
+                                </div>
+                            </div>
+                            <div class="col" style="flex-grow: 1; border: none">
+                                <div class="row"><span class="key">Duration:</span><span class="val">{{"{{taskDetails.duration}}"}}</span></div>
+                                <div class="row"><span class="key">View Count:</span><span class="val">{{"{{taskDetails.view_count}}"}}</span></div>
+                                <div class="row"><span class="key">Like Count:</span><span class="val">{{"{{taskDetails.like_count}}"}}</span></div>
+                                <div class="row"><span class="key">Dislike Count:</span><span class="val">{{"{{taskDetails.dislike_count}}"}}</span></div>
+                                <div class="row"><span class="key">Average Rating:</span><span class="val">{{"{{taskDetails.average_rating}}"}}</span></div>
+                            </div>
+                    </div>
+                    <div v-show="showTab === 'Log'" class="log-container" v-cloak>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 125px">Time</th>
+                                    <th style="width: 90px">Type</th>
+                                    <th style="text-align: center; padding-left: 5px;">Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="log in taskDetails.log" class="log" v-cloak>
+                                    <td>{{"{{tsToLocal(log.time)}}"}}</td>
+                                    <td>{{"{{log.type}}"}}</td>
+                                    <td style="text-align: left; padding-left: 5px;">{{"{{log.msg}}"}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/vue-resource.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/vue-toast.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/global.js') }}"></script>
+    </body>
+</html>
