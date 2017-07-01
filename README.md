@@ -50,6 +50,9 @@ After everything is ready, simply execute:
 
 A server will be started locally. The default port is **5000**.
 
+**Note**, you have to remove proxy configuration option in your config file. I
+write it here for illustrating all valid config options.
+
 # Docker image
 
 There also exists a docker image to easy the deployment. Check [HERE] for more.
