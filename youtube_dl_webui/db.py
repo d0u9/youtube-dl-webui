@@ -4,6 +4,7 @@
 import json
 import os
 import sqlite3
+import logging
 
 from hashlib import sha1
 from time import time
@@ -16,12 +17,13 @@ from .utils import TaskRunningError
 
 class DataBase(object):
     def __init__(self, db_path):
+        self.logger = logging.getLogger('ydl_webui')
         if os.path.exists(db_path) and not os.path.isfile(db_path):
-            print('[ERROR] The db_path: {} is not a regular file'.format(db_path))
+            self.logger.error('The db_path: %s is not a regular file', db_path)
             raise Exception('The db_path is not valid')
 
         if os.path.exists(db_path) and not os.access(db_path, os.W_OK):
-            print('[ERROR] The db_path: {} is not writable'.format(db_path))
+            self.logger.error('The db_path: %s is not writable', db_path)
             raise Exception('The db_path is not valid')
 
         # first time to create db

@@ -3,6 +3,7 @@
 
 import json
 import os
+import logging
 
 from multiprocessing import Process, Queue
 from collections import deque
@@ -19,11 +20,13 @@ from .utils import TaskPausedError
 from .server import Server
 from .worker import Worker
 
+
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
     valid_opts = ['proxy', 'format']
 
     def __init__(self, args=None):
+        self.logger = logging.getLogger('ydl_webui')
         self.cmd_args = {}
         self.conf = {'server': {}, 'ydl': {}}
         self.rq = Queue()
@@ -40,10 +43,10 @@ class Core(object):
         dl_dir = self.conf['download_dir']
         try:
             os.makedirs(dl_dir, exist_ok=True)
-            print(dl_dir)
+            self.logger.info("Download dir: %s", dl_dir)
             os.chdir(dl_dir)
         except PermissionError:
-            print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
+            self.logger.critical('Permission Error for download dir: %s', dl_dir)
             exit(1)
 
         self.launch_unfinished()
@@ -60,7 +63,7 @@ class Core(object):
             elif data_from == 'worker':
                 ret = self.worker_request(data)
             else:
-                print(data)
+                logger.debug(data)
 
 
     def launch_unfinished(self):
@@ -159,7 +162,7 @@ class Core(object):
             with open(self.cmd_args['conf']) as f:
                 conf_dict = json.load(f)
         except FileNotFoundError as e:
-            print("Config file ({}) doesn't exist".format(self.cmd_args['conf']))
+            self.logger.critical("Config file (%s) doesn't exist", self.cmd_args['conf'])
             exit(1)
 
         general = conf_dict.get('general', None)
@@ -323,6 +326,6 @@ class Core(object):
             d = data['data']
 
             if d['type'] == 'invalid_url':
-                print("Can't start downloading {}, url is invalid".format(d['url']))
+                self.logger.error("Can't start downloading {}, url is invalid".format(d['url']))
                 self.db.set_state(tid, 'invalid')
 
