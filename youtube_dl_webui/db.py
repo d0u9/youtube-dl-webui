@@ -4,6 +4,7 @@
 import json
 import os
 import sqlite3
+import logging
 
 from hashlib import sha1
 from time import time
@@ -16,12 +17,13 @@ from .utils import TaskRunningError
 
 class DataBase(object):
     def __init__(self, db_path):
+        self.logger = logging.getLogger('ydl_webui')
         if os.path.exists(db_path) and not os.path.isfile(db_path):
-            print('[ERROR] The db_path: {} is not a regular file'.format(db_path))
+            self.logger.error('The db_path: %s is not a regular file', db_path)
             raise Exception('The db_path is not valid')
 
         if os.path.exists(db_path) and not os.access(db_path, os.W_OK):
-            print('[ERROR] The db_path: {} is not writable'.format(db_path))
+            self.logger.error('The db_path: %s is not writable', db_path)
             raise Exception('The db_path is not valid')
 
         # first time to create db
@@ -253,20 +255,18 @@ class DataBase(object):
         else:
             d['total_bytes'] = '0'
 
-        sql = ("UPDATE task_status SET "
-               "percent='{percent}',            filename='{filename}', "
-               "tmpfilename='{tmpfilename}',   downloaded_bytes='{downloaded_bytes}', "
-               "total_bytes='{total_bytes}',   total_bytes_estmt='{total_bytes_estmt}', "
-               "speed='{speed}', eta='{eta}',  elapsed='{elapsed}' WHERE tid='{tid}'"
-              ).format  \
-              ( percent=d['_percent_str'],      filename=d['filename'],                         \
-                tmpfilename=d['tmpfilename'],   downloaded_bytes=d['downloaded_bytes'],         \
-                total_bytes=d['total_bytes'],   total_bytes_estmt=d['total_bytes_estimate'],    \
-                speed=d['speed'],               eta=d['eta'],                                   \
-                elapsed=elapsed,                tid=tid
-              )
+        self.db.execute("UPDATE task_status SET "
+                "percent=:percent,            filename=:filename, "
+                "tmpfilename=:tmpfilename,    downloaded_bytes=:downloaded_bytes, "
+                "total_bytes=:total_bytes,    total_bytes_estmt=:total_bytes_estmt, "
+                "speed=:speed, eta=:eta,      elapsed=:elapsed WHERE tid=:tid",
+                { "percent":     d['_percent_str'], "filename":          d['filename'],             \
+                  "tmpfilename": d['tmpfilename'],  "downloaded_bytes":  d['downloaded_bytes'],     \
+                  "total_bytes": d['total_bytes'],  "total_bytes_estmt": d['total_bytes_estimate'], \
+                  "speed":       d['speed'],        "eta":               d['eta'],                  \
+                  "elapsed":     elapsed,           "tid":               tid
+                })
 
-        self.db.execute(sql)
         self.db.execute('UPDATE task_info SET finish_time=? WHERE tid=(?)', (time(), tid))
         self.conn.commit()
 

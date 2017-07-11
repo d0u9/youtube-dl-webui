@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import logging
 
 from youtube_dl import YoutubeDL
 from youtube_dl import DownloadError
@@ -15,6 +16,7 @@ WQ_DICT = {'from': 'worker'}
 
 class ydl_hook(object):
     def __init__(self, tid, wqueue):
+        self.logger = logging.getLogger('ydl_webui')
         self.tid = tid
         self.wq = wqueue
         self.wqd = deepcopy(WQ_DICT)
@@ -24,7 +26,7 @@ class ydl_hook(object):
 
 
     def finished(self, d):
-        print('finished status')
+        self.logger.debug('finished status')
         d['_percent_str'] = '100%'
         d['speed'] = '0'
         d['elapsed'] = 0
@@ -35,12 +37,12 @@ class ydl_hook(object):
 
 
     def downloading(self, d):
-        print('downloading status')
+        self.logger.debug('downloading status')
         return d
 
 
     def error(self, d):
-        print('error status')
+        self.logger.debug('error status')
         d['_percent_str'] = '100%'
         return d
 
@@ -123,6 +125,7 @@ class fatal_event(object):
 class Worker(Process):
     def __init__(self, tid, wqueue, param=None, ydl_opts=None, first_run=False):
         super(Worker, self).__init__()
+        self.logger = logging.getLogger('ydl_webui')
         self.tid = tid
         self.wq = wqueue
         self.param = param
@@ -155,7 +158,7 @@ class Worker(Process):
                     wqd['data'] = info_dict
                     self.wq.put(wqd)
 
-                print('start downloading ...')
+                self.logger.info('start downloading ...')
                 ydl.download([self.url])
             except DownloadError as e:
                 # url error
@@ -164,7 +167,7 @@ class Worker(Process):
 
 
     def stop(self):
-        print('Terminating Process ...')
+        self.logger.info('Terminating Process ...')
         self.terminate()
         self.join()
 
