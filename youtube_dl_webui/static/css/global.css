@@ -1,4 +1,324 @@
-#demo {
-  color: red;
-  font-size: 25px;
+:root {
+    --border-color: #bfbfbf;
+    --header-height: 33px;
+    --footer-margin: 5px;
+    --footer-height: 195px;
+    --main-height: calc(100% - (var(--footer-height) + var(--header-height) + var(--footer-margin)));
+    --info-tab-height: 35px;
+    --tabpane-dl-width: 500px;
+    --tabpane-dt-width: 120px;
+    --state-finished-color: grey;
+    --state-downloading-color: blue;
+    --state-paused-color: green;
+    --state-invalid-color: red;
+}
+
+html, body {
+    height: 100%;
+    font:normal 11px arial,tahoma,verdana,helvetica;
+    font-size: 15px;
+    color: #0d0d0d;
+    display: flex;
+    flex-flow: column;
+}
+
+[v-cloak] {
+    display: none!important;
+}
+
+td {
+    text-align: center;
+}
+
+#videoWrapper {
+    height: 100%;
+}
+
+header {
+    height: 33px;
+}
+
+.operBtns button {
+    cursor: pointer;
+    color:#333;
+    font-size: 13px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 2px 5px 0 rgba(0, 0, 0, 0.19);
+    padding: 3px 10px 3px 10px;
+    border: 2px solid;
+    border-color: transparent;
+    background-color: #FFFFFF;
+    border-radius: 4px;
+}
+
+.operBtns button:focus {
+    outline: 0;
+}
+
+.operBtns button:active {
+    box-shadow: none;
+}
+
+.operBtns button:hover {
+    border: 2px solid grey;
+}
+
+.main-body {
+    display: flex;
+    height: var(--main-height);
+}
+
+.main-body .sidebar-wrapper {
+    width: 200px;
+    min-width: 150px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.filter-caption {
+    font-size: 12px;
+    font-weight: bold;
+    background-image: linear-gradient(to top, #80b9ff, #99c7ff);
+    border: 0;
+    padding: 3px 9px 3px 9px;
+}
+
+.filter-list {
+    font-size: 14px;
+    padding: 6px 0 0 0;
+}
+
+.filter-list li {
+    padding: 8px 12px 8px 12px !important;
+}
+
+.filter-list .active {
+    background-color: rgb(166, 178, 212);
+}
+
+.main-body .sidebar-wrapper ul {
+    list-style: none;
+    height: 100%;
+    margin:0;
+    padding-left:0;:
+}
+
+.main-body .sidebar-wrapper ul li {
+    padding:5px 0;
+    display: block;
+    cursor: pointer;
+}
+
+.main-body .sidebar-wrapper ul li:hover {
+    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+}
+
+.main-body .videoList-wrapper {
+    margin-left:5px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    background-color: #fff;
+    flex-grow:1;
+    overflow: auto;
+}
+
+table {
+    width:100%;
+    border-collapse: collapse;
+    border-style: hidden;
+}
+
+table td, table th {
+    border: 2px solid white;
+}
+
+table thead th {
+    font-size: 12px;
+    font-weight: bold;
+    background-image: linear-gradient(to top, #80b9ff, #99c7ff);
+    padding: 3px 9px 3px 9px;
+}
+
+table tbody tr {
+    font-size: 11px;
+    font-weight: lighter;
+    /* background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%); */
+    background-color: rgba(132, 132, 132, 0.3);
+    height: 23px;
+    overflow: hidden;
+    cursor: default;
+}
+
+table tbody tr:hover td {
+    background-color: #bfbfbf;
+}
+
+tr .progress-bar {
+    position: relative;
+}
+
+tr .progress-bar .string {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    right: 0;
+    margin: auto auto;
+}
+
+tr .progress-bar .bar-container {
+    margin: 3px;
+}
+
+tr .progress-bar .bar {
+    height: 19px;
+    width: 70%;
+    background: linear-gradient(to top, rgba(96, 115, 159, 0.7), rgba(96, 115, 159, 0.9), rgba(96, 115, 159, 0.7));
+}
+
+tr.selected {
+    background: #d2cde8;
+    pointer-events: none;
+}
+
+footer {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--footer-margin);
+    height: var(--footer-height);
+    overflow: hidden;
+    border: solid 2px var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+footer div.info-tabs {
+    background-color: #f5f6f9;
+    width: 100%;
+    min-height: var(--info-tab-height);
+    overflow: auto;
+    padding: 3px 10px 3px 10px;
+    border: #e6e7ec solid thin;
+}
+
+ul.task-info {
+    font-size: 13px;
+    font-weight: bold;
+    list-style: none;
+    display: flex;
+    padding: 0;
+    margin:5px 0;
+}
+
+ul.task-info li {
+    margin-left: 10px;
+    border: #d5d7df solid 1px;
+    border-radius: 2px;
+    width: 70px;
+    height: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+ul.task-info li.selected {
+    -webkit-box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.59);
+    -moz-box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.59);
+    box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.59);
+}
+
+ul.task-info li:first-of-type {
+    margin-left: 0;
+}
+
+.tabpane {
+    font-size: 12px;
+}
+
+.tabpane dl {
+    width: var(--tabpane-dl-width);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    white-space:nowrap;
+    padding: 10px;
+    margin: 0;
+}
+
+.tabpane dl dt {
+    font-weight: bold;
+    display: inline-block;
+    width: var(--tabpane-dt-width);
+    margin-bottom:5px;
+}
+
+.tabpane dl dd {
+    display: inline-block;
+    overflow: hidden;
+    list-style: none;
+    margin-left: 0;
+    margin-bottom: 5px;
+    width: calc(var(--tabpane-dl-width) - var(--tabpane-dt-width));
+}
+
+.tabpane div.details {
+    display: flex;
+    flex-direction: row;
+}
+
+.tabpane div.details div.col {
+    flex: 3 0;
+    border-right: rgb(185, 185, 185) solid thin;
+    margin: 10px;
+    height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
+    overflow: hidden;
+}
+
+.tabpane div.details div.row {
+    --height: 15px;
+    height: var(--height);
+    line-height: var(--height);
+    padding: 3px 0 3px 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.tabpane div.details .key {
+    font-weight: bold;
+    min-width: 100px;
+    align-self: center;
+    display: inline-block;
+}
+
+.tabpane div.details .val {
+    overflow: hidden;
+    display: inline-block;
+}
+
+.tabpane div.details .auto-height {
+    height: auto !important;
+}
+
+.tabpane div.details .description {
+    margin-top: 5px;
+    height: calc(var(--footer-height) - var(--info-tab-height) - 20px - 15px - 5px);
+    overflow: auto;
+    white-space: normal;
+}
+
+.tabpane div.log-container {
+    flex-grow: 1;
+    margin: 5px 10px 5px 10px;
+    height: calc(var(--footer-height) - var(--info-tab-height) - 5px - 10px);
+    overflow: auto;
+}
+
+.tabpane div.log-container th {
+    font-weight: bold;
+}
+
+.tabpane div.log-container th,
+.tabpane div.log-container td {
+    font-size: 12px;
 }
