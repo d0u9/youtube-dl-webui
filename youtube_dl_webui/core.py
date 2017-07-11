@@ -86,6 +86,8 @@ class Core(object):
         if param['url'].strip() == '':
             raise KeyError
 
+        valid_ydl_opts = {k: ydl_opts[k] for k in ydl_opts if k in self.conf['ydl']}
+
         tid = self.db.create_task(param, ydl_opts)
         return tid
 
@@ -128,21 +130,14 @@ class Core(object):
         self.worker[tid]['log'].appendleft({'time': int(time()), 'type': 'debug', 'msg': 'Task starts...'})
         self.db.update_log(tid, self.worker[tid]['log'])
 
-        opts = self.add_ydl_conf_file_opts(ydl_opts)
+        # Merge global ydl_opts with local opts
+        opts = {k: ydl_opts[k] if k in ydl_opts else self.conf['ydl'][k] for k in self.conf['ydl']}
+        self.logger.debug("ydl_opts(%s): %s" %(tid, json.dumps(opts)))
 
         # launch worker process
         w = Worker(tid, self.rq, param=param, ydl_opts=opts, first_run=first_run)
         w.start()
         self.worker[tid]['obj'] = w
-
-
-    def add_ydl_conf_file_opts(self, ydl_opts={}):
-        conf_opts = self.conf.get('ydl', {})
-
-        # filter out unvalid options
-        d = {k: ydl_opts[k] for k in ydl_opts if k in Core.valid_opts}
-
-        return {**conf_opts, **d}
 
 
     def cancel_worker(self, tid):
