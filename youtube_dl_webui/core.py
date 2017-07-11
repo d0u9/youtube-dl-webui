@@ -42,6 +42,7 @@ class Core(object):
         self.load_cmdl_args(args)
         self.load_conf_file()
         self.cmdl_override_conf_file()
+        self.logger.debug("configuration: \n%s", json.dumps(self.conf, indent=4))
 
         self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
         self.db = DataBase(self.conf['db_path'])
@@ -191,6 +192,8 @@ class Core(object):
             else:
                 self.conf[conf[0]] = conf[2](general_conf.get(conf[0], conf[1]))
 
+        self.logger.debug("general_config: %s", json.dumps(self.conf))
+
 
     def load_server_conf(self, conf_file_dict):
         valid_conf = [  ['host', '127.0.0.1'],
@@ -202,13 +205,21 @@ class Core(object):
         for pair in valid_conf:
             self.conf['server'][pair[0]] = server_conf.get(pair[0], pair[1])
 
+        self.logger.debug("server_config: %s", json.dumps(self.conf['server']))
+
 
     def load_ydl_conf(self, conf_file_dict):
+        valid_opts = [  ['proxy',   None,               ],
+                        ['format',  'bestaudio/best'    ]
+                     ]
+
         ydl_opts = conf_file_dict.get('youtube_dl', {})
 
-        for opt in Core.valid_opts:
-            if opt in ydl_opts:
-                self.conf['ydl'][opt] = ydl_opts.get(opt, None)
+        for opt in valid_opts:
+            if opt[0] in ydl_opts:
+                self.conf['ydl'][opt[0]] = ydl_opts.get(opt[0], opt[1])
+
+        self.logger.debug("global ydl_opts: %s", json.dumps(self.conf['ydl']))
 
 
     def cmdl_override_conf_file(self):
