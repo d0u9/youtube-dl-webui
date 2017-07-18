@@ -3,6 +3,7 @@
 
 import re
 import logging
+import json
 
 from youtube_dl import YoutubeDL
 from youtube_dl import DownloadError
@@ -149,6 +150,8 @@ class Worker(Process):
             try:
                 if self.first_run:
                     info_dict = ydl.extract_info(self.url, download=False)
+
+                    # self.logger.debug(json.dumps(info_dict, indent=4))
 
                     info_dict['description'] = info_dict['description'].replace('\n', '<br />');
 

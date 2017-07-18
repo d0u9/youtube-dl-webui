@@ -23,7 +23,6 @@ from .worker import Worker
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
-    valid_opts = ['proxy', 'format']
 
     def __init__(self, args=None):
         self.logger = logging.getLogger('ydl_webui')
