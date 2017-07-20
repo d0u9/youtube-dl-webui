@@ -156,11 +156,21 @@ class DataBase(object):
         return json.loads(row['log'])
 
 
-    def delete_task(self, tid):
+    def delete_task(self, tid, del_data=False):
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
             raise TaskInexistenceError('')
+
+        if del_data:
+            if row['tmpfilename'] != '':
+                self.logger.debug('Delete tmp file: %s' %(row['tmpfilename']))
+                os.remove(row['tmpfilename'])
+            elif row['filename'] != '':
+                self.logger.debug('Delete file: %s' %(row['filename']))
+                os.remove(row['filename'])
+            else:
+                self.logger.debug('No file to delete')
 
         self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
         self.db.execute('DELETE FROM task_info WHERE tid=(?)', (tid, ))
@@ -254,6 +264,8 @@ class DataBase(object):
             d['total_bytes_estmt'] = d['total_bytes']
         else:
             d['total_bytes'] = '0'
+
+        self.logger.debug("update filename=%s, tmpfilename=%s" %(d['filename'], d['tmpfilename']))
 
         self.db.execute("UPDATE task_status SET "
                 "percent=:percent,            filename=:filename, "

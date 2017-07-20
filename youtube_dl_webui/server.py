@@ -66,6 +66,8 @@ def delete_task(tid):
     wqd['command'] = 'delete'
     wqd['tid'] = tid
 
+    wqd['del_data'] = not not request.args.get('del_data', False)
+
     WQ.put(wqd)
     return json.dumps(RQ.get())
 

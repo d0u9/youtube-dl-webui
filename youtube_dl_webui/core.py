@@ -106,7 +106,7 @@ class Core(object):
         self.cancel_worker(tid)
 
 
-    def delete_task(self, tid):
+    def delete_task(self, tid, del_data=False):
         try:
             self.cancel_worker(tid)
         except TaskInexistenceError as e:
@@ -114,7 +114,7 @@ class Core(object):
         except:
             pass
 
-        self.db.delete_task(tid)
+        self.db.delete_task(tid, del_data=del_data)
 
 
     def launch_worker(self, tid, log_list, param=None, ydl_opts={}, first_run=False):
@@ -244,7 +244,7 @@ class Core(object):
 
         if data['command'] == 'delete':
             try:
-                self.delete_task(data['tid'])
+                self.delete_task(data['tid'], del_data=data['del_data'])
             except TaskInexistenceError:
                 return msg_task_inexistence_error
 
