@@ -14,6 +14,8 @@ writes in python. What makes things more worse is that, to use PHP, a web
 server is needly inevitably. This complexes service deployment and makes it not
 very 'light'.
 
+**issues** are welcomed!
+
 # Screenshot
 
 ![screenshot1](screen_shot/1.gif)
