@@ -108,6 +108,13 @@ def query_task(tid):
     return json.dumps(RQ.get())
 
 
+###
+# test cases
+###
+@app.route('/test/<case>')
+def test(case):
+    return render_template('test/{}.html'.format(case))
+
 
 class Server(Process):
     def __init__(self, rqueue, wqueue, host, port):

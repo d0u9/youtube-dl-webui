@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test cases</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/test.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+    </head>
+    <body>
+        <fieldset>
+            <legend>Task control</legend>
+            <div class="row">
+                <label for="url">URL:</label> <input id="url" type="text"> <button>Add</button>
+            </div>
+            <div class="row">
+                <label for="tid">TID:</label> <input id="tid" type="text"><br />
+            </div>
+            <div class="row">
+                <button>Pause</button> <button>Resume</button>
+            </div>
+            <div class="row">
+                <input type="checkbox" value="del">Delete File <button>Delete</button>
+            </div>
+        </fieldset>
+    </body>
+</html>
+
