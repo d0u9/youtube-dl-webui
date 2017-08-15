@@ -4,24 +4,62 @@
         <title>Test cases</title>
         <meta charset="utf-8">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/test.css') }}">
-        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
     </head>
     <body>
         <fieldset>
+            <div class="retval"></div>
             <legend>Task control</legend>
             <div class="row">
-                <label for="url">URL:</label> <input id="url" type="text"> <button>Add</button>
+                <label for="url">URL:</label> <input id="url" type="text" style="width:350px;" value="https://www.youtube.com/watch?v=C0DPdy98e4c"> <button id="add-task">Add</button>
             </div>
             <div class="row">
-                <label for="tid">TID:</label> <input id="tid" type="text"><br />
+                <label for="tid">TID:</label> <input id="tid" type="text" style="width:350px;"><br />
             </div>
             <div class="row">
-                <button>Pause</button> <button>Resume</button>
+                <button id="pause-task">Pause</button> <button id="resume-task">Resume</button>
             </div>
             <div class="row">
                 <input type="checkbox" value="del">Delete File <button>Delete</button>
             </div>
         </fieldset>
     </body>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            host=window.location.protocol + '//' + window.location.host;
+
+            $("#add-task").click(function() {
+                $.post(host + '/task',
+                {
+                    url: $("#url").val()
+                },
+                function(data, status) {
+                    console.log(data);
+                    if (data['status'] == 'success') {
+                        $("#tid").val(data['tid']);
+                    }
+                }, 'json');
+            });
+
+            $("#pause-task").click(function() {
+                $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=pause',
+                    type: 'PUT',
+                    success : function(result) {
+                        console.log(result);
+                    }
+                });
+            });
+
+            $("#resume-task").click(function() {
+                $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=resume',
+                    type: 'PUT',
+                    success : function(result) {
+                        console.log(result);
+                    }
+                });
+            });
+
+        });
+    </script>
 </html>
 
