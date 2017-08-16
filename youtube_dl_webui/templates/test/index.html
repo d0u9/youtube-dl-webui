@@ -20,13 +20,13 @@
                 <button id="pause-task">Pause</button> <button id="resume-task">Resume</button>
             </div>
             <div class="row">
-                <input type="checkbox" value="del">Delete File <button>Delete</button>
+                <input id="del-file" type="checkbox" value="del">Delete File <button id="del-task">Delete</button>
             </div>
         </fieldset>
     </body>
     <script type="text/javascript">
         $(document).ready(function(){
-            host=window.location.protocol + '//' + window.location.host;
+            host = window.location.protocol + '//' + window.location.host;
 
             $("#add-task").click(function() {
                 $.post(host + '/task',
@@ -53,6 +53,17 @@
             $("#resume-task").click(function() {
                 $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=resume',
                     type: 'PUT',
+                    success : function(result) {
+                        console.log(result);
+                    }
+                });
+            });
+
+            $("#del-task").click(function () {
+                act = $("#del-file").is(":checked") ? '?del_data=true' : '';
+
+                $.ajax({ url: host + '/task/tid/' + $("#tid").val() + act,
+                    type: 'DELETE',
                     success : function(result) {
                         console.log(result);
                     }
