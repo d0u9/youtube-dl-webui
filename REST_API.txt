@@ -18,6 +18,7 @@
 | 12 |   GET  | /task/list?exerpt=false&state={all|downloading|finished|paused} | get task list according to the state         |
 | 13 |   GET  | /task/list                                                      | get task list of all tasks                   |
 | 14 |   GET  | /task/state_coutner                                             | get number of tasks in each state            |
+| 15 |   GET  | /config                                                         | get the server's configuration               |
 |----+--------+-----------------------------------------------------------------+----------------------------------------------|
 
 Note:
