@@ -32,7 +32,7 @@ class Core(object):
         # options read from configuration file
         self.conf_file_dict = {}
         # configuration options combined cmdl_args_dict with conf_file_dict.
-        self.conf = {'server': {}, 'ydl': {}}
+        self.conf = { 'server': {}, 'ydl': {}, 'general': {} }
 
         self.rq = Queue()
         self.wq = Queue()
@@ -44,9 +44,9 @@ class Core(object):
         self.logger.debug("configuration: \n%s", json.dumps(self.conf, indent=4))
 
         self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
-        self.db = DataBase(self.conf['db_path'])
+        self.db = DataBase(self.conf['general']['db_path'])
 
-        dl_dir = self.conf['download_dir']
+        dl_dir = self.conf['general']['download_dir']
         try:
             os.makedirs(dl_dir, exist_ok=True)
             self.logger.info("Download dir: %s", dl_dir)
@@ -182,9 +182,9 @@ class Core(object):
 
         for conf in valid_conf:
             if conf[2] is None:
-                self.conf[conf[0]] = general_conf.get(conf[0], conf[1])
+                self.conf['general'][conf[0]] = general_conf.get(conf[0], conf[1])
             else:
-                self.conf[conf[0]] = conf[2](general_conf.get(conf[0], conf[1]))
+                self.conf['general'][conf[0]] = conf[2](general_conf.get(conf[0], conf[1]))
 
         self.logger.debug("general_config: %s", json.dumps(self.conf))
 
