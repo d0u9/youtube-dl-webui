@@ -11,17 +11,57 @@
             <div class="retval"></div>
             <legend>Task control</legend>
             <div class="row">
-                <label for="url">URL:</label> <input id="url" type="text" style="width:350px;" value="https://www.youtube.com/watch?v=C0DPdy98e4c"> <button id="add-task">Add</button>
+                <label class="left" for="url">URL:</label>
+                <input class="right" id="url" type="text" style="width:350px;" value="https://www.youtube.com/watch?v=C0DPdy98e4c">
+                <button class="right" id="add-task">Add</button>
             </div>
             <div class="row">
-                <label for="tid">TID:</label> <input id="tid" type="text" style="width:350px;"><br />
+                <label class="left" for="tid">TID:</label>
+                <input class="right" id="tid" type="text" style="width:350px;">
             </div>
             <div class="row">
+                <label class="left">Actions:</label>
                 <button id="pause-task">Pause</button> <button id="resume-task">Resume</button>
             </div>
             <div class="row">
-                <input id="del-file" type="checkbox" value="del">Delete File <button id="del-task">Delete</button>
+                <span class="left">Del:</span>
+                <button id="del-task">Delete</button>
+                <input id="del-file" type="checkbox" value="del">Delete File
             </div>
+        </fieldset>
+        <div class="row"></div>
+        <fieldset>
+        <legend>Settings</legend>
+        <div class="row">
+            <b>-- General --</b>
+        </div>
+        <div class="row">
+            <label class="left" for="download-path">Download Path:</label>
+            <input class="right" id="download-path" type="text">
+        </div>
+        <div class="row">
+            <label class="left" for="db-path">Database Path:</label>
+            <input class="right" id="db-path" type="text">
+        </div>
+        <div class="row">
+            <label class="left" for="log-size">log-size: </label>
+            <input class="right" id="log-size" type="text" value="10">
+        </div>
+        <hr />
+        <div class="row">
+            <b>-- youtubedl --</b>
+        </div>
+        <div class="row">
+            <label class="left" for="format">Format:</label>
+            <input class="right" id="format" type="text" value="bestaudio/best">
+        </div>
+        <div class="row">
+            <label class="left" for="proxy">Proxy:</label>
+            <input class="right" id="proxy" type="text" value="socks5://127.0.0.1:1080">
+        </div>
+        <div class="row">
+            <button>Save</button> <button>Cancel</button>
+        </div>
         </fieldset>
     </body>
     <script type="text/javascript">

@@ -7,3 +7,22 @@ body {
     height: 25px;
     line-height: 25px;
 }
+
+.left {
+    float: left;
+    display: block;
+    min-width: 60px;
+    width: 160px;
+    max-width: 200px;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.right {
+    float: left;
+    margin-right: 10px;
+}
+
+input[type=text] {
+    width: 350px;
+}
