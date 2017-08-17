@@ -26,3 +26,7 @@ body {
 input[type=text] {
     width: 350px;
 }
+
+.read-only {
+    background-color: rgba(128, 128, 128, 0.50);
+}
