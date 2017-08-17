@@ -301,6 +301,14 @@ class Core(object):
         if data['command'] == 'state':
             return self.db.list_state()
 
+        if data['command'] == 'config':
+            if data['act'] == 'get':
+                return {'status': 'success', 'config': self.conf}
+            elif data['act'] == 'update':
+                return {'status': 'success'}
+            else:
+                return {'status': 'error', 'errmsg': 'invalid query'}
+
 
     def worker_request(self, data):
         tid = data['tid']
