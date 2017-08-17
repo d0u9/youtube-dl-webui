@@ -35,32 +35,44 @@
         <div class="row">
             <b>-- General --</b>
         </div>
-        <div class="row">
-            <label class="left" for="download-path">Download Path:</label>
-            <input class="right" id="download-path" type="text">
+        <div class="row general">
+            <label class="left" for="download_dir">Download Path:</label>
+            <input class="right" id="download_dir" type="text">
         </div>
-        <div class="row">
-            <label class="left" for="db-path">Database Path:</label>
-            <input class="right" id="db-path" type="text">
+        <div class="row general">
+            <label class="left" for="db_path">Database Path:</label>
+            <input class="right" id="db_path" type="text">
         </div>
+        <div class="row general">
+            <label class="left" for="task_log_size">log-size: </label>
+            <input class="right" id="task_log_size" type="text" value="10">
+        </div>
+        <hr />
         <div class="row">
-            <label class="left" for="log-size">log-size: </label>
-            <input class="right" id="log-size" type="text" value="10">
+            <b>-- Server --</b>
+        </div>
+        <div class="row server">
+            <label class="left" for="server-host">HOST:</label>
+            <input class="right read-only" id="host" type="text" readonly>
+        </div>
+        <div class="row server">
+            <label class="left" for="server-port">PORT:</label>
+            <input class="right read-only" id="port" type="text" readonly>
         </div>
         <hr />
         <div class="row">
             <b>-- youtubedl --</b>
         </div>
-        <div class="row">
+        <div class="row ydl">
             <label class="left" for="format">Format:</label>
-            <input class="right" id="format" type="text" value="bestaudio/best">
+            <input class="right" id="format" type="text">
         </div>
-        <div class="row">
+        <div class="row ydl">
             <label class="left" for="proxy">Proxy:</label>
-            <input class="right" id="proxy" type="text" value="socks5://127.0.0.1:1080">
+            <input class="right" id="proxy" type="text">
         </div>
         <div class="row">
-            <button>Save</button> <button>Reset</button>
+            <button id="conf-save">Save</button> <button id="conf-reset">Reset</button>
         </div>
         </fieldset>
     </body>
