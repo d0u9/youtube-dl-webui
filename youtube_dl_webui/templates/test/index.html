@@ -122,6 +122,19 @@
                 });
             });
 
+            $("#conf-reset").click(function () {
+                $.get(host + '/config',
+                function (data, status) {
+                    config = data['config'];
+                    for (let cls in config) {
+                        items = config[cls];
+                        for (let id in items) {
+                            $("." + cls + " #" + id).val(items[id]);
+                        }
+                    }
+                }, 'json');
+            });
+
         });
     </script>
 </html>
