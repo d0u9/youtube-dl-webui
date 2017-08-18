@@ -141,14 +141,15 @@
 
             console.debug(data);
 
-            $.post(host + '/config',
-            JSON.stringify(data),
-            function(data, status) {
-                console.log(data);
-                if (data['status'] == 'success') {
-                    $("#tid").val(data['tid']);
-                }
-            }, 'json');
+            $.ajax({url: host + '/config',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
+            });
         });
 
         $(document).ready(function(){
