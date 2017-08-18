@@ -115,6 +115,7 @@ def get_config():
 
     if request.method == 'POST':
         wqd['act'] = 'update'
+        wqd['param'] = request.get_json()
     else:
         wqd['act'] = 'get'
 
