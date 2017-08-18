@@ -77,65 +77,105 @@
         </fieldset>
     </body>
     <script type="text/javascript">
-        $(document).ready(function(){
-            host = window.location.protocol + '//' + window.location.host;
+        var host = window.location.protocol + '//' + window.location.host;
 
-            $("#add-task").click(function() {
-                $.post(host + '/task',
-                {
-                    url: $("#url").val()
-                },
-                function(data, status) {
-                    console.log(data);
-                    if (data['status'] == 'success') {
-                        $("#tid").val(data['tid']);
-                    }
-                }, 'json');
-            });
+        $("#conf-reset").trigger("click");
 
-            $("#pause-task").click(function() {
-                $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=pause',
-                    type: 'PUT',
-                    success : function(result) {
-                        console.log(result);
-                    }
-                });
-            });
-
-            $("#resume-task").click(function() {
-                $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=resume',
-                    type: 'PUT',
-                    success : function(result) {
-                        console.log(result);
-                    }
-                });
-            });
-
-            $("#del-task").click(function () {
-                act = $("#del-file").is(":checked") ? '?del_data=true' : '';
-
-                $.ajax({ url: host + '/task/tid/' + $("#tid").val() + act,
-                    type: 'DELETE',
-                    success : function(result) {
-                        console.log(result);
-                    }
-                });
-            });
-
-            $("#conf-reset").click(function () {
-                $.get(host + '/config',
-                function (data, status) {
-                    config = data['config'];
-                    for (let cls in config) {
-                        items = config[cls];
-                        for (let id in items) {
-                            $("." + cls + " #" + id).val(items[id]);
-                        }
-                    }
-                }, 'json');
-            });
-
+        $("#add-task").click(function() {
+            $.post(host + '/task',
+            {
+                url: $("#url").val()
+            },
+            function(data, status) {
+                console.log(data);
+                if (data['status'] == 'success') {
+                    $("#tid").val(data['tid']);
+                }
+            }, 'json');
         });
+
+        $("#pause-task").click(function() {
+            $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=pause',
+                type: 'PUT',
+                success : function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $("#resume-task").click(function() {
+            $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=resume',
+                type: 'PUT',
+                success : function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $("#del-task").click(function () {
+            var act = $("#del-file").is(":checked") ? '?del_data=true' : '';
+
+            $.ajax({ url: host + '/task/tid/' + $("#tid").val() + act,
+                type: 'DELETE',
+                success : function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $("#conf-reset").click(function () {
+            $.get(host + '/config',
+            function (data, status) {
+                config = data['config'];
+                for (let cls in config) {
+                    items = config[cls];
+                    for (let id in items) {
+                        $("." + cls + " #" + id).val(items[id]);
+                    }
+                }
+            }, 'json');
+        });
+
+        $("#conf-save").click(function () {
+            var data = get_conf_data();
+
+            console.debug(data);
+
+            $.post(host + '/config',
+            JSON.stringify(data),
+            function(data, status) {
+                console.log(data);
+                if (data['status'] == 'success') {
+                    $("#tid").val(data['tid']);
+                }
+            }, 'json');
+        });
+
+        $(document).ready(function(){
+            $("#conf-reset").trigger("click");
+        });
+
+        function get_conf_data() {
+            var data = {};
+            var general = {};
+            var server = {};
+            var ydl = {};
+
+            general['download_dir'] = $("#download_dir").val();
+            general['db_path'] = $("#db_path").val();
+
+            server['host'] = $("#host").val();
+            server['port'] = $("#port").val();
+
+            ydl['format'] = $("#format").val();
+            ydl['proxy'] = $("#proxy").val();
+
+            data['general'] = general;
+            data['server'] = server;
+            data['ydl'] = ydl;
+
+            return data;
+        }
     </script>
 </html>
 
