@@ -108,6 +108,20 @@ def query_task(tid):
     return json.dumps(RQ.get())
 
 
+@app.route('/config', methods=['GET', 'POST'])
+def get_config():
+    wqd = deepcopy(WQ_DICT)
+    wqd['command'] = 'config'
+
+    if request.method == 'POST':
+        wqd['act'] = 'update'
+    else:
+        wqd['act'] = 'get'
+
+    WQ.put(wqd)
+    return json.dumps(RQ.get())
+
+
 ###
 # test cases
 ###
