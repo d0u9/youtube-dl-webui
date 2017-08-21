@@ -7,11 +7,12 @@ var videoDownload = (function (Vue, extendAM){
         videoList: [],
         videoListCopy: [],
         showModal: false,
+	modalType: 'addTask',
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
         tablist: ['Status', 'Details', 'Log'],
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
-        modalData: { url: '' },
+        modalData: { url: '' , removeFile: false },
         currentSelected: null,
         taskDetails: {},
         taskInfoUrl: null,
@@ -47,10 +48,16 @@ var videoDownload = (function (Vue, extendAM){
                 showAddTaskModal: function(){
                     this.modalData.url = '';
                     this.showModal = true;
+		    this.modalType = 'addTask';
                     this.$nextTick(function(){
                         this.$refs.url.focus();
                     });
                 },
+		showRemoveTaskModal: function(){
+		    this.modalData.removeFile = false;
+		    this.showModal = true;
+		    this.modalType = 'removeTask';
+		},
                 addTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task';
@@ -60,9 +67,22 @@ var videoDownload = (function (Vue, extendAM){
                         _self.showAlertToast(err, 'error');
                     });
                 },
+		modalConfirmHandler: function(){
+		    switch(modalType){
+			case 'addTask':
+			    this.addTask();
+			    break;
+			case 'deleteTask':
+			    this.removeTask();
+			    break;
+		    } 
+		}
                 removeTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
+		    if(_self.modalData.removeFile){
+			url += '?del_data=true';
+		    }
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('Task Delete', 'info');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);

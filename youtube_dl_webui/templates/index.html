@@ -45,7 +45,7 @@
             <header>
                 <div class="operBtns">
                     <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
-                    <button @click="removeTask"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
+                    <button @click="showRemoveTaskModal"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
                     <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
                     <button @click="resumeTask"><i class="fa fa-play" aria-hidden="true"></i> Resume</button>
                 </div>
@@ -109,8 +109,14 @@
                     </table>
                 </div>
                 <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
-                <div slot="header">URL to download</div>
-                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
+		    <template v-if="modalType === 'removeTask'">
+			<p>Are you sure you want to delete the task?</p>		
+			<label><input type="checkbox" v-model="removeFile"><b></b>&nbsp;Please click the checkbox if you want to delete the file by the way!</label>
+		    </template>
+		    <template v-if="modalType === 'addTask'">
+		        <div slot="header">URL to download</div>
+                        <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
+		    </template>
                 </modal>
                 <vue-toast ref='toast'></vue-toast>
             </div>
