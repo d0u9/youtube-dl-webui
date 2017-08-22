@@ -3,6 +3,7 @@
 
 import json
 import os
+import logging
 
 from multiprocessing import Process, Queue
 from collections import deque
@@ -19,20 +20,28 @@ from .utils import TaskPausedError
 from .server import Server
 from .worker import Worker
 
+
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
-    valid_opts = ['proxy', 'format']
 
     def __init__(self, args=None):
-        self.cmd_args = {}
+        self.logger = logging.getLogger('ydl_webui')
+
+        # options from command line
+        self.cmdl_args_dict = {}
+        # options read from configuration file
+        self.conf_file_dict = {}
+        # configuration options combined cmdl_args_dict with conf_file_dict.
         self.conf = {'server': {}, 'ydl': {}}
+
         self.rq = Queue()
         self.wq = Queue()
         self.worker = {}
 
-        self.load_cmd_args(args)
+        self.load_cmdl_args(args)
         self.load_conf_file()
-        self.override_conf()
+        self.cmdl_override_conf_file()
+        self.logger.debug("configuration: \n%s", json.dumps(self.conf, indent=4))
 
         self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
         self.db = DataBase(self.conf['db_path'])
@@ -40,10 +49,10 @@ class Core(object):
         dl_dir = self.conf['download_dir']
         try:
             os.makedirs(dl_dir, exist_ok=True)
-            print(dl_dir)
+            self.logger.info("Download dir: %s", dl_dir)
             os.chdir(dl_dir)
         except PermissionError:
-            print('[ERROR] Permission Error of download_dir: {}'.format(dl_dir))
+            self.logger.critical('Permission Error for download dir: %s', dl_dir)
             exit(1)
 
         self.launch_unfinished()
@@ -60,7 +69,7 @@ class Core(object):
             elif data_from == 'worker':
                 ret = self.worker_request(data)
             else:
-                print(data)
+                logger.debug(data)
 
 
     def launch_unfinished(self):
@@ -75,6 +84,8 @@ class Core(object):
 
         if param['url'].strip() == '':
             raise KeyError
+
+        valid_ydl_opts = {k: ydl_opts[k] for k in ydl_opts if k in self.conf['ydl']}
 
         tid = self.db.create_task(param, ydl_opts)
         return tid
@@ -95,7 +106,7 @@ class Core(object):
         self.cancel_worker(tid)
 
 
-    def delete_task(self, tid):
+    def delete_task(self, tid, del_data=False):
         try:
             self.cancel_worker(tid)
         except TaskInexistenceError as e:
@@ -103,7 +114,7 @@ class Core(object):
         except:
             pass
 
-        self.db.delete_task(tid)
+        self.db.delete_task(tid, del_data=del_data)
 
 
     def launch_worker(self, tid, log_list, param=None, ydl_opts={}, first_run=False):
@@ -118,21 +129,14 @@ class Core(object):
         self.worker[tid]['log'].appendleft({'time': int(time()), 'type': 'debug', 'msg': 'Task starts...'})
         self.db.update_log(tid, self.worker[tid]['log'])
 
-        opts = self.add_ydl_conf_file_opts(ydl_opts)
+        # Merge global ydl_opts with local opts
+        opts = {k: ydl_opts[k] if k in ydl_opts else self.conf['ydl'][k] for k in self.conf['ydl']}
+        self.logger.debug("ydl_opts(%s): %s" %(tid, json.dumps(opts)))
 
         # launch worker process
         w = Worker(tid, self.rq, param=param, ydl_opts=opts, first_run=first_run)
         w.start()
         self.worker[tid]['obj'] = w
-
-
-    def add_ydl_conf_file_opts(self, ydl_opts={}):
-        conf_opts = self.conf.get('ydl', {})
-
-        # filter out unvalid options
-        d = {k: ydl_opts[k] for k in ydl_opts if k in Core.valid_opts}
-
-        return {**conf_opts, **d}
 
 
     def cancel_worker(self, tid):
@@ -148,70 +152,76 @@ class Core(object):
         del self.worker[tid]
 
 
-    def load_cmd_args(self, args):
-        self.cmd_args['conf'] = args.get('config', None)
-        self.cmd_args['host'] = args.get('host', None)
-        self.cmd_args['port'] = args.get('port', None)
+    def load_cmdl_args(self, args):
+        self.cmdl_args_dict['conf'] = args.get('config')
+        self.cmdl_args_dict['host'] = args.get('host')
+        self.cmdl_args_dict['port'] = args.get('port')
 
 
     def load_conf_file(self):
         try:
-            with open(self.cmd_args['conf']) as f:
-                conf_dict = json.load(f)
+            with open(self.cmdl_args_dict['conf']) as f:
+                self.conf_file_dict = json.load(f)
         except FileNotFoundError as e:
-            print("Config file ({}) doesn't exist".format(self.cmd_args['conf']))
+            self.logger.critical("Config file (%s) doesn't exist", self.cmdl_args_dict['conf'])
             exit(1)
 
-        general = conf_dict.get('general', None)
-        self.load_general_conf(general)
-
-        server_conf = conf_dict.get('server', None)
-        self.load_server_conf(server_conf)
-
-        ydl_opts = conf_dict.get('youtube_dl', None)
-        self.load_ydl_conf(ydl_opts)
+        self.load_general_conf(self.conf_file_dict)
+        self.load_server_conf(self.conf_file_dict)
+        self.load_ydl_conf(self.conf_file_dict)
 
 
-    def load_general_conf(self, general):
-        valid_conf = [  ['download_dir', '~/Downloads/youtube-dl', expanduser],
-                        ['db_path', '~/.conf/youtube-dl-webui/db.db', expanduser],
-                        ['task_log_size', 10, None],
+    def load_general_conf(self, conf_file_dict):
+        # field1: key, field2: default value, field3: function to process the value
+        valid_conf = [  ['download_dir',  '~/Downloads/youtube-dl',         expanduser],
+                        ['db_path',       '~/.conf/youtube-dl-webui/db.db', expanduser],
+                        ['task_log_size', 10,                                None],
                      ]
 
-        general = {} if general is None else general
+        general_conf = conf_file_dict.get('general', {})
 
         for conf in valid_conf:
             if conf[2] is None:
-                self.conf[conf[0]] = general.get(conf[0], conf[1])
+                self.conf[conf[0]] = general_conf.get(conf[0], conf[1])
             else:
-                self.conf[conf[0]] = conf[2](general.get(conf[0], conf[1]))
+                self.conf[conf[0]] = conf[2](general_conf.get(conf[0], conf[1]))
+
+        self.logger.debug("general_config: %s", json.dumps(self.conf))
 
 
-    def load_server_conf(self, server_conf):
-        valid_conf = [  ('host', '127.0.0.1'),
-                        ('port', '5000')
+    def load_server_conf(self, conf_file_dict):
+        valid_conf = [  ['host', '127.0.0.1'],
+                        ['port', '5000'     ]
                      ]
 
-        server_conf = {} if server_conf is None else server_conf
+        server_conf = conf_file_dict.get('server', {})
 
         for pair in valid_conf:
             self.conf['server'][pair[0]] = server_conf.get(pair[0], pair[1])
 
-
-    def load_ydl_conf(self, ydl_opts):
-        ydl_opts = {} if ydl_opts is None else ydl_opts
-
-        for opt in Core.valid_opts:
-            if opt in ydl_opts:
-                self.conf['ydl'][opt] = ydl_opts.get(opt, None)
+        self.logger.debug("server_config: %s", json.dumps(self.conf['server']))
 
 
-    def override_conf(self):
-        if self.cmd_args['host'] is not None:
-            self.conf['server']['host'] = self.cmd_args['host']
+    def load_ydl_conf(self, conf_file_dict):
+        valid_opts = [  ['proxy',   None,               ],
+                        ['format',  'bestaudio/best'    ]
+                     ]
 
-        if self.cmd_args['port'] is not None:
-            self.conf['server']['port'] = self.cmd_args['port']
+        ydl_opts = conf_file_dict.get('youtube_dl', {})
+
+        for opt in valid_opts:
+            if opt[0] in ydl_opts:
+                self.conf['ydl'][opt[0]] = ydl_opts.get(opt[0], opt[1])
+
+        self.logger.debug("global ydl_opts: %s", json.dumps(self.conf['ydl']))
+
+
+    def cmdl_override_conf_file(self):
+        if self.cmdl_args_dict['host'] is not None:
+            self.conf['server']['host'] = self.cmdl_args_dict['host']
+
+        if self.cmdl_args_dict['port'] is not None:
+            self.conf['server']['port'] = self.cmdl_args_dict['port']
 
 
     def server_request(self, data):
@@ -234,7 +244,7 @@ class Core(object):
 
         if data['command'] == 'delete':
             try:
-                self.delete_task(data['tid'])
+                self.delete_task(data['tid'], del_data=data['del_data'])
             except TaskInexistenceError:
                 return msg_task_inexistence_error
 
@@ -323,6 +333,6 @@ class Core(object):
             d = data['data']
 
             if d['type'] == 'invalid_url':
-                print("Can't start downloading {}, url is invalid".format(d['url']))
+                self.logger.error("Can't start downloading {}, url is invalid".format(d['url']))
                 self.db.set_state(tid, 'invalid')
 
