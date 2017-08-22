@@ -227,6 +227,10 @@ class Core(object):
             self.conf['server']['port'] = self.cmdl_args_dict['port']
 
 
+    def update_config(self, config):
+        print(config)
+
+
     def server_request(self, data):
         msg_internal_error = {'status': 'error', 'errmsg': 'Internal Error'}
         msg_task_existence_error = {'status': 'error', 'errmsg': 'URL is already added'}
@@ -308,6 +312,7 @@ class Core(object):
             if data['act'] == 'get':
                 return {'status': 'success', 'config': self.conf}
             elif data['act'] == 'update':
+                self.update_config(data['param'])
                 return {'status': 'success'}
             else:
                 return {'status': 'error', 'errmsg': 'invalid query'}
