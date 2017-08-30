@@ -20,12 +20,18 @@ from .utils import TaskPausedError
 from .server import Server
 from .worker import Worker
 
+from .config import ydl_conf, conf
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
 
     def __init__(self, args=None):
         self.logger = logging.getLogger('ydl_webui')
+
+        y = ydl_conf({'proxy':123, 'ff': 33})
+        c = conf([])
+
+        #  exit(1)
 
         # options from command line
         self.cmdl_args_dict = {}
