@@ -22,31 +22,39 @@ from .worker import Worker
 
 from .config import ydl_conf, conf
 
+
+def load_conf_from_file(cmd_args):
+    logger = logging.getLogger('ydl_webui')
+
+    conf_file = cmd_args.get('config', None)
+    logger.info('load config file (%s)' %(conf_file))
+
+    if cmd_args is None or conf_file is None:
+        return ({}, {})
+
+    try:
+        with open(expanduser(conf_file)) as f:
+            return (json.load(f), cmd_args)
+    except FileNotFoundError as e:
+        logger.critical("Config file (%s) doesn't exist", conf_file)
+        exit(1)
+
+
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
 
-    def __init__(self, args=None):
+    def __init__(self, cmd_args=None):
         self.logger = logging.getLogger('ydl_webui')
 
-        c = conf({'proxy':123, 'ff': 33})
-
-        #exit(1)
-
-        # options from command line
-        self.cmdl_args_dict = {}
-        # options read from configuration file
-        self.conf_file_dict = {}
-        # configuration options combined cmdl_args_dict with conf_file_dict.
-        self.conf = { 'server': {}, 'ydl': {}, 'general': {} }
+        self.logger.debug('cmd_args = %s' %(cmd_args))
+        conf_dict, cmd_args = load_conf_from_file(cmd_args)
+        self.conf = conf(conf_dict=conf_dict, cmd_args=cmd_args)
 
         self.rq = Queue()
         self.wq = Queue()
         self.worker = {}
 
-        self.load_cmdl_args(args)
-        self.load_conf_file()
-        self.cmdl_override_conf_file()
-        self.logger.debug("configuration: \n%s", json.dumps(self.conf, indent=4))
+        self.logger.debug("configuration: \n%s", json.dumps(self.conf.dict(), indent=4))
 
         self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
         self.db = DataBase(self.conf['general']['db_path'])
@@ -158,70 +166,6 @@ class Core(object):
         self.db.update_log(tid, self.worker[tid]['log'])
 
         del self.worker[tid]
-
-
-    def load_cmdl_args(self, args):
-        self.cmdl_args_dict['conf'] = args.get('config')
-        self.cmdl_args_dict['host'] = args.get('host')
-        self.cmdl_args_dict['port'] = args.get('port')
-
-
-    def load_conf_file(self):
-        try:
-            with open(self.cmdl_args_dict['conf']) as f:
-                self.conf_file_dict = json.load(f)
-        except FileNotFoundError as e:
-            self.logger.critical("Config file (%s) doesn't exist", self.cmdl_args_dict['conf'])
-            exit(1)
-
-        self.load_general_conf(self.conf_file_dict)
-        self.load_server_conf(self.conf_file_dict)
-        self.load_ydl_conf(self.conf_file_dict)
-
-
-    def load_general_conf(self, conf_file_dict):
-        # field1: key, field2: default value, field3: function to process the value
-        valid_conf = [  ['download_dir',  '~/Downloads/youtube-dl',         expanduser],
-                        ['db_path',       '~/.conf/youtube-dl-webui/db.db', expanduser],
-                        ['task_log_size', 10,                                None],
-                     ]
-
-        general_conf = conf_file_dict.get('general', {})
-
-        for conf in valid_conf:
-            if conf[2] is None:
-                self.conf['general'][conf[0]] = general_conf.get(conf[0], conf[1])
-            else:
-                self.conf['general'][conf[0]] = conf[2](general_conf.get(conf[0], conf[1]))
-
-        self.logger.debug("general_config: %s", json.dumps(self.conf))
-
-
-    def load_server_conf(self, conf_file_dict):
-        valid_conf = [  ['host', '127.0.0.1'],
-                        ['port', '5000'     ]
-                     ]
-
-        server_conf = conf_file_dict.get('server', {})
-
-        for pair in valid_conf:
-            self.conf['server'][pair[0]] = server_conf.get(pair[0], pair[1])
-
-        self.logger.debug("server_config: %s", json.dumps(self.conf['server']))
-
-
-    def load_ydl_conf(self, conf_file_dict):
-        valid_opts = [  ['proxy',   None,               ],
-                        ['format',  'bestaudio/best'    ]
-                     ]
-
-        ydl_opts = conf_file_dict.get('youtube_dl', {})
-
-        for opt in valid_opts:
-            if opt[0] in ydl_opts:
-                self.conf['ydl'][opt[0]] = ydl_opts.get(opt[0], opt[1])
-
-        self.logger.debug("global ydl_opts: %s", json.dumps(self.conf['ydl']))
 
 
     def cmdl_override_conf_file(self):

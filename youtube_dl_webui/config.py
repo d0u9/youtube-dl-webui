@@ -23,13 +23,16 @@ class conf_base(object):
 
             # More check can be made here
             if key in conf_dict:
-                self._conf[key] = conf_dict[key] if func is None else func(conf_json.get(key, dft_val))
+                self._conf[key] = conf_dict[key] if func is None else func(conf_dict.get(key, dft_val))
             elif dft_val is not None:
                 self._conf[key] = dft_val if func is None else func(conf_dict.get(key, dft_val))
 
 
     def get_val(self, key):
         return self._conf[key]
+
+    def __getitem__(self, key):
+        return self.get_val(key)
 
     def dict(self):
         return self._conf
@@ -82,22 +85,22 @@ class conf(object):
     svr_conf = None
     gen_conf = None
 
-    def __init__(self, conf={}):
+    def __init__(self, conf_dict={}, cmd_args={}):
         self.logger = logging.getLogger('ydl_webui')
-        self.load(conf)
+        self.load(conf_dict)
 
-    def load(self, conf):
-        if not isinstance(conf, dict):
-            self.logger.error("input parameter(conf) is not an instance of dict")
+    def load(self, conf_dict):
+        if not isinstance(conf_dict, dict):
+            self.logger.error("input parameter(conf_dict) is not an instance of dict")
             return
 
         for f in self._valid_fields:
             if f == 'youtube_dl':
-                self.ydl_conf = ydl_conf(conf.get(f, {}))
+                self.ydl_conf = ydl_conf(conf_dict.get(f, {}))
             elif f == 'server':
-                self.svr_conf = svr_conf(conf.get(f, {}))
+                self.svr_conf = svr_conf(conf_dict.get(f, {}))
             elif f == 'general':
-                self.gen_conf = gen_conf(conf.get(f, {}))
+                self.gen_conf = gen_conf(conf_dict.get(f, {}))
 
     def dict(self):
         d = {}
@@ -110,6 +113,19 @@ class conf(object):
                 d[f] = self.gen_conf.dict()
 
         return d
+
+    def __getitem__(self, key):
+        if key not in self._valid_fields:
+            raise KeyError(key)
+
+        if key == 'youtube_dl':
+            return self.ydl_conf
+        elif key == 'server':
+            return self.svr_conf
+        elif key == 'general':
+            return self.gen_conf
+        else:
+            raise KeyError(key)
 
 
 
