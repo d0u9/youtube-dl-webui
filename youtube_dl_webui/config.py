@@ -6,16 +6,14 @@ import logging
 from os.path import expanduser
 
 class conf_base(object):
-    _valid_fields = [
-            # (key,              default_val,                type,       validate_regex,     call_function)
-            ]
+    def __init__(self, valid_fields, conf_dict):
+        # each item in the _valid_fields is a tuple represents
+        # (key, default_val, type, validate_regex, call_function)
+        self._valid_fields = valid_fields
+        self._conf = {}
+        self.load(conf_dict)
 
-    _conf = {}
-
-    def __init__(self, conf_json):
-        self.load(conf_json)
-
-    def load(self, conf_json):
+    def load(self, conf_dict):
         for field in self._valid_fields:
             key      = field[0]
             dft_val  = field[1]
@@ -24,35 +22,43 @@ class conf_base(object):
             func     = field[4]
 
             # More check can be made here
-            if key in conf_json:
-                self._conf[key] = conf_json[key] if func is None else func(conf_json[key])
+            if key in conf_dict:
+                self._conf[key] = conf_dict[key] if func is None else func(conf_json.get(key, dft_val))
             elif dft_val is not None:
-                self._conf[key] = dft_val if func is None else func(conf_json[key])
+                self._conf[key] = dft_val if func is None else func(conf_dict.get(key, dft_val))
+
 
     def get_val(self, key):
         return self._conf[key]
 
+    def dict(self):
+        return self._conf
+
 
 class ydl_conf(conf_base):
     _valid_fields = [
+            #(key,              default_val,                type,       validate_regex,     call_function)
             ('proxy',           None,                       'string',   None,               None),
             ('format',          None,                       'string',   None,               None),
         ]
 
-    def __init__(self, conf_json={}):
+    def __init__(self, conf_dict={}):
         self.logger = logging.getLogger('ydl_webui')
-        super(ydl_conf, self).__init__(conf_json)
+
+        super(ydl_conf, self).__init__(self._valid_fields, conf_dict)
 
 
 class svr_conf(conf_base):
     _valid_fields = [
+            #(key,              default_val,                type,       validate_regex,     call_function)
             ('host',            '127.0.0.1',                'string',   None,               None),
             ('port',            '5000',                     'string',   None,               None),
         ]
 
-    def __init__(self, conf_json={}):
+    def __init__(self, conf_dict={}):
         self.logger = logging.getLogger('ydl_webui')
-        super(ydl_conf, self).__init__(conf_json)
+
+        super(svr_conf, self).__init__(self._valid_fields, conf_dict)
 
 
 class gen_conf(conf_base):
@@ -63,13 +69,14 @@ class gen_conf(conf_base):
             ('task_log_size',   10,                         'int',      '',                 None),
         ]
 
-    def __init__(self, conf_json={}):
+    def __init__(self, conf_dict={}):
         self.logger = logging.getLogger('ydl_webui')
-        super(ydl_conf, self).__init__(conf_json)
+
+        super(gen_conf, self).__init__(self._valid_fields, conf_dict)
 
 
 class conf(object):
-    _valid_fields = set(('ydl', 'svr', 'gen'))
+    _valid_fields = set(('youtube_dl', 'server', 'general'))
 
     ydl_conf = None
     svr_conf = None
@@ -81,8 +88,28 @@ class conf(object):
 
     def load(self, conf):
         if not isinstance(conf, dict):
-            self.logger.debug("input parameter(conf) is not an instance of dict")
+            self.logger.error("input parameter(conf) is not an instance of dict")
             return
+
+        for f in self._valid_fields:
+            if f == 'youtube_dl':
+                self.ydl_conf = ydl_conf(conf.get(f, {}))
+            elif f == 'server':
+                self.svr_conf = svr_conf(conf.get(f, {}))
+            elif f == 'general':
+                self.gen_conf = gen_conf(conf.get(f, {}))
+
+    def dict(self):
+        d = {}
+        for f in self._valid_fields:
+            if f == 'youtube_dl':
+                d[f] = self.ydl_conf.dict()
+            elif f == 'server':
+                d[f] = self.svr_conf.dict()
+            elif f == 'general':
+                d[f] = self.gen_conf.dict()
+
+        return d
 
 
 

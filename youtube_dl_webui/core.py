@@ -28,10 +28,9 @@ class Core(object):
     def __init__(self, args=None):
         self.logger = logging.getLogger('ydl_webui')
 
-        y = ydl_conf({'proxy':123, 'ff': 33})
-        c = conf([])
+        c = conf({'proxy':123, 'ff': 33})
 
-        #  exit(1)
+        #exit(1)
 
         # options from command line
         self.cmdl_args_dict = {}
