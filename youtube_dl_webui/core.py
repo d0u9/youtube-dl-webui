@@ -21,6 +21,7 @@ from .server import Server
 from .worker import Worker
 
 from .config import ydl_conf, conf
+from .task import TaskManager, Task
 
 
 def load_conf_from_file(cmd_args):
@@ -49,6 +50,14 @@ class Core(object):
         self.logger.debug('cmd_args = %s' %(cmd_args))
         conf_dict, cmd_args = load_conf_from_file(cmd_args)
         self.conf = conf(conf_dict=conf_dict, cmd_args=cmd_args)
+
+        self.db = DataBase(self.conf['general']['db_path'])
+        self.task_manager = TaskManager(self.db)
+
+        #  tid = self.task_manager.new_task('ix212xx', {'proxy': '12.12.12.12'})
+        #  self.task_manager.start_task(tid)
+
+        #  exit(1)
 
         self.rq = Queue()
         self.wq = Queue()

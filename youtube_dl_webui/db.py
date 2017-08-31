@@ -14,6 +14,7 @@ from .utils import TaskExistenceError
 from .utils import TaskInexistenceError
 from .utils import TaskPausedError
 from .utils import TaskRunningError
+from .task  import url2tid
 
 class DataBase(object):
     def __init__(self, db_path):
@@ -69,7 +70,7 @@ class DataBase(object):
 
     def get_opts(self, tid):
         self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
-                (tid, state_index['finished'], state_index['invalid']))
+                        (tid, state_index['finished'], state_index['invalid']))
         row = self.db.fetchone()
 
         if row is None:
@@ -78,8 +79,8 @@ class DataBase(object):
         return json.loads(row['opt'])
 
 
-    def get_ydl_opts(self, tid):
-        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?)', (tid, ))
+    #  def get_ydl_opts(self, tid):
+        #  self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?)', (tid, ))
 
 
     def create_task(self, param, ydl_opts):
@@ -281,4 +282,53 @@ class DataBase(object):
 
         self.db.execute('UPDATE task_info SET finish_time=? WHERE tid=(?)', (time(), tid))
         self.conn.commit()
+
+
+
+
+    def get_ydl_opts(self, tid):
+        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
+                        (tid, state_index['finished'], state_index['invalid']))
+        row = self.db.fetchone()
+
+        if row is None:
+            raise TaskInexistenceError('task does not exist')
+
+        return json.loads(row['opt'])
+
+    def get_stat(self, tid):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+
+        if row is None:
+            raise TaskInexistenceError('task does not exist')
+
+        return dict(row)
+
+    def get_info(self, tid):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+
+        if row is None:
+            raise TaskInexistenceError('task does not exist')
+
+        return dict(row)
+
+    def new_task(self, url, ydl_opts):
+        tid = url2tid(url)
+
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        if self.db.fetchone() is not None:
+            raise TaskExistenceError('Task exists')
+
+        ydl_opts_str = json.dumps(ydl_opts)
+
+        self.db.execute('INSERT INTO task_status (tid, url) VALUES (?, ?)', (tid, url))
+        self.db.execute('INSERT INTO task_info (tid, url, create_time) VALUES (?, ?, ?)',
+                        (tid, url, time()))
+        self.db.execute('INSERT INTO task_ydl_opt (tid, url, opt) VALUES (?, ?, ?)',
+                        (tid, url, ydl_opts_str))
+        self.conn.commit()
+
+        return tid
 
