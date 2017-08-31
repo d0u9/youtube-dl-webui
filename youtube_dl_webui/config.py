@@ -34,6 +34,12 @@ class conf_base(object):
     def __getitem__(self, key):
         return self.get_val(key)
 
+    def set_val(self, key, val):
+        self._conf[key] = val
+
+    def __setitem__(self, key, val):
+        self.set_val(key, val)
+
     def dict(self):
         return self._conf
 
@@ -87,7 +93,18 @@ class conf(object):
 
     def __init__(self, conf_dict={}, cmd_args={}):
         self.logger = logging.getLogger('ydl_webui')
+        self.cmd_args = cmd_args
         self.load(conf_dict)
+
+    def cmd_args_override(self):
+        _cat_dict = {'host': 'server',
+                     'port': 'server'}
+
+        for key, val in self.cmd_args.items():
+            if key not in _cat_dict:
+                continue
+            sub_conf = self.get_val(_cat_dict[key])
+            sub_conf.set_val(key, val)
 
     def load(self, conf_dict):
         if not isinstance(conf_dict, dict):
@@ -102,6 +119,9 @@ class conf(object):
             elif f == 'general':
                 self.gen_conf = gen_conf(conf_dict.get(f, {}))
 
+        # override configurations by cmdline arguments
+        self.cmd_args_override()
+
     def dict(self):
         d = {}
         for f in self._valid_fields:
@@ -114,7 +134,7 @@ class conf(object):
 
         return d
 
-    def __getitem__(self, key):
+    def get_val(self, key):
         if key not in self._valid_fields:
             raise KeyError(key)
 
@@ -126,6 +146,9 @@ class conf(object):
             return self.gen_conf
         else:
             raise KeyError(key)
+
+    def __getitem__(self, key):
+        return self.get_val(key)
 
 
 
