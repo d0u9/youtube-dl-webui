@@ -21,12 +21,7 @@ MSG_INVALID_REQUEST = {'status': 'error', 'errmsg': 'invalid request'}
 
 @app.route('/')
 def index():
-    MSG.put('event', 'data')
-    k = MSG.get()
-    print(k)
-    #  print('index')
-    return 'good'
-    #  return render_template('index.html')
+    return render_template('index.html')
 
 
 @app.route('/task', methods=['POST'])
@@ -139,7 +134,7 @@ def test(case):
 
 
 class Server(Process):
-    def __init__(self, rqueue, wqueue, host, port, m):
+    def __init__(self, rqueue, wqueue, host, port, m=None):
         super(Server, self).__init__()
         self.rq = rqueue
         self.wq = wqueue
@@ -156,8 +151,7 @@ class Server(Process):
         MSG = m
 
     def run(self):
-        #  self.m.put('hello', 'data')
-        #  app.run(host=self.host, port=self.port, use_reloader=False)
-        app.run(host='0.0.0.0', port=5000, use_reloader=False)
+        app.run(host=self.host, port=self.port, use_reloader=False)
+        #  app.run(host='0.0.0.0', port=5000, use_reloader=False)
 
 

@@ -58,23 +58,23 @@ class Core(object):
         #  tid = self.task_manager.new_task('ix212xx', {'proxy': '12.12.12.12'})
         #  self.task_manager.start_task(tid)
 
-        def pp(svr, event, data):
-            print(svr)
-            print(event)
-            print(data)
-            svr.put('sdf')
+        #  def pp(svr, event, data):
+            #  print(svr)
+            #  print(event)
+            #  print(data)
+            #  svr.put('sdf')
 
 
-        self.msg_mgr = MsgMgr()
-        self.msg_mgr.reg_event('event', pp)
+        #  self.msg_mgr = MsgMgr()
+        #  self.msg_mgr.reg_event('event', pp)
 
-        cli = self.msg_mgr.new_cli('server')
+        #  cli = self.msg_mgr.new_cli('server')
 
-        self.server = Server(None, None, None, None, cli)
-        self.server.start()
-        self.msg_mgr.run()
+        #  self.server = Server(None, None, None, None, cli)
+        #  self.server.start()
+        #  self.msg_mgr.run()
 
-        exit(1)
+        #  exit(1)
 
         self.rq = Queue()
         self.wq = Queue()
