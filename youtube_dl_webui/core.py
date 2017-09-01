@@ -22,6 +22,7 @@ from .worker import Worker
 
 from .config import ydl_conf, conf
 from .task import TaskManager, Task
+from .msg import MsgMgr
 
 
 def load_conf_from_file(cmd_args):
@@ -57,7 +58,23 @@ class Core(object):
         #  tid = self.task_manager.new_task('ix212xx', {'proxy': '12.12.12.12'})
         #  self.task_manager.start_task(tid)
 
-        #  exit(1)
+        def pp(m, event, data):
+            print(m)
+            print(event)
+            print(data)
+            m.svr_put('reply')
+
+
+        self.msg_mgr = MsgMgr()
+        self.msg_mgr.reg_event('hello', pp)
+
+        m = self.msg_mgr.get_msg_handler('server')
+
+        self.server = Server(None, None, None, None, m)
+        self.server.start()
+        self.msg_mgr.run()
+
+        exit(1)
 
         self.rq = Queue()
         self.wq = Queue()

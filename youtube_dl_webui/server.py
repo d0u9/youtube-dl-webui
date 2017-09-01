@@ -9,6 +9,10 @@ from flask import request
 from multiprocessing import Process
 from copy import deepcopy
 
+from .msg import Msg
+
+MSG = None
+
 app = Flask(__name__)
 
 RQ = None
@@ -19,7 +23,12 @@ MSG_INVALID_REQUEST = {'status': 'error', 'errmsg': 'invalid request'}
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    MSG.put('hello', 'data')
+    k = MSG.get()
+    print(k)
+    #  print('index')
+    return 'good'
+    #  return render_template('index.html')
 
 
 @app.route('/task', methods=['POST'])
@@ -132,7 +141,7 @@ def test(case):
 
 
 class Server(Process):
-    def __init__(self, rqueue, wqueue, host, port):
+    def __init__(self, rqueue, wqueue, host, port, m):
         super(Server, self).__init__()
         self.rq = rqueue
         self.wq = wqueue
@@ -145,7 +154,12 @@ class Server(Process):
         self.host = host
         self.port = port
 
+        global MSG
+        MSG = m
+
     def run(self):
-        app.run(host=self.host, port=self.port, use_reloader=False)
+        #  self.m.put('hello', 'data')
+        #  app.run(host=self.host, port=self.port, use_reloader=False)
+        app.run(host='0.0.0.0', port=5000, use_reloader=False)
 
 
