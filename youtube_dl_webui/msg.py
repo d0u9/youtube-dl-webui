@@ -5,7 +5,7 @@ import logging
 
 from multiprocessing import Process, Queue
 
-from .utils import uuid
+from .utils import new_uuid
 
 class MsgBase(object):
 
@@ -53,8 +53,8 @@ class MsgMgr(object):
             uuid = cli_name
             cli = CliMsg(cli_name, Queue(), self._svrQ)
         else:
-            uuid = uuid()
-            cli = cliMsg(uuid, None, self._svrQ)
+            uuid = new_uuid()
+            cli = CliMsg(uuid, None, self._svrQ)
 
         self._cli_dict[uuid] = cli
 
@@ -67,6 +67,7 @@ class MsgMgr(object):
         while True:
             raw_msg = self._svrQ.get()
             uuid = raw_msg['__uuid__']
+            print(uuid)
             evnt = raw_msg['__event__']
             data = raw_msg['__data__']
 
