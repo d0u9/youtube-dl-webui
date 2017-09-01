@@ -7,69 +7,72 @@ from multiprocessing import Process, Queue
 
 from .utils import uuid
 
-class Msg(object):
-    _svrQ = Queue()
+class MsgBase(object):
 
-    def __init__(self, uuid, cliQ=False):
+    def __init__(self, getQ, putQ):
+        self.getQ = getQ
+        self.putQ = putQ
+
+
+class SvrMsg(MsgBase):
+
+    def __init__(self, getQ, putQ):
+        super(SvrMsg, self).__init__(getQ, putQ)
+
+    def put(self, data):
+        payload = {'__data__': data}
+        self.putQ.put(payload)
+
+
+class CliMsg(MsgBase):
+
+    def __init__(self, uuid, getQ, putQ):
+        super(CliMsg, self).__init__(getQ, putQ)
+
         self.uuid = uuid
-        if cliQ is True:
-            self._cliQ = Queue()
-        else:
-            self._cliQ = None
 
     def put(self, event, data):
         payload = {'__uuid__': self.uuid, '__event__': event, '__data__': data}
-        Msg._svrQ.put(payload)
+        self.putQ.put(payload)
 
     def get(self):
-        raw_msg = self._cliQ.get()
-        uuid  = raw_msg['__uuid__']
-        data  = raw_msg['__data__']
-
-        return (uuid, data)
-
-    def svr_put(self, data):
-        payload = {'__uuid__': self.uuid, '__data__': data}
-        self._cliQ.put(payload)
-
-    @classmethod
-    def svr_get(cls):
-        raw_msg = cls._svrQ.get()
-        print(raw_msg)
-        uuid  = raw_msg['__uuid__']
-        event = raw_msg['__event__']
-        data  = raw_msg['__data__']
-
-        return (uuid, event, data)
-
+        raw_msg = self.getQ.get()
+        return raw_msg['__data__']
 
 class MsgMgr(object):
+    _svrQ = Queue()
+    _cli_dict = {}
+    _evnt_cb_dict = {}
 
     def __init__(self):
-        self.logger = logging.getLogger('ydl_webui')
-        self._cb_dict = {}
-        self._msg_dict = {}
+        pass
 
-    def get_msg_handler(self, cli_name=None):
+    def new_cli(self, cli_name=None):
+        uuid = None
         if cli_name is not None:
-            m = Msg(uuid=cli_name, cliQ=True)
-            self._msg_dict[cli_name] = m
-            return m
+            uuid = cli_name
+            cli = CliMsg(cli_name, Queue(), self._svrQ)
         else:
             uuid = uuid()
-            m = Msg(uuid=uuid)
-            self._msg_dict[uuid] = m
-            return m
+            cli = cliMsg(uuid, None, self._svrQ)
 
-    def reg_event(self, event, callback):
-        self._cb_dict[event] = callback
+        self._cli_dict[uuid] = cli
+
+        return cli
+
+    def reg_event(self, event, cb_func):
+        self._evnt_cb_dict[event] = cb_func
 
     def run(self):
         while True:
-            uuid, event, data = Msg.svr_get()
+            raw_msg = self._svrQ.get()
+            uuid = raw_msg['__uuid__']
+            evnt = raw_msg['__event__']
+            data = raw_msg['__data__']
 
-            cb_func = self._cb_dict[event]
-            cb_func(self._msg_dict[uuid], event, data)
+            cli = self._cli_dict[uuid]
+            cb  = self._evnt_cb_dict[evnt]
 
-
+            svr = SvrMsg(cli.putQ, cli.getQ)
+            cb(svr, evnt, data)
 

@@ -9,8 +9,6 @@ from flask import request
 from multiprocessing import Process
 from copy import deepcopy
 
-from .msg import Msg
-
 MSG = None
 
 app = Flask(__name__)
@@ -23,7 +21,7 @@ MSG_INVALID_REQUEST = {'status': 'error', 'errmsg': 'invalid request'}
 
 @app.route('/')
 def index():
-    MSG.put('hello', 'data')
+    MSG.put('event', 'data')
     k = MSG.get()
     print(k)
     #  print('index')
