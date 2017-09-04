@@ -67,7 +67,6 @@ class MsgMgr(object):
         while True:
             raw_msg = self._svrQ.get()
             uuid = raw_msg['__uuid__']
-            print(uuid)
             evnt = raw_msg['__event__']
             data = raw_msg['__data__']
 

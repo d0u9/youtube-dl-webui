@@ -24,6 +24,53 @@ from .config import ydl_conf, conf
 from .task import TaskManager, Task
 from .msg import MsgMgr
 
+class WebMsgDispatcher(object):
+    InternalErrorMsg        = {'status': 'error', 'errmsg': 'Internal Error'}
+    TaskExistenceErrorMsg   = {'status': 'error', 'errmsg': 'URL is already added'}
+    TaskInexistenceErrorMsg = {'status': 'error', 'errmsg': 'Task does not exist'}
+    UrlErrorMsg             = {'status': 'error', 'errmsg': 'URL is invalid'}
+
+    _task_mgr = None
+
+    @classmethod
+    def init(cls, task_mgr):
+        cls._task_mgr = task_mgr
+
+    @classmethod
+    def create_event(cls, svr, event, data):
+        print(data)
+        svr.put({'status': 'success', 'tid': 123})
+
+    @classmethod
+    def delete_event(cls, svr, event, data):
+        svr.put({})
+
+    @classmethod
+    def manipulate_event(cls, svr, event, data):
+        svr.put({})
+
+    @classmethod
+    def query_event(cls, svr, event, data):
+        svr.put({})
+
+    @classmethod
+    def list_event(cls, svr, event, data):
+        svr.put({})
+
+    @classmethod
+    def state_event(cls, svr, event, data):
+        svr.put({})
+
+    @classmethod
+    def config_event(cls, svr, event, data):
+        svr.put({})
+
+
+class WorkMsgDispatcher(object):
+
+    def init(cls, __unknow__=None):
+        pass
+
 
 def load_conf_from_file(cmd_args):
     logger = logging.getLogger('ydl_webui')
@@ -49,32 +96,40 @@ class Core(object):
         self.logger = logging.getLogger('ydl_webui')
 
         self.logger.debug('cmd_args = %s' %(cmd_args))
+
         conf_dict, cmd_args = load_conf_from_file(cmd_args)
         self.conf = conf(conf_dict=conf_dict, cmd_args=cmd_args)
+        self.logger.debug("configuration: \n%s", json.dumps(self.conf.dict(), indent=4))
+
+
+        self.msg_mgr = MsgMgr()
+        web_cli  = self.msg_mgr.new_cli('server')
+        task_cli = self.msg_mgr.new_cli()
 
         self.db = DataBase(self.conf['general']['db_path'])
-        self.task_manager = TaskManager(self.db)
+        self.task_mgr = TaskManager(self.db, task_cli)
 
         #  tid = self.task_manager.new_task('ix212xx', {'proxy': '12.12.12.12'})
         #  self.task_manager.start_task(tid)
 
-        #  def pp(svr, event, data):
-            #  print(svr)
-            #  print(event)
-            #  print(data)
-            #  svr.put('sdf')
 
+        WebMsgDispatcher.init(self.task_mgr)
+        WorkMsgDispatcher.init(self.task_mgr)
 
-        #  self.msg_mgr = MsgMgr()
-        #  self.msg_mgr.reg_event('event', pp)
+        self.msg_mgr.reg_event('create',     WebMsgDispatcher.create_event)
+        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.delete_event)
+        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.manipulate_event)
+        self.msg_mgr.reg_event('query',      WebMsgDispatcher.query_event)
+        self.msg_mgr.reg_event('list',       WebMsgDispatcher.list_event)
+        self.msg_mgr.reg_event('state',      WebMsgDispatcher.state_event)
+        self.msg_mgr.reg_event('config',     WebMsgDispatcher.config_event)
 
-        #  cli = self.msg_mgr.new_cli('server')
+        self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
+        self.server.start()
 
-        #  self.server = Server(None, None, None, None, cli)
-        #  self.server.start()
-        #  self.msg_mgr.run()
+        self.msg_mgr.run()
 
-        #  exit(1)
+        exit(1)
 
         self.rq = Queue()
         self.wq = Queue()
@@ -82,7 +137,7 @@ class Core(object):
 
         self.logger.debug("configuration: \n%s", json.dumps(self.conf.dict(), indent=4))
 
-        self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
+        self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'], web_cli)
         self.db = DataBase(self.conf['general']['db_path'])
 
         dl_dir = self.conf['general']['download_dir']

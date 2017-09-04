@@ -44,8 +44,9 @@ class TaskManager(object):
     but memory instance.
     """
 
-    def __init__(self, db):
+    def __init__(self, db, msg_cli):
         self._db = db
+        self._msg_cli = msg_cli
 
         # all the active type tasks can be referenced from self._tasks_dict or
         # self._tasks_set.

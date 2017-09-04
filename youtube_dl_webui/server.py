@@ -26,103 +26,84 @@ def index():
 
 @app.route('/task', methods=['POST'])
 def add_task():
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'create'
-    wqd['param'] = {'url': request.form['url']}
-    wqd['ydl_opts'] = {}
+    payload = {'url': request.form['url'], 'ydl_opts': {}}
 
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('create', payload)
+    return json.dumps(MSG.get())
 
 
 @app.route('/task/list', methods=['GET'])
 def list_task():
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'list'
-
+    payload = {}
     exerpt = request.args.get('exerpt', None)
     if exerpt is None:
-        wqd['exerpt'] = True
+        payload['exerpt'] = True
     else:
-        wqd['exerpt'] = False
+        payload['exerpt'] = False
 
-    state = request.args.get('state', 'all')
-    wqd['state'] = state
+    payload['state'] = request.args.get('state', 'all')
 
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('list', payload)
+    return json.dumps(MSG.get())
 
 
 @app.route('/task/state_counter', methods=['GET'])
 def list_state():
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'state'
-
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('state', None)
+    return json.dumps(MSG.get())
 
 
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'delete'
-    wqd['tid'] = tid
+    payload = {}
+    payload['tid'] = tid
+    payload['del_data'] = not not request.args.get('del_data', False)
 
-    wqd['del_data'] = not not request.args.get('del_data', False)
-
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('delete', payload)
+    return json.dumps(MSG.get())
 
 
 @app.route('/task/tid/<tid>', methods=['PUT'])
 def manipulate_task(tid):
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'manipulate'
-    wqd['tid'] = tid
+    payload = {}
+    payload['tid'] = tid
 
     act = request.args.get('act', None)
-
     if act == 'pause':
-        wqd['act'] = 'pause'
+        payload['act'] = 'pause'
     elif act == 'resume':
-        wqd['act'] = 'resume'
+        payload['act'] = 'resume'
     else:
         return json.dumps(MSG_INVALID_REQUEST)
 
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('manipulate', payload)
+    return json.dumps(MSG.get())
 
 
 @app.route('/task/tid/<tid>/status', methods=['GET'])
 def query_task(tid):
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'query'
-    wqd['tid'] = tid
+    payload['tid'] = tid
 
     exerpt = request.args.get('exerpt', None)
-
     if exerpt is None:
-        wqd['exerpt'] = False
+        payload['exerpt'] = False
     else:
-        wqd['exerpt'] = True
+        payload['exerpt'] = True
 
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('query', payload)
+    return json.dumps(MSG.get())
 
 
 @app.route('/config', methods=['GET', 'POST'])
 def get_config():
-    wqd = deepcopy(WQ_DICT)
-    wqd['command'] = 'config'
-
     if request.method == 'POST':
-        wqd['act'] = 'update'
-        wqd['param'] = request.get_json()
+        payload['act'] = 'update'
+        payload['param'] = request.get_json()
     else:
-        wqd['act'] = 'get'
+        payload['act'] = 'get'
 
-    WQ.put(wqd)
-    return json.dumps(RQ.get())
+    MSG.put('config', payload)
+    return json.dumps(MSG.get())
 
 
 ###
@@ -134,21 +115,14 @@ def test(case):
 
 
 class Server(Process):
-    def __init__(self, rqueue, wqueue, host, port, m=None):
+    def __init__(self, msg_cli, host, port):
         super(Server, self).__init__()
-        self.rq = rqueue
-        self.wq = wqueue
 
-        global RQ
-        global WQ
-        RQ = rqueue
-        WQ = wqueue
+        global MSG
+        MSG = msg_cli
 
         self.host = host
         self.port = port
-
-        global MSG
-        MSG = m
 
     def run(self):
         app.run(host=self.host, port=self.port, use_reloader=False)
