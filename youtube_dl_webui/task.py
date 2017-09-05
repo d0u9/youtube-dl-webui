@@ -51,10 +51,7 @@ class TaskManager(object):
         self._db = db
         self._msg_cli = msg_cli
 
-        # all the active type tasks can be referenced from self._tasks_dict or
-        # self._tasks_set.
         self._tasks_dict = {}
-        self._tasks_set = set(())
 
     def new_task(self, url, ydl_opts={}):
         """Create a new task and put it in inactive type"""
@@ -64,7 +61,7 @@ class TaskManager(object):
     def start_task(self, tid, ignore_state=False, first_run=False):
         """make an inactive type task into active type"""
 
-        if tid in self._tasks_set:
+        if tid in self._tasks_dict:
             task = self._tasks_dict[tid]
             task.start()
             return task
@@ -77,7 +74,6 @@ class TaskManager(object):
             raise TaskInexistenceError(e.msg)
 
         task = Task(tid, ydl_opts=ydl_opts, info=info, status=status)
-        self._tasks_set.add(task)
         self._tasks_dict[tid] = task
 
         task.start()
