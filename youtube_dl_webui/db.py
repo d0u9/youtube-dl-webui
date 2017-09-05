@@ -157,29 +157,6 @@ class DataBase(object):
         return json.loads(row['log'])
 
 
-    def delete_task(self, tid, del_data=False):
-        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
-        row = self.db.fetchone()
-        if row is None:
-            raise TaskInexistenceError('')
-
-        if del_data:
-            if row['tmpfilename'] != '':
-                self.logger.debug('Delete tmp file: %s' %(row['tmpfilename']))
-                os.remove(row['tmpfilename'])
-            elif row['filename'] != '':
-                self.logger.debug('Delete file: %s' %(row['filename']))
-                os.remove(row['filename'])
-            else:
-                self.logger.debug('No file to delete')
-
-        self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
-        self.db.execute('DELETE FROM task_info WHERE tid=(?)', (tid, ))
-        self.db.execute('DELETE FROM task_param WHERE tid=(?)', (tid, ))
-        self.db.execute('DELETE FROM task_ydl_opt WHERE tid=(?)', (tid, ))
-        self.conn.commit()
-
-
     def query_task(self, tid):
         self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=(?) and task_info.tid=(?)', (tid, tid))
         row = self.db.fetchone()
@@ -286,6 +263,13 @@ class DataBase(object):
 
 
 
+
+
+
+
+
+
+
     def get_ydl_opts(self, tid):
         self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
                         (tid, state_index['finished'], state_index['invalid']))
@@ -331,4 +315,25 @@ class DataBase(object):
         self.conn.commit()
 
         return tid
+
+    def delete_task(self, tid):
+        """ return the tmp file or file downloaded """
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
+        dl_file = None
+        if row['tmpfilename'] != '':
+            dl_file = row['tmpfilename']
+        elif row['filename'] != '':
+            dl_file = row['filename']
+
+        self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
+        self.db.execute('DELETE FROM task_info WHERE tid=(?)', (tid, ))
+        self.db.execute('DELETE FROM task_ydl_opt WHERE tid=(?)', (tid, ))
+        self.conn.commit()
+
+        return dl_file
+
 

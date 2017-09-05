@@ -57,7 +57,7 @@ def list_state():
 def delete_task(tid):
     payload = {}
     payload['tid'] = tid
-    payload['del_data'] = not not request.args.get('del_data', False)
+    payload['del_file'] = not not request.args.get('del_file', False)
 
     MSG.put('delete', payload)
     return json.dumps(MSG.get())

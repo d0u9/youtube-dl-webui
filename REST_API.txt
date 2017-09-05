@@ -7,7 +7,7 @@
 | 1  |  POST  | /task                                                           | create a new download task                   |
 | 2  |   PUT  | /task/tid/<tid>?act=pause                                       | pause a task with its tid                    |
 | 3  |   PUT  | /task/tid/<tid>?act=resume                                      | resume download                              |
-| 4  | DELETE | /task/tid/<tid>?del_data=true                                   | delete a task and its data                   |
+| 4  | DELETE | /task/tid/<tid>?del_file=true                                   | delete a task and its data                   |
 | 5  | DELETE | /task/tid/<tid>                                                 | delete a task and keep data                  |
 | 6  |   GET  | /task/tid/<tid>/status                                          | get the full status of a task                |
 | 7  |   GET  | /task/tid/<tid>/status?exerpt=true                              | get the status exerpt of a task              |

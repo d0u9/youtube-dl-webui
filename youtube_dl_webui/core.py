@@ -49,15 +49,19 @@ class WebMsgDispatcher(object):
             return
 
         task = task_mgr.start_task(tid)
-        print(task)
 
         svr.put({'status': 'success', 'tid': tid})
 
     @classmethod
     def delete_event(cls, svr, event, data, task_mgr):
-        tid, del_data = data['tid'], data['del_data']
+        tid = data['tid']
+        del_file = True if data['del_data'] == 'true' else False
 
-        task_mgr.delete_task(tid)
+        try:
+            task_mgr.delete_task(tid, del_file)
+        except TaskInexistenceError:
+            svr.put(cls.TaskInexistenceErrorMsg)
+            return
 
         svr.put(cls.SuccessMsg)
 

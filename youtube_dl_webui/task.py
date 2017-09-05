@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
 
 from hashlib import sha1
 
@@ -61,20 +62,19 @@ class TaskManager(object):
     def start_task(self, tid, ignore_state=False, first_run=False):
         """make an inactive type task into active type"""
 
+        task = None
         if tid in self._tasks_dict:
             task = self._tasks_dict[tid]
-            task.start()
-            return task
+        else:
+            try:
+                ydl_opts = self._db.get_ydl_opts(tid)
+                info     = self._db.get_info(tid)
+                status   = self._db.get_stat(tid)
+            except TaskInexistenceError as e:
+                raise TaskInexistenceError(e.msg)
 
-        try:
-            ydl_opts = self._db.get_ydl_opts(tid)
-            info     = self._db.get_info(tid)
-            status   = self._db.get_stat(tid)
-        except TaskInexistenceError as e:
-            raise TaskInexistenceError(e.msg)
-
-        task = Task(tid, ydl_opts=ydl_opts, info=info, status=status)
-        self._tasks_dict[tid] = task
+            task = Task(tid, ydl_opts=ydl_opts, info=info, status=status)
+            self._tasks_dict[tid] = task
 
         task.start()
 
@@ -101,7 +101,7 @@ class TaskManager(object):
             task.finish()
             del self._tasks_dict[tid]
 
-    def delete_task(self, tid, del_data=False):
+    def delete_task(self, tid, del_file=False):
         self.logger.debug('task deleted (%s)' %(tid))
 
         if tid in self._tasks_dict:
@@ -109,5 +109,10 @@ class TaskManager(object):
             task.halt()
             del self._tasks_dict[tid]
 
-        if del_data:
-            pass
+        try:
+            dl_file = self._db.delete_task(tid)
+        except TaskInexistenceError as e:
+            raise TaskInexistenceError(e.msg)
+
+        if del_file and dl_file is not None:
+            os.remove(dl_file)
