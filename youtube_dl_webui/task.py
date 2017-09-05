@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+
 from hashlib import sha1
 
 from .config import ydl_conf
@@ -22,15 +24,16 @@ class Task(object):
         self.status = status
 
     def start(self):
-        pass
+        print('---- task  start ----')
 
     def pause(self):
-        pass
+        print('---- task  pause ----')
 
     def halt(self):
-        pass
+        print('---- task  halt ----')
 
     def finish(self):
+        print('---- task  finish ----')
         pass
 
 
@@ -45,6 +48,7 @@ class TaskManager(object):
     """
 
     def __init__(self, db, msg_cli):
+        self.logger = logging.getLogger('ydl_webui')
         self._db = db
         self._msg_cli = msg_cli
 
@@ -82,19 +86,33 @@ class TaskManager(object):
         return task
 
     def pause_task(self, tid):
+        self.logger.debug('task paused (%s)' %(tid))
         task = self._tasks_dict[tid]
         task.pause()
 
     def halt_task(self, tid):
-        task = self._tasks_dict[tid]
-        task.stop()
+        self.logger.debug('task halted (%s)' %(tid))
+
+        if tid in self._tasks_dict:
+            task = self._tasks_dict[tid]
+            task.halt()
+            del self._tasks_dict[tid]
 
     def finish_task(self, tid):
-        task = self._tasks_dict[tid]
-        task.finish()
+        self.logger.debug('task finished (%s)' %(tid))
 
+        if tid in self._tasks_dict:
+            task = self._tasks_dict[tid]
+            task.finish()
+            del self._tasks_dict[tid]
 
+    def delete_task(self, tid, del_data=False):
+        self.logger.debug('task deleted (%s)' %(tid))
 
+        if tid in self._tasks_dict:
+            task = self._tasks_dict[tid]
+            task.halt()
+            del self._tasks_dict[tid]
 
-
-
+        if del_data:
+            pass

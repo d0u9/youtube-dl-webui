@@ -60,8 +60,8 @@ class MsgMgr(object):
 
         return cli
 
-    def reg_event(self, event, cb_func):
-        self._evnt_cb_dict[event] = cb_func
+    def reg_event(self, event, cb_func, arg=None):
+        self._evnt_cb_dict[event] = (cb_func, arg)
 
     def run(self):
         while True:
@@ -71,8 +71,9 @@ class MsgMgr(object):
             data = raw_msg['__data__']
 
             cli = self._cli_dict[uuid]
-            cb  = self._evnt_cb_dict[evnt]
+            cb  = self._evnt_cb_dict[evnt][0]
+            arg = self._evnt_cb_dict[evnt][1]
 
             svr = SvrMsg(cli.putQ, cli.getQ)
-            cb(svr, evnt, data)
+            cb(svr, evnt, data, arg)
 

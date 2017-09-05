@@ -25,6 +25,9 @@ from .task import TaskManager, Task
 from .msg import MsgMgr
 
 class WebMsgDispatcher(object):
+    logger = logging.getLogger('ydl_webui')
+
+    SuccessMsg              = {'status': 'success'}
     InternalErrorMsg        = {'status': 'error', 'errmsg': 'Internal Error'}
     TaskExistenceErrorMsg   = {'status': 'error', 'errmsg': 'URL is already added'}
     TaskInexistenceErrorMsg = {'status': 'error', 'errmsg': 'Task does not exist'}
@@ -37,32 +40,56 @@ class WebMsgDispatcher(object):
         cls._task_mgr = task_mgr
 
     @classmethod
-    def create_event(cls, svr, event, data):
-        print(data)
-        svr.put({'status': 'success', 'tid': 123})
+    def create_event(cls, svr, event, data, task_mgr):
+        cls.logger.debug('url = %s' %(data['url']))
+        try:
+            tid = task_mgr.new_task(data['url'], {'proxy': '12.12.12.12'})
+        except TaskExistenceError:
+            svr.put(cls.TaskExistenceErrorMsg)
+            return
+
+        task = task_mgr.start_task(tid)
+        print(task)
+
+        svr.put({'status': 'success', 'tid': tid})
 
     @classmethod
-    def delete_event(cls, svr, event, data):
+    def delete_event(cls, svr, event, data, task_mgr):
+        tid, del_data = data['tid'], data['del_data']
+
+        task_mgr.delete_task(tid)
+
+        svr.put(cls.SuccessMsg)
+
+    @classmethod
+    def manipulate_event(cls, svr, event, data, task_mgr):
+        cls.logger.debug('manipulation event')
+        tid, act = data['tid'], data['act']
+
+        ret_val = cls.InternalErrorMsg
+        if   act == 'pause':
+            task_mgr.pause_task(tid)
+            ret_val = cls.SuccessMsg
+        elif act == 'resume':
+            task_mgr.start_task(tid)
+            ret_val = cls.SuccessMsg
+
+        svr.put(ret_val)
+
+    @classmethod
+    def query_event(cls, svr, event, data, arg):
         svr.put({})
 
     @classmethod
-    def manipulate_event(cls, svr, event, data):
+    def list_event(cls, svr, event, data, arg):
         svr.put({})
 
     @classmethod
-    def query_event(cls, svr, event, data):
+    def state_event(cls, svr, event, data, arg):
         svr.put({})
 
     @classmethod
-    def list_event(cls, svr, event, data):
-        svr.put({})
-
-    @classmethod
-    def state_event(cls, svr, event, data):
-        svr.put({})
-
-    @classmethod
-    def config_event(cls, svr, event, data):
+    def config_event(cls, svr, event, data, arg):
         svr.put({})
 
 
@@ -116,9 +143,9 @@ class Core(object):
         WebMsgDispatcher.init(self.task_mgr)
         WorkMsgDispatcher.init(self.task_mgr)
 
-        self.msg_mgr.reg_event('create',     WebMsgDispatcher.create_event)
-        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.delete_event)
-        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.manipulate_event)
+        self.msg_mgr.reg_event('create',     WebMsgDispatcher.create_event,     self.task_mgr)
+        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.delete_event,     self.task_mgr)
+        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.manipulate_event, self.task_mgr)
         self.msg_mgr.reg_event('query',      WebMsgDispatcher.query_event)
         self.msg_mgr.reg_event('list',       WebMsgDispatcher.list_event)
         self.msg_mgr.reg_event('state',      WebMsgDispatcher.state_event)
