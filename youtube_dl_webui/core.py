@@ -136,10 +136,6 @@ class Core(object):
         self.db = DataBase(self.conf['general']['db_path'])
         self.task_mgr = TaskManager(self.db, task_cli)
 
-        #  tid = self.task_manager.new_task('ix212xx', {'proxy': '12.12.12.12'})
-        #  self.task_manager.start_task(tid)
-
-
         WebMsgDispatcher.init(self.task_mgr)
         WorkMsgDispatcher.init(self.task_mgr)
 
