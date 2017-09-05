@@ -16,9 +16,8 @@ def url2tid(url):
 
 class Task(object):
 
-    def __init__(self, tid, db, ydl_opts={}, info={}, status={}):
+    def __init__(self, tid, ydl_opts={}, info={}, status={}):
         self.tid = tid
-        self._db = db
         self.ydl_conf = ydl_conf(ydl_opts)
         self.info = info
         self.status = status
@@ -77,7 +76,7 @@ class TaskManager(object):
         except TaskInexistenceError as e:
             raise TaskInexistenceError(e.msg)
 
-        task = Task(tid, self._db, ydl_opts=ydl_opts, info=info, status=status)
+        task = Task(tid, ydl_opts=ydl_opts, info=info, status=status)
         self._tasks_set.add(task)
         self._tasks_dict[tid] = task
 
