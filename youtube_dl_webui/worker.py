@@ -93,25 +93,15 @@ class LogFilter(object):
         return re.sub(reg, '', msg)
 
 
-class fatal_event(object):
-    def __init__(self, tid, wqueue):
-        pass
-        #  self.tid = tid
-        #  self.wq = wqueue
-        #  self.wqd = deepcopy(WQ_DICT)
-        #  self.wqd['tid'] = self.tid
-        #  self.wqd['msgtype'] = 'fatal'
-        #  self.data = {'time': None, 'type': None, 'msg': None}
-        #  self.wqd['data'] = self.data
-
+class FatalEvent(object):
+    def __init__(self, tid, msg_cli):
+        self.tid = tid
+        self.msg_cli = msg_cli
 
     def invalid_url(self, url):
-        pass
-        #  self.data['time'] = int(time())
-        #  self.data['type'] = 'invalid_url'
-        #  self.data['url'] = url;
-        #  self.data['msg'] = 'invalid url: {}'.format(url)
-        #  self.wq.put(self.wqd)
+        self.logger.debug('fatal error: invalid url')
+        payload = {'time': int(time()), 'type': 'invalid_url', 'error': 'invalid url: %s' %(url)}
+        self.msg_cli.put('fatal', {'tid': self.tid, 'data': payload})
 
 
 class Worker(Process):
@@ -150,10 +140,8 @@ class Worker(Process):
                 #  ydl.download([self.url])
             except DownloadError as e:
                 # url error
-                #  event_handle = fatal_event(self.tid, self.wq)
-                #  event_handle.invalid_url(self.url);
-                pass
-
+                event_handler = FatalEvent(self.tid, self.msg_cli)
+                event_handler.invalid_url(self.url);
 
     def stop(self):
         self.logger.info('Terminating Process ...')

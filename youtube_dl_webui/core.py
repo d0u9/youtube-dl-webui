@@ -131,6 +131,14 @@ class WorkMsgDispatcher(object):
         tid, log = data['tid'], data['data']
         cls._task_mgr.update_log(tid, log)
 
+    @classmethod
+    def event_fatal(cls, svr, event, data, arg):
+        tid, data = data['tid'], data['data']
+
+        cls._task_mgr.update_log(tid, data)
+        if data['type'] == 'invalid_url':
+            cls._task_mgr.halt_task(tid)
+
 
 def load_conf_from_file(cmd_args):
     logger = logging.getLogger('ydl_webui')

@@ -53,7 +53,7 @@ class Task(object):
         tm = time()
         self.pause_time = tm
         self.finish_time = tm
-        self.log.appendleft({'time': int(tm), 'type': 'debug', 'msg': 'Task stops...'})
+        self.log.appendleft({'time': int(tm), 'type': 'debug', 'msg': 'Task halts...'})
         print('---- task  halt ----')
 
     def finish(self):
