@@ -40,7 +40,7 @@ class WebMsgDispatcher(object):
         cls._task_mgr = task_mgr
 
     @classmethod
-    def create_event(cls, svr, event, data, task_mgr):
+    def event_create(cls, svr, event, data, task_mgr):
         cls.logger.debug('url = %s' %(data['url']))
         try:
             tid = task_mgr.new_task(data['url'], {'proxy': '12.12.12.12'})
@@ -53,7 +53,7 @@ class WebMsgDispatcher(object):
         svr.put({'status': 'success', 'tid': tid})
 
     @classmethod
-    def delete_event(cls, svr, event, data, task_mgr):
+    def event_delete(cls, svr, event, data, task_mgr):
         tid = data['tid']
         del_file = True if data['del_file'] == 'true' else False
 
@@ -66,7 +66,7 @@ class WebMsgDispatcher(object):
         svr.put(cls.SuccessMsg)
 
     @classmethod
-    def manipulate_event(cls, svr, event, data, task_mgr):
+    def event_manipulation(cls, svr, event, data, task_mgr):
         cls.logger.debug('manipulation event')
         tid, act = data['tid'], data['act']
 
@@ -81,19 +81,19 @@ class WebMsgDispatcher(object):
         svr.put(ret_val)
 
     @classmethod
-    def query_event(cls, svr, event, data, arg):
+    def event_query(cls, svr, event, data, arg):
         svr.put({})
 
     @classmethod
-    def list_event(cls, svr, event, data, arg):
+    def event_list(cls, svr, event, data, arg):
         svr.put({})
 
     @classmethod
-    def state_event(cls, svr, event, data, arg):
+    def event_state(cls, svr, event, data, arg):
         svr.put({})
 
     @classmethod
-    def config_event(cls, svr, event, data, arg):
+    def event_config(cls, svr, event, data, arg):
         svr.put({})
 
 
@@ -143,13 +143,13 @@ class Core(object):
         WebMsgDispatcher.init(self.task_mgr)
         WorkMsgDispatcher.init(self.task_mgr)
 
-        self.msg_mgr.reg_event('create',     WebMsgDispatcher.create_event,     self.task_mgr)
-        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.delete_event,     self.task_mgr)
-        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.manipulate_event, self.task_mgr)
-        self.msg_mgr.reg_event('query',      WebMsgDispatcher.query_event)
-        self.msg_mgr.reg_event('list',       WebMsgDispatcher.list_event)
-        self.msg_mgr.reg_event('state',      WebMsgDispatcher.state_event)
-        self.msg_mgr.reg_event('config',     WebMsgDispatcher.config_event)
+        self.msg_mgr.reg_event('create',     WebMsgDispatcher.event_create,     self.task_mgr)
+        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.event_delete,     self.task_mgr)
+        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.event_manipulation, self.task_mgr)
+        self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query)
+        self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list)
+        self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state)
+        self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)
 
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
         self.server.start()
