@@ -37,9 +37,9 @@ def list_task():
     payload = {}
     exerpt = request.args.get('exerpt', None)
     if exerpt is None:
-        payload['exerpt'] = True
-    else:
         payload['exerpt'] = False
+    else:
+        payload['exerpt'] = True
 
     payload['state'] = request.args.get('state', 'all')
 

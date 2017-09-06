@@ -441,3 +441,36 @@ class DataBase(object):
 
         return ret
 
+    def list_task(self, state):
+        self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=task_info.tid')
+        rows = self.db.fetchall()
+
+        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0, 'invalid': 0}
+        ret_val = []
+        for row in rows:
+            t = {}
+            for key in row.keys():
+                if key == 'state':
+                    s = row[key]
+                    t[key] = state_name[s]
+                    state_counter[state_name[s]] += 1
+                elif key == 'log':
+                    t['log'] = json.loads(row[key])
+                else:
+                    t[key] = row[key]
+
+            if state == 'all' or t['state'] == state:
+                ret_val.append(t)
+
+        return ret_val, state_counter
+
+    def state_counter(self):
+        state_counter = {'downloading': 0, 'paused': 0, 'finished': 0, 'invalid': 0}
+
+        self.db.execute('SELECT state, count(*) as NUM FROM task_status GROUP BY state')
+        rows = self.db.fetchall()
+
+        for r in rows:
+            state_counter[state_name[r['state']]] = r['NUM']
+
+        return state_counter

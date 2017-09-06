@@ -32,6 +32,7 @@ class WebMsgDispatcher(object):
     TaskExistenceErrorMsg   = {'status': 'error', 'errmsg': 'URL is already added'}
     TaskInexistenceErrorMsg = {'status': 'error', 'errmsg': 'Task does not exist'}
     UrlErrorMsg             = {'status': 'error', 'errmsg': 'URL is invalid'}
+    InvalidStateMsg         = {'status': 'error', 'errmsg': 'invalid query state'}
 
     _task_mgr = None
 
@@ -92,13 +93,19 @@ class WebMsgDispatcher(object):
             svr.put({'status': 'success', 'detail': detail})
 
     @classmethod
-    def event_list(cls, svr, event, data, arg):
-        tid, exerpt, state = data['tid'], data['exerpt'], data['state']
-        svr.put({})
+    def event_list(cls, svr, event, data, task_mgr):
+        exerpt, state = data['exerpt'], data['state']
+
+        if state not in state_name:
+            svr.put(cls.InvalidStateMsg)
+        else:
+            d, c = task_mgr.list(state, exerpt)
+            svr.put({'status': 'success', 'detail': d, 'state_counter': c})
 
     @classmethod
-    def event_state(cls, svr, event, data, arg):
-        svr.put({})
+    def event_state(cls, svr, event, data, task_mgr):
+        c = task_mgr.state()
+        svr.put({'status': 'success', 'detail': c})
 
     @classmethod
     def event_config(cls, svr, event, data, arg):
@@ -155,8 +162,8 @@ class Core(object):
         self.msg_mgr.reg_event('delete',     WebMsgDispatcher.event_delete,     self.task_mgr)
         self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.event_manipulation, self.task_mgr)
         self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query,      self.task_mgr)
-        self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list)
-        self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state)
+        self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list,       self.task_mgr)
+        self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state,      self.task_mgr)
         self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)
 
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])

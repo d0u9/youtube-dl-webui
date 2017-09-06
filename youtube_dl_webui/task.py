@@ -148,3 +148,19 @@ class TaskManager(object):
 
         return detail
 
+    def list(self, state, exerpt=False):
+        db_ret, counter = self._db.list_task(state)
+
+        detail = []
+        if exerpt is not True:
+            for item in db_ret:
+                d = {k: item[k] for k in item if k in self.ExerptKeys}
+                detail.append(d)
+        else:
+            detail = db_ret
+
+        return detail, counter
+
+    def state(self):
+        return self._db.state_counter()
+
