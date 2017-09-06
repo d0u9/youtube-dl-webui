@@ -336,4 +336,10 @@ class DataBase(object):
 
         return dl_file
 
+    def pause_task(self, tid):
+        self.logger.debug("db pause_task()")
+
+    def finish_task(self, tid):
+        self.logger.debug("db finish_task()")
+
 

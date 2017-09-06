@@ -82,32 +82,41 @@ class TaskManager(object):
 
     def pause_task(self, tid):
         self.logger.debug('task paused (%s)' %(tid))
+
+        if tid not in self._tasks_dict:
+            raise TaskInexistenceError
+
         task = self._tasks_dict[tid]
         task.pause()
+        self._db.pause_task(tid)
 
     def halt_task(self, tid):
         self.logger.debug('task halted (%s)' %(tid))
 
         if tid in self._tasks_dict:
             task = self._tasks_dict[tid]
-            task.halt()
             del self._tasks_dict[tid]
+            task.halt()
 
     def finish_task(self, tid):
         self.logger.debug('task finished (%s)' %(tid))
 
-        if tid in self._tasks_dict:
-            task = self._tasks_dict[tid]
-            task.finish()
-            del self._tasks_dict[tid]
+        if tid not in self._tasks_dict:
+            raise TaskInexistenceError
+
+        task = self._tasks_dict[tid]
+        del self._tasks_dict[tid]
+        task.finish()
+
+        self._db.finish_task(tid)
 
     def delete_task(self, tid, del_file=False):
         self.logger.debug('task deleted (%s)' %(tid))
 
         if tid in self._tasks_dict:
             task = self._tasks_dict[tid]
-            task.halt()
             del self._tasks_dict[tid]
+            task.halt()
 
         try:
             dl_file = self._db.delete_task(tid)
