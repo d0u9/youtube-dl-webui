@@ -82,6 +82,7 @@ def manipulate_task(tid):
 
 @app.route('/task/tid/<tid>/status', methods=['GET'])
 def query_task(tid):
+    payload = {}
     payload['tid'] = tid
 
     exerpt = request.args.get('exerpt', None)
