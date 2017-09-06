@@ -424,3 +424,20 @@ class DataBase(object):
 
         return dl_file
 
+    def query_task(self, tid):
+        self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=(?) and task_info.tid=(?)', (tid, tid))
+        row = self.db.fetchone()
+        if row is None:
+            raise TaskInexistenceError('')
+
+        ret = {}
+        for key in row.keys():
+            if key == 'state':
+                ret[key] = state_name[row[key]]
+            elif key == 'log':
+                ret['log'] = json.loads(row['log'])
+            else:
+                ret[key] = row[key]
+
+        return ret
+

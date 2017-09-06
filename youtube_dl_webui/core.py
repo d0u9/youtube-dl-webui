@@ -61,9 +61,8 @@ class WebMsgDispatcher(object):
             task_mgr.delete_task(tid, del_file)
         except TaskInexistenceError:
             svr.put(cls.TaskInexistenceErrorMsg)
-            return
-
-        svr.put(cls.SuccessMsg)
+        else:
+            svr.put(cls.SuccessMsg)
 
     @classmethod
     def event_manipulation(cls, svr, event, data, task_mgr):
@@ -81,11 +80,20 @@ class WebMsgDispatcher(object):
         svr.put(ret_val)
 
     @classmethod
-    def event_query(cls, svr, event, data, arg):
-        svr.put({})
+    def event_query(cls, svr, event, data, task_mgr):
+        cls.logger.debug('query event')
+        tid, exerpt = data['tid'], data['exerpt']
+
+        try:
+            detail = task_mgr.query(tid, exerpt)
+        except TaskInexistenceError:
+            svr.put(cls.TaskInexistenceErrorMsg)
+        else:
+            svr.put({'status': 'success', 'detail': detail})
 
     @classmethod
     def event_list(cls, svr, event, data, arg):
+        tid, exerpt, state = data['tid'], data['exerpt'], data['state']
         svr.put({})
 
     @classmethod
@@ -146,7 +154,7 @@ class Core(object):
         self.msg_mgr.reg_event('create',     WebMsgDispatcher.event_create,     self.task_mgr)
         self.msg_mgr.reg_event('delete',     WebMsgDispatcher.event_delete,     self.task_mgr)
         self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.event_manipulation, self.task_mgr)
-        self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query)
+        self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query,      self.task_mgr)
         self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list)
         self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state)
         self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)

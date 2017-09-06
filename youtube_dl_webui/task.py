@@ -4,7 +4,6 @@
 import logging
 import os
 
-from hashlib import sha1
 from time import time
 
 from .config import ydl_conf
@@ -51,6 +50,7 @@ class TaskManager(object):
     are in invalid state or finished state, which only have database recoards
     but memory instance.
     """
+    ExerptKeys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
 
     def __init__(self, db, msg_cli):
         self.logger = logging.getLogger('ydl_webui')
@@ -136,3 +136,15 @@ class TaskManager(object):
 
         if del_file and dl_file is not None:
             os.remove(dl_file)
+
+    def query(self, tid, exerpt=True):
+        db_ret = self._db.query_task(tid)
+
+        detail = {}
+        if exerpt:
+            detail = {k: db_ret[k] for k in ret if k in self.ExerptKeys}
+        else:
+            detail = db_ret
+
+        return detail
+
