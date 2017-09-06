@@ -33,9 +33,13 @@ class Task(object):
         print('---- task  pause ----')
 
     def halt(self):
+        self.pause_time = time()
+        self.finish_time = time()
         print('---- task  halt ----')
 
     def finish(self):
+        self.pause_time = time()
+        self.finish_time = time()
         print('---- task  finish ----')
         pass
 
@@ -95,14 +99,6 @@ class TaskManager(object):
         elapsed = task.pause_time - task.start_time + task.status['elapsed']
         self._db.pause_task(tid, pause_time=task.pause_time, elapsed=elapsed)
 
-    def halt_task(self, tid):
-        self.logger.debug('task halted (%s)' %(tid))
-
-        if tid in self._tasks_dict:
-            task = self._tasks_dict[tid]
-            del self._tasks_dict[tid]
-            task.halt()
-
     def finish_task(self, tid):
         self.logger.debug('task finished (%s)' %(tid))
 
@@ -112,8 +108,20 @@ class TaskManager(object):
         task = self._tasks_dict[tid]
         del self._tasks_dict[tid]
         task.finish()
+        elapsed = task.finish_time - task.start_time + task.status['elapsed']
+        self._db.finish_task(tid, finish_time=task.finish_time, elapsed=elapsed)
 
-        self._db.finish_task(tid)
+    def halt_task(self, tid):
+        self.logger.debug('task halted (%s)' %(tid))
+
+        if tid not in self._tasks_dict:
+            raise TaskInexistenceError
+
+        task = self._tasks_dict[tid]
+        del self._tasks_dict[tid]
+        task.halt()
+        elapsed = task.finish_time - task.start_time + task.status['elapsed']
+        self._db.halt_task(tid, finish_time=task.halt_time, elapsed=elapsed)
 
     def delete_task(self, tid, del_file=False):
         self.logger.debug('task deleted (%s)' %(tid))

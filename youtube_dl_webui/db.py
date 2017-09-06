@@ -369,6 +369,41 @@ class DataBase(object):
                     }
         self.update(tid, db_data)
 
+    def finish_task(self, tid, elapsed, finish_time=time()):
+        self.logger.debug("db finish_task()")
+        state = state_index['finished']
+        db_data =   {
+                        'task_info': {  'state': state,
+                                        'finish_time': finish_time,
+                        },
+                        'task_status': {'pause_time': finish_time,
+                                        'eta': 0,
+                                        'speed': 0,
+                                        'elapsed': elapsed,
+                                        'state': state,
+                                        'percent': '100.0%',
+                        },
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
+
+    def halt_task(self, tid, elapsed, halt_time=time()):
+        self.logger.debug('db halt_task()')
+        state = state_index['invalid']
+        db_data =   {
+                        'task_info': {  'state': state,
+                                        'finish_time': finish_time,
+                        },
+                        'task_status': {'pause_time': finish_time,
+                                        'eta': 0,
+                                        'speed': 0,
+                                        'elapsed': elapsed,
+                                        'state': state,
+                        },
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
+
     def delete_task(self, tid):
         """ return the tmp file or file downloaded """
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
@@ -388,8 +423,4 @@ class DataBase(object):
         self.conn.commit()
 
         return dl_file
-
-    def finish_task(self, tid):
-        self.logger.debug("db finish_task()")
-
 
