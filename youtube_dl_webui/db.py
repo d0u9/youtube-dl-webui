@@ -229,7 +229,7 @@ class DataBase(object):
         self.conn.commit()
 
 
-    def update_log(self, tid, log):
+    def update_log_ob(self, tid, log):
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
@@ -287,8 +287,9 @@ class DataBase(object):
             f, v = '', []
             for name, val in data.items():
                 if name in self.tables[table]:
-                    f = f + '{}=?,'.format(name)
-                    v.append(val)
+                    if val is not None:
+                        f = f + '{}=(?),'.format(name)
+                        v.append(val)
                 else:
                     self.logger.warning('field_name(%s) does not exist' %(name))
             else:
@@ -474,3 +475,30 @@ class DataBase(object):
             state_counter[state_name[r['state']]] = r['NUM']
 
         return state_counter
+
+    def update_info(self, tid, info_dict):
+        self.logger.debug('db update_info()')
+        db_data =   {
+                        'title':            info_dict['title'],
+                        'format':           info_dict['format'],
+                        'ext':              info_dict['ext'],
+                        'thumbnail':        info_dict['thumbnail'],
+                        'duration':         info_dict['duration'],
+                        'view_count':       info_dict['view_count'],
+                        'like_count':       info_dict['like_count'],
+                        'dislike_count':    info_dict['dislike_count'],
+                        'average_rating':   info_dict['average_rating'],
+                        'description':      info_dict['description'],
+                    }
+        self.update(tid, {'task_info': db_data})
+
+    def update_log(self, tid, log, exist_test=False):
+        if exist_test:
+            self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+            row = self.db.fetchone()
+            if row is None:
+                raise TaskInexistenceError('')
+
+        log_str = json.dumps([l for l in log])
+        self.update(tid, {'task_status': {'log': log_str}})
+

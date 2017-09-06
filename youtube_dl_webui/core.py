@@ -41,70 +41,71 @@ class WebMsgDispatcher(object):
         cls._task_mgr = task_mgr
 
     @classmethod
-    def event_create(cls, svr, event, data, task_mgr):
+    def event_create(cls, svr, event, data, args):
         cls.logger.debug('url = %s' %(data['url']))
         try:
-            tid = task_mgr.new_task(data['url'], {'proxy': '12.12.12.12'})
+            ydl_opts = cls._task_mgr.ydl_conf.dict()
+            tid = cls._task_mgr.new_task(data['url'], ydl_opts=ydl_opts)
         except TaskExistenceError:
             svr.put(cls.TaskExistenceErrorMsg)
             return
 
-        task = task_mgr.start_task(tid)
+        task = cls._task_mgr.start_task(tid, first_run=True)
 
         svr.put({'status': 'success', 'tid': tid})
 
     @classmethod
-    def event_delete(cls, svr, event, data, task_mgr):
+    def event_delete(cls, svr, event, data, args):
         tid = data['tid']
         del_file = True if data['del_file'] == 'true' else False
 
         try:
-            task_mgr.delete_task(tid, del_file)
+            cls._task_mgr.delete_task(tid, del_file)
         except TaskInexistenceError:
             svr.put(cls.TaskInexistenceErrorMsg)
         else:
             svr.put(cls.SuccessMsg)
 
     @classmethod
-    def event_manipulation(cls, svr, event, data, task_mgr):
+    def event_manipulation(cls, svr, event, data, args):
         cls.logger.debug('manipulation event')
         tid, act = data['tid'], data['act']
 
         ret_val = cls.InternalErrorMsg
         if   act == 'pause':
-            task_mgr.pause_task(tid)
+            cls._task_mgr.pause_task(tid)
             ret_val = cls.SuccessMsg
         elif act == 'resume':
-            task_mgr.start_task(tid)
+            cls._task_mgr.start_task(tid)
             ret_val = cls.SuccessMsg
 
         svr.put(ret_val)
 
     @classmethod
-    def event_query(cls, svr, event, data, task_mgr):
+    def event_query(cls, svr, event, data, args):
         cls.logger.debug('query event')
         tid, exerpt = data['tid'], data['exerpt']
 
         try:
-            detail = task_mgr.query(tid, exerpt)
+            detail = cls._task_mgr.query(tid, exerpt)
         except TaskInexistenceError:
             svr.put(cls.TaskInexistenceErrorMsg)
         else:
             svr.put({'status': 'success', 'detail': detail})
 
     @classmethod
-    def event_list(cls, svr, event, data, task_mgr):
+    def event_list(cls, svr, event, data, args):
         exerpt, state = data['exerpt'], data['state']
 
         if state not in state_name:
             svr.put(cls.InvalidStateMsg)
         else:
-            d, c = task_mgr.list(state, exerpt)
+            d, c = cls._task_mgr.list(state, exerpt)
             svr.put({'status': 'success', 'detail': d, 'state_counter': c})
 
     @classmethod
-    def event_state(cls, svr, event, data, task_mgr):
-        c = task_mgr.state()
+    def event_state(cls, svr, event, data, args):
+        c = cls._task_mgr.state()
         svr.put({'status': 'success', 'detail': c})
 
     @classmethod
@@ -114,8 +115,21 @@ class WebMsgDispatcher(object):
 
 class WorkMsgDispatcher(object):
 
-    def init(cls, __unknow__=None):
-        pass
+    _task_mgr = None
+
+    @classmethod
+    def init(cls, task_mgr):
+        cls._task_mgr = task_mgr
+
+    @classmethod
+    def event_info_dict(cls, svr, event, data, arg):
+        tid, info_dict = data['tid'], data['data']
+        cls._task_mgr.update_info(tid, info_dict)
+
+    @classmethod
+    def event_log(cls, svr, event, data, arg):
+        tid, log = data['tid'], data['data']
+        cls._task_mgr.update_log(tid, log)
 
 
 def load_conf_from_file(cmd_args):
@@ -153,18 +167,21 @@ class Core(object):
         task_cli = self.msg_mgr.new_cli()
 
         self.db = DataBase(self.conf['general']['db_path'])
-        self.task_mgr = TaskManager(self.db, task_cli)
+        self.task_mgr = TaskManager(self.db, task_cli, self.conf)
 
         WebMsgDispatcher.init(self.task_mgr)
         WorkMsgDispatcher.init(self.task_mgr)
 
-        self.msg_mgr.reg_event('create',     WebMsgDispatcher.event_create,     self.task_mgr)
-        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.event_delete,     self.task_mgr)
-        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.event_manipulation, self.task_mgr)
-        self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query,      self.task_mgr)
-        self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list,       self.task_mgr)
-        self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state,      self.task_mgr)
+        self.msg_mgr.reg_event('create',     WebMsgDispatcher.event_create)
+        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.event_delete)
+        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.event_manipulation)
+        self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query)
+        self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list)
+        self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state)
         self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)
+
+        self.msg_mgr.reg_event('info_dict',  WorkMsgDispatcher.event_info_dict)
+        self.msg_mgr.reg_event('log',  WorkMsgDispatcher.event_log)
 
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
 
