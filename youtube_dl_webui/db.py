@@ -14,7 +14,7 @@ from .utils import TaskExistenceError
 from .utils import TaskInexistenceError
 from .utils import TaskPausedError
 from .utils import TaskRunningError
-from .task  import url2tid
+from .utils  import url2tid
 
 class DataBase(object):
     def __init__(self, db_path):

@@ -10,6 +10,10 @@ def new_uuid():
     return str(uuid.uuid4().hex)
 
 
+def url2tid(url):
+    return sha1(url.encode()).hexdigest()
+
+
 class YoutubeDLWebUI(Exception):
     """Base exception for YoutubeDL errors."""
     pass

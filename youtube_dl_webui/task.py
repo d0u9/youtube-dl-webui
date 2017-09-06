@@ -12,9 +12,7 @@ from .utils import TaskInexistenceError
 from .utils import TaskRunningError
 from .utils import TaskExistenceError
 from .utils import TaskPausedError
-
-def url2tid(url):
-    return sha1(url.encode()).hexdigest()
+from .utils import url2tid
 
 class Task(object):
 
