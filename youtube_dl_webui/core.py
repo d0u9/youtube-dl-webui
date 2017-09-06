@@ -55,7 +55,7 @@ class WebMsgDispatcher(object):
     @classmethod
     def delete_event(cls, svr, event, data, task_mgr):
         tid = data['tid']
-        del_file = True if data['del_data'] == 'true' else False
+        del_file = True if data['del_file'] == 'true' else False
 
         try:
             task_mgr.delete_task(tid, del_file)
