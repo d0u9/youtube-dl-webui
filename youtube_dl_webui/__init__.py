@@ -24,4 +24,4 @@ def main(argv=None):
 
     cmd_args = getopt(argv)
     core = Core(cmd_args=cmd_args)
-    core.run()
+    core.start()
