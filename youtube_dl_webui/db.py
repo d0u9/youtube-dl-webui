@@ -45,6 +45,16 @@ class DataBase(object):
         self.db = db
         self.conn = conn
 
+        # Get tables
+        self.tables = {}
+        self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        for row in self.db.fetchall():
+            self.tables[row['name']] = None
+
+        for table in self.tables:
+            c = self.conn.execute('SELECT * FROM {}'.format(table))
+            self.tables[table] = [desc[0] for desc in c.description]
+
 
     def get_unfinished(self):
         self.db.execute('SELECT tid FROM task_status WHERE state not in (?,?)',
@@ -268,7 +278,26 @@ class DataBase(object):
 
 
 
+    def update(self, tid, val_dict={}):
+        for table, data in val_dict.items():
+            if table not in self.tables:
+                self.logger.warning('table(%s) does not exist' %(table))
+                continue
 
+            f, v = '', []
+            for name, val in data.items():
+                if name in self.tables[table]:
+                    f = f + '{}=?,'.format(name)
+                    v.append(val)
+                else:
+                    self.logger.warning('field_name(%s) does not exist' %(name))
+            else:
+                f = f[:-1]
+
+            v.append(tid)
+            self.db.execute('UPDATE {} SET {} WHERE tid=(?)'.format(table, f), tuple(v))
+
+        self.conn.commit()
 
     def get_ydl_opts(self, tid):
         self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
@@ -316,6 +345,30 @@ class DataBase(object):
 
         return tid
 
+    def start_task(self, tid, start_time=time()):
+        state = state_index['downloading']
+        db_data =   {
+                        'task_info': {'state': state},
+                        'task_status': {'start_time': start_time, 'state': state},
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
+
+    def pause_task(self, tid, elapsed, pause_time=time()):
+        self.logger.debug("db pause_task()")
+        state = state_index['paused']
+        db_data =   {
+                        'task_info': {'state': state},
+                        'task_status': {'pause_time': pause_time,
+                                        'eta': 0,
+                                        'speed': 0,
+                                        'elapsed': elapsed,
+                                        'state': state,
+                        },
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
+
     def delete_task(self, tid):
         """ return the tmp file or file downloaded """
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
@@ -335,9 +388,6 @@ class DataBase(object):
         self.conn.commit()
 
         return dl_file
-
-    def pause_task(self, tid):
-        self.logger.debug("db pause_task()")
 
     def finish_task(self, tid):
         self.logger.debug("db finish_task()")

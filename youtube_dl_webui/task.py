@@ -5,6 +5,7 @@ import logging
 import os
 
 from hashlib import sha1
+from time import time
 
 from .config import ydl_conf
 from .utils import TaskInexistenceError
@@ -24,9 +25,11 @@ class Task(object):
         self.status = status
 
     def start(self):
+        self.start_time = time()
         print('---- task  start ----')
 
     def pause(self):
+        self.pause_time = time()
         print('---- task  pause ----')
 
     def halt(self):
@@ -77,6 +80,7 @@ class TaskManager(object):
             self._tasks_dict[tid] = task
 
         task.start()
+        self._db.start_task(tid, start_time=task.start_time)
 
         return task
 
@@ -88,7 +92,8 @@ class TaskManager(object):
 
         task = self._tasks_dict[tid]
         task.pause()
-        self._db.pause_task(tid)
+        elapsed = task.pause_time - task.start_time + task.status['elapsed']
+        self._db.pause_task(tid, pause_time=task.pause_time, elapsed=elapsed)
 
     def halt_task(self, tid):
         self.logger.debug('task halted (%s)' %(tid))
