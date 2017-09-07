@@ -56,8 +56,7 @@ class WebMsgDispatcher(object):
 
     @classmethod
     def event_delete(cls, svr, event, data, args):
-        tid = data['tid']
-        del_file = True if data['del_file'] == 'true' else False
+        tid, del_file = data['tid'], data['del_file']
 
         try:
             cls._task_mgr.delete_task(tid, del_file)
@@ -200,6 +199,15 @@ class Core(object):
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
 
     def start(self):
+        dl_dir = self.conf['general']['download_dir']
+        try:
+            os.makedirs(dl_dir, exist_ok=True)
+            self.logger.info('Download dir: %s' %(dl_dir))
+            os.chdir(dl_dir)
+        except PermissionError:
+            self.logger.critical('Permission error when accessing download dir')
+            exit(1)
+
         self.server.start()
         self.msg_mgr.run()
 

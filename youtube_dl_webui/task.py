@@ -199,7 +199,9 @@ class TaskManager(object):
             raise TaskInexistenceError(e.msg)
 
         if del_file and dl_file is not None:
-            os.remove(dl_file)
+            abs_dl_file = os.path.join(os.getcwd(), dl_file)
+            self.logger.debug('delete file: %s' %(abs_dl_file))
+            os.remove(abs_dl_file)
 
     def query(self, tid, exerpt=True):
         db_ret = self._db.query_task(tid)

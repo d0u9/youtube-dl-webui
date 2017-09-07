@@ -55,9 +55,10 @@ def list_state():
 
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
+    del_flag = request.args.get('del_file', False)
     payload = {}
     payload['tid'] = tid
-    payload['del_file'] = not not request.args.get('del_file', False)
+    payload['del_file'] = False if del_flag is False else True
 
     MSG.put('delete', payload)
     return json.dumps(MSG.get())

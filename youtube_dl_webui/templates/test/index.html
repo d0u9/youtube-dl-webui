@@ -113,7 +113,7 @@
         });
 
         $("#del-task").click(function () {
-            var act = $("#del-file").is(":checked") ? '?del_data=true' : '';
+            var act = $("#del-file").is(":checked") ? '?del_file=true' : '';
 
             $.ajax({ url: host + '/task/tid/' + $("#tid").val() + act,
                 type: 'DELETE',
