@@ -17,7 +17,7 @@
             </div>
             <div class="row">
                 <label class="left" for="tid">TID:</label>
-                <input class="right" id="tid" type="text" style="width:350px;">
+                <input class="right" id="tid" type="text" style="width:350px;"> </div>
             </div>
             <div class="row">
                 <label class="left">Actions:</label>
@@ -27,6 +27,15 @@
                 <span class="left">Del:</span>
                 <button id="del-task">Delete</button>
                 <input id="del-file" type="checkbox" value="del">Delete File
+            </div>
+            <div class="row">
+                <label class="left">Batch actions:</label>
+                <button id="pause-task-batch">Pause</button> <button id="resume-task-batch">Resume</button>
+            </div>
+            <div class="row">
+                <span class="left">Batch Del:</span>
+                <button id="del-task-batch">Delete</button>
+                <input id="del-file-batch" type="checkbox" value="del">Delete File
             </div>
         </fieldset>
         <div class="row"></div>
@@ -103,12 +112,40 @@
             });
         });
 
+        $("#pause-task-batch").click(function() {
+            var data = { tids: [ $("#tid").val() ] };
+
+            $.ajax({url: host + '/task/batch/pause',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
+            });
+        });
+
         $("#resume-task").click(function() {
             $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=resume',
                 type: 'PUT',
                 success : function(result) {
                     console.log(result);
                 }
+            });
+        });
+
+        $("#resume-task-batch").click(function() {
+            var data = { tids: [ $("#tid").val() ] };
+
+            $.ajax({url: host + '/task/batch/resume',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
             });
         });
 
@@ -120,6 +157,21 @@
                 success : function(result) {
                     console.log(result);
                 }
+            });
+        });
+
+        $("#del-task-batch").click(function () {
+            var del_flag = $("#del-file-batch").is(":checked") ? 'true' : 'false';
+            var data = { tids: [ $("#tid").val() ], del_file: del_flag };
+
+            $.ajax({url: host + '/task/batch/delete',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
             });
         });
 

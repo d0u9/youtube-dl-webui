@@ -155,7 +155,7 @@ class TaskManager(object):
         self.logger.debug('task paused (%s)' %(tid))
 
         if tid not in self._tasks_dict:
-            raise TaskInexistenceError
+            raise TaskInexistenceError('task does not exist')
 
         task = self._tasks_dict[tid]
         task.pause()
@@ -166,7 +166,7 @@ class TaskManager(object):
         self.logger.debug('task finished (%s)' %(tid))
 
         if tid not in self._tasks_dict:
-            raise TaskInexistenceError
+            raise TaskInexistenceError('task does not exist')
 
         task = self._tasks_dict[tid]
         del self._tasks_dict[tid]
@@ -178,7 +178,7 @@ class TaskManager(object):
         self.logger.debug('task halted (%s)' %(tid))
 
         if tid not in self._tasks_dict:
-            raise TaskInexistenceError
+            raise TaskInexistenceError('task does not exist')
 
         task = self._tasks_dict[tid]
         del self._tasks_dict[tid]
@@ -233,7 +233,8 @@ class TaskManager(object):
 
     def update_info(self, tid, info_dict):
         if tid not in self._tasks_dict:
-            raise TaskInexistenceError
+            raise TaskInexistenceError('task does not exist')
+
         task = self._tasks_dict[tid]
         task.update_info(info_dict)
 
@@ -241,7 +242,7 @@ class TaskManager(object):
 
     def update_log(self, tid, log):
         if tid not in self._tasks_dict:
-            raise TaskInexistenceError
+            raise TaskInexistenceError('task does not exist')
 
         task = self._tasks_dict[tid]
         task.update_log(log)
@@ -249,7 +250,8 @@ class TaskManager(object):
 
     def progress_update(self, tid, data):
         if tid not in self._tasks_dict:
-            raise TaskInexistenceError
+            raise TaskInexistenceError('task does not exist')
+
         task = self._tasks_dict[tid]
         task.progress_update(data)
 

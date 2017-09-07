@@ -33,6 +33,7 @@ class WebMsgDispatcher(object):
     TaskInexistenceErrorMsg = {'status': 'error', 'errmsg': 'Task does not exist'}
     UrlErrorMsg             = {'status': 'error', 'errmsg': 'URL is invalid'}
     InvalidStateMsg         = {'status': 'error', 'errmsg': 'invalid query state'}
+    RequestErrorMsg         = {'status': 'error', 'errmsg': 'request error'}
 
     _task_mgr = None
 
@@ -70,7 +71,7 @@ class WebMsgDispatcher(object):
         cls.logger.debug('manipulation event')
         tid, act = data['tid'], data['act']
 
-        ret_val = cls.InternalErrorMsg
+        ret_val = cls.RequestErrorMsg
         if   act == 'pause':
             cls._task_mgr.pause_task(tid)
             ret_val = cls.SuccessMsg
@@ -110,6 +111,43 @@ class WebMsgDispatcher(object):
     @classmethod
     def event_config(cls, svr, event, data, arg):
         svr.put({})
+
+    @classmethod
+    def event_batch(cls, svr, event, data, arg):
+        act, detail = data['act'], data['detail']
+
+        if 'tids' not in detail:
+            svr.put(cls.RequestErrorMsg)
+            return
+
+        tids = detail['tids']
+        errors = []
+        if   act == 'pause':
+            for tid in tids:
+                try:
+                    cls._task_mgr.pause_task(tid)
+                except TaskInexistenceError:
+                    errors.append([tid, 'inexistence error'])
+        elif act == 'resume':
+            for tid in tids:
+                try:
+                    cls._task_mgr.start_task(tid)
+                except TaskInexistenceError:
+                    errors.append([tid, 'inexistence error'])
+        elif act == 'delete':
+            del_file = True if detail.get('del_file', 'false') == 'true' else False
+            for tid in tids:
+                try:
+                    cls._task_mgr.delete_task(tid, del_file)
+                except TaskInexistenceError:
+                    errors.append([tid, 'inexistence error'])
+
+        if errors:
+            ret_val = {'status': 'success', 'detail': errors}
+        else:
+            ret_val = cls.SuccessMsg
+
+        svr.put(ret_val)
 
 
 class WorkMsgDispatcher(object):
@@ -194,6 +232,7 @@ class Core(object):
         self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list)
         self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state)
         self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)
+        self.msg_mgr.reg_event('batch',      WebMsgDispatcher.event_batch)
 
         self.msg_mgr.reg_event('info_dict',  WorkMsgDispatcher.event_info_dict)
         self.msg_mgr.reg_event('log',        WorkMsgDispatcher.event_log)

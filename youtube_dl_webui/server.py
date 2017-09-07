@@ -53,6 +53,13 @@ def list_state():
     return json.dumps(MSG.get())
 
 
+@app.route('/task/batch/<action>', methods=['POST'])
+def task_batch(action):
+    payload={'act': action, 'detail': request.get_json()}
+
+    MSG.put('batch', payload)
+    return json.dumps(MSG.get())
+
 @app.route('/task/tid/<tid>', methods=['DELETE'])
 def delete_task(tid):
     del_flag = request.args.get('del_file', False)
