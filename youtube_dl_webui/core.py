@@ -115,9 +115,17 @@ class WebMsgDispatcher(object):
         act = data['act']
 
         ret_val = cls.RequestErrorMsg
-        if act == 'get':
+        if   act == 'get':
             ret_val = {'status': 'success'}
             ret_val['config'] = cls._conf.dict()
+        elif act == 'update':
+            conf_dict = data['param']
+            cls._conf.load(conf_dict)
+            suc, msg = cls._conf.save2file()
+            if suc:
+                ret_val = cls.SuccessMsg
+            else:
+                ret_val = {'status': 'error', 'errmsg': msg}
 
         svr.put(ret_val)
 
@@ -201,11 +209,12 @@ def load_conf_from_file(cmd_args):
     logger.info('load config file (%s)' %(conf_file))
 
     if cmd_args is None or conf_file is None:
-        return ({}, {})
+        return (None, {}, {})
 
+    abs_file = os.path.abspath(conf_file)
     try:
-        with open(expanduser(conf_file)) as f:
-            return (json.load(f), cmd_args)
+        with open(abs_file) as f:
+            return (abs_file, json.load(f), cmd_args)
     except FileNotFoundError as e:
         logger.critical("Config file (%s) doesn't exist", conf_file)
         exit(1)
@@ -219,10 +228,9 @@ class Core(object):
 
         self.logger.debug('cmd_args = %s' %(cmd_args))
 
-        conf_dict, cmd_args = load_conf_from_file(cmd_args)
-        self.conf = conf(conf_dict=conf_dict, cmd_args=cmd_args)
+        conf_file, conf_dict, cmd_args = load_conf_from_file(cmd_args)
+        self.conf = conf(conf_file, conf_dict=conf_dict, cmd_args=cmd_args)
         self.logger.debug("configuration: \n%s", json.dumps(self.conf.dict(), indent=4))
-
 
         self.msg_mgr = MsgMgr()
         web_cli  = self.msg_mgr.new_cli('server')

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import json
 
 from os.path import expanduser
 
@@ -91,8 +92,9 @@ class conf(object):
     svr_conf = None
     gen_conf = None
 
-    def __init__(self, conf_dict={}, cmd_args={}):
+    def __init__(self, conf_file, conf_dict={}, cmd_args={}):
         self.logger = logging.getLogger('ydl_webui')
+        self.conf_file = conf_file
         self.cmd_args = cmd_args
         self.load(conf_dict)
 
@@ -121,6 +123,20 @@ class conf(object):
 
         # override configurations by cmdline arguments
         self.cmd_args_override()
+
+    def save2file(self):
+        print(self.dict())
+        print(self.conf_file)
+        if self.conf_file is not None:
+            try:
+                with open(self.conf_file, 'w') as f:
+                    json.dump(self.dict(), f, indent=4)
+            except PermissionError:
+                return (False, 'permission error')
+            except FileNotFoundError:
+                return (False, 'can not find file')
+            else:
+                return (True, None)
 
     def dict(self):
         d = {}
