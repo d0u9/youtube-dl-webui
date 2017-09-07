@@ -258,3 +258,10 @@ class TaskManager(object):
             data['total_bytes'] = '0'
 
         self._db.progress_update(tid, data, task.elapsed)
+
+    def launch_unfinished(self):
+        tid_list = self._db.launch_unfinished()
+
+        for t in tid_list:
+            self.start_task(t)
+

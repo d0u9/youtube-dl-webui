@@ -296,3 +296,16 @@ class DataBase(object):
                     }
         self.update(tid, {'task_status': db_data})
 
+    def launch_unfinished(self):
+        self.db.execute('SELECT tid FROM task_status WHERE state in (?)',
+                        (state_index['downloading'],))
+
+        rows = self.db.fetchall()
+
+        ret_val = []
+        for row in rows:
+            ret_val.append(row['tid'])
+
+        return ret_val
+
+

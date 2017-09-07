@@ -211,6 +211,7 @@ class Core(object):
             self.logger.critical('Permission error when accessing download dir')
             exit(1)
 
+        self.task_mgr.launch_unfinished()
         self.server.start()
         self.msg_mgr.run()
 
