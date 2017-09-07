@@ -36,10 +36,12 @@ class WebMsgDispatcher(object):
     RequestErrorMsg         = {'status': 'error', 'errmsg': 'request error'}
 
     _task_mgr = None
+    _conf = None
 
     @classmethod
-    def init(cls, task_mgr):
+    def init(cls, conf, task_mgr):
         cls._task_mgr = task_mgr
+        cls._conf = conf
 
     @classmethod
     def event_create(cls, svr, event, data, args):
@@ -110,7 +112,14 @@ class WebMsgDispatcher(object):
 
     @classmethod
     def event_config(cls, svr, event, data, arg):
-        svr.put({})
+        act = data['act']
+
+        ret_val = cls.RequestErrorMsg
+        if act == 'get':
+            ret_val = {'status': 'success'}
+            ret_val['config'] = cls._conf.dict()
+
+        svr.put(ret_val)
 
     @classmethod
     def event_batch(cls, svr, event, data, arg):
@@ -222,7 +231,7 @@ class Core(object):
         self.db = DataBase(self.conf['general']['db_path'])
         self.task_mgr = TaskManager(self.db, task_cli, self.conf)
 
-        WebMsgDispatcher.init(self.task_mgr)
+        WebMsgDispatcher.init(self.conf, self.task_mgr)
         WorkMsgDispatcher.init(self.task_mgr)
 
         self.msg_mgr.reg_event('create',     WebMsgDispatcher.event_create)

@@ -72,11 +72,11 @@
         <div class="row">
             <b>-- youtubedl --</b>
         </div>
-        <div class="row ydl">
+        <div class="row youtube_dl">
             <label class="left" for="format">Format:</label>
             <input class="right" id="format" type="text">
         </div>
-        <div class="row ydl">
+        <div class="row youtube_dl">
             <label class="left" for="proxy">Proxy:</label>
             <input class="right" id="proxy" type="text">
         </div>
@@ -178,6 +178,7 @@
         $("#conf-reset").click(function () {
             $.get(host + '/config',
             function (data, status) {
+                console.log(data)
                 config = data['config'];
                 for (let cls in config) {
                     items = config[cls];
