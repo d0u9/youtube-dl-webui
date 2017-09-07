@@ -76,8 +76,8 @@ class DataBase(object):
         self.conn.commit()
 
     def get_ydl_opts(self, tid):
-        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
-                        (tid, state_index['finished'], state_index['invalid']))
+        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?)',
+                        (tid, state_index['finished']))
         row = self.db.fetchone()
 
         if row is None:
@@ -168,9 +168,9 @@ class DataBase(object):
         state = state_index['invalid']
         db_data =   {
                         'task_info': {  'state': state,
-                                        'finish_time': finish_time,
+                                        'finish_time': halt_time,
                         },
-                        'task_status': {'pause_time': finish_time,
+                        'task_status': {'pause_time': halt_time,
                                         'eta': 0,
                                         'speed': 0,
                                         'elapsed': elapsed,

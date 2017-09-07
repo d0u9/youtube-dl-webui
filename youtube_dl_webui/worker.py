@@ -68,7 +68,7 @@ class LogFilter(object):
 
     def error(self, msg):
         self.logger.debug('error: %s' %(self.ansi_escape(msg)))
-        payload = {'time': int(time()), 'type': 'warning', 'error': self.ansi_escape(msg)}
+        payload = {'time': int(time()), 'type': 'warning', 'msg': self.ansi_escape(msg)}
         self.msg_cli.put('log', {'tid': self.tid, 'data': payload})
 
     def ansi_escape(self, msg):
@@ -78,12 +78,13 @@ class LogFilter(object):
 
 class FatalEvent(object):
     def __init__(self, tid, msg_cli):
+        self.logger = logging.getLogger('ydl_webui')
         self.tid = tid
         self.msg_cli = msg_cli
 
     def invalid_url(self, url):
         self.logger.debug('fatal error: invalid url')
-        payload = {'time': int(time()), 'type': 'invalid_url', 'error': 'invalid url: %s' %(url)}
+        payload = {'time': int(time()), 'type': 'fatal', 'msg': 'invalid url: %s' %(url)}
         self.msg_cli.put('fatal', {'tid': self.tid, 'data': payload})
 
 

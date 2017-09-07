@@ -201,7 +201,7 @@ class WorkMsgDispatcher(object):
         tid, data = data['tid'], data['data']
 
         cls._task_mgr.update_log(tid, data)
-        if data['type'] == 'invalid_url':
+        if data['type'] == 'fatal':
             cls._task_mgr.halt_task(tid)
 
     @classmethod
@@ -265,6 +265,7 @@ class Core(object):
         self.msg_mgr.reg_event('info_dict',  WorkMsgDispatcher.event_info_dict)
         self.msg_mgr.reg_event('log',        WorkMsgDispatcher.event_log)
         self.msg_mgr.reg_event('progress',   WorkMsgDispatcher.event_progress)
+        self.msg_mgr.reg_event('fatal',      WorkMsgDispatcher.event_fatal)
 
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
 

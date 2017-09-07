@@ -164,18 +164,3 @@ class conf(object):
     def __getitem__(self, key):
         return self.get_val(key)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -70,7 +70,7 @@ class Task(object):
         tm = time()
         self.state = state_index['invalid']
 
-        self.pause_time = tm
+        self.halt_time = tm
         self.finish_time = tm
         self.elapsed = self.elapsed + (tm - self.touch)
         self.touch = tm
@@ -188,7 +188,7 @@ class TaskManager(object):
 
         task = self._tasks_dict[tid]
         task.halt()
-        self._db.halt_task(tid, finish_time=task.halt_time, elapsed=task.elapsed)
+        self._db.halt_task(tid, halt_time=task.halt_time, elapsed=task.elapsed)
         self._db.update_log(tid, task.log)
         del self._tasks_dict[tid]
 
