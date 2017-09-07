@@ -143,6 +143,9 @@ class WorkMsgDispatcher(object):
         tid, data = data['tid'], data['data']
         cls._task_mgr.progress_update(tid, data)
 
+        if data['status'] == 'finished':
+            cls._task_mgr.finish_task(tid)
+
 
 def load_conf_from_file(cmd_args):
     logger = logging.getLogger('ydl_webui')
