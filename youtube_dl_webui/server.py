@@ -97,6 +97,7 @@ def query_task(tid):
 
 @app.route('/config', methods=['GET', 'POST'])
 def get_config():
+    payload = {}
     if request.method == 'POST':
         payload['act'] = 'update'
         payload['param'] = request.get_json()
