@@ -227,7 +227,7 @@ class DataBase(object):
         ret_val = []
         for row in rows:
             t = {}
-            for key in row.keys():
+            for key in set(row.keys()):
                 if key == 'state':
                     s = row[key]
                     t[key] = state_name[s]
