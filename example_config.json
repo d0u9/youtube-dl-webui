@@ -2,7 +2,7 @@
     "general": {
         "download_dir": "/tmp/youtube_dl",
         "db_path": "/tmp/youtube_dl_webui.db",
-        "download_log_size": 10
+        "log_size": 10
     },
     "server": {
         "host": "0.0.0.0",

@@ -75,7 +75,7 @@ class gen_conf(conf_base):
             #(key,              default_val,                type,       validate_regex,     call_function)
             ('download_dir',    '~/Downloads/youtube-dl',   'string',   '',                 expanduser),
             ('db_path',         '~/.conf/ydl_webui.db',     'string',   '',                 expanduser),
-            ('task_log_size',   10,                         'int',      '',                 None),
+            ('log_size',        10,                         'int',      '',                 None),
         ]
 
     def __init__(self, conf_dict={}):

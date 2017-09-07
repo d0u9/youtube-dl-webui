@@ -20,12 +20,12 @@ from .worker import Worker
 
 class Task(object):
 
-    def __init__(self, tid, msg_cli, ydl_opts={}, info={}, status={}):
+    def __init__(self, tid, msg_cli, ydl_opts={}, info={}, status={}, log_size=10):
         self.tid = tid
         self.ydl_opts = ydl_opts
         self.ydl_conf = ydl_conf(ydl_opts)
         self.info = info
-        self.log = deque(maxlen=10)
+        self.log = deque(maxlen=log_size)
         self.msg_cli = msg_cli
         self.touch = time()
         self.state = None
@@ -141,7 +141,8 @@ class TaskManager(object):
             except TaskInexistenceError as e:
                 raise TaskInexistenceError(e.msg)
 
-            task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info, status=status)
+            task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info, 
+                        status=status, log_size=self._conf['general']['log_size'])
             self._tasks_dict[tid] = task
 
         task.start()
