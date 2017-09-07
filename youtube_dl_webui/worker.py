@@ -109,11 +109,9 @@ class Worker(Process):
         with YoutubeDL(self.ydl_opts) as ydl:
             try:
                 if self.first_run:
-                    print(self.url)
                     info_dict = ydl.extract_info(self.url, download=False)
 
                     #  self.logger.debug(json.dumps(info_dict, indent=4))
-                    print(info_dict['like_count'])
 
                     info_dict['description'] = info_dict['description'].replace('\n', '<br />');
                     payload = {'tid': self.tid, 'data': info_dict}

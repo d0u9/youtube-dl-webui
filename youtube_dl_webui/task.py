@@ -21,6 +21,7 @@ from .worker import Worker
 class Task(object):
 
     def __init__(self, tid, msg_cli, ydl_opts={}, info={}, status={}, log_size=10):
+        self.logger = logging.getLogger('ydl_webui')
         self.tid = tid
         self.ydl_opts = ydl_opts
         self.ydl_conf = ydl_conf(ydl_opts)
@@ -37,7 +38,7 @@ class Task(object):
             self.log.appendleft(log)
 
     def start(self):
-        print('---- task  start ----')
+        self.logger.debug('Task starts, tid = %s' %(self.tid))
         tm = time()
         self.state = state_index['downloading']
 
@@ -53,6 +54,7 @@ class Task(object):
         self.worker.start()
 
     def pause(self):
+        self.logger.debug('Task pauses, tid = %s' %(self.tid))
         tm = time()
         self.state = state_index['paused']
 
@@ -62,9 +64,9 @@ class Task(object):
 
         self.worker.stop()
         self.log.appendleft({'time': int(tm), 'type': 'debug', 'msg': 'Task pauses...'})
-        print('---- task  pause ----')
 
     def halt(self):
+        self.logger.debug('Task halts, tid = %s' %(self.tid))
         tm = time()
         self.state = state_index['invalid']
 
@@ -75,9 +77,9 @@ class Task(object):
 
         self.worker.stop()
         self.log.appendleft({'time': int(tm), 'type': 'debug', 'msg': 'Task halts...'})
-        print('---- task  halt ----')
 
     def finish(self):
+        self.logger.debug('Task finishes, tid = %s' %(self.tid))
         tm = time()
         self.state = state_index['finished']
 
@@ -88,7 +90,6 @@ class Task(object):
 
         self.worker.stop()
         self.log.appendleft({'time': int(tm), 'type': 'debug', 'msg': 'Task finishs...'})
-        print('---- task  finish ----')
 
     def update_info(self, info_dict):
         self.first_run = False

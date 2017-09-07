@@ -125,8 +125,6 @@ class conf(object):
         self.cmd_args_override()
 
     def save2file(self):
-        print(self.dict())
-        print(self.conf_file)
         if self.conf_file is not None:
             try:
                 with open(self.conf_file, 'w') as f:
