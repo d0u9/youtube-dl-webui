@@ -1,10 +1,3 @@
-DROP TABLE IF EXISTS task_param;
-CREATE TABLE task_param (
-    tid     TEXT    PRIMARY KEY NOT NULL,
-    state   INTEGER NOT NULL DEFAULT 2,
-    url     TEXT    NOT NULL
-);
-
 DROP TABLE IF EXISTS task_info;
 CREATE TABLE task_info (
     tid     TEXT    PRIMARY KEY NOT NULL,
