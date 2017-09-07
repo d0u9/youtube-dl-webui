@@ -240,7 +240,7 @@ class DataBase(object):
         self.conn.commit()
 
 
-    def progress_update(self, tid, d):
+    def progress_update_ob(self, tid, d):
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
@@ -320,7 +320,7 @@ class DataBase(object):
         return dict(row)
 
     def get_info(self, tid):
-        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        self.db.execute('SELECT * FROM task_info WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
 
         if row is None:
@@ -479,6 +479,7 @@ class DataBase(object):
     def update_info(self, tid, info_dict):
         self.logger.debug('db update_info()')
         db_data =   {
+                        'valid':            1,      # info_dict is updated
                         'title':            info_dict['title'],
                         'format':           info_dict['format'],
                         'ext':              info_dict['ext'],
@@ -501,4 +502,20 @@ class DataBase(object):
 
         log_str = json.dumps([l for l in log])
         self.update(tid, {'task_status': {'log': log_str}})
+
+    def progress_update(self, tid, d, elapsed):
+        self.logger.debug("update filename=%s, tmpfilename=%s" %(d['filename'], d['tmpfilename']))
+
+        db_data =   {
+                        'percent':              d['_percent_str'],
+                        'filename':             d['filename'],
+                        'tmpfilename':          d['tmpfilename'],
+                        'downloaded_bytes':     d['downloaded_bytes'],
+                        'total_bytes':          d['total_bytes'],
+                        'total_bytes_estmt':    d['total_bytes_estimate'],
+                        'speed':                d['speed'],
+                        'eta':                  d['eta'],
+                        'elapsed':              elapsed,
+                    }
+        self.update(tid, {'task_status': db_data})
 

@@ -50,7 +50,7 @@ class WebMsgDispatcher(object):
             svr.put(cls.TaskExistenceErrorMsg)
             return
 
-        task = cls._task_mgr.start_task(tid, first_run=True)
+        task = cls._task_mgr.start_task(tid)
 
         svr.put({'status': 'success', 'tid': tid})
 
@@ -139,6 +139,11 @@ class WorkMsgDispatcher(object):
         if data['type'] == 'invalid_url':
             cls._task_mgr.halt_task(tid)
 
+    @classmethod
+    def event_progress(cls, svr, event, data, arg):
+        tid, data = data['tid'], data['data']
+        cls._task_mgr.progress_update(tid, data)
+
 
 def load_conf_from_file(cmd_args):
     logger = logging.getLogger('ydl_webui')
@@ -189,7 +194,8 @@ class Core(object):
         self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)
 
         self.msg_mgr.reg_event('info_dict',  WorkMsgDispatcher.event_info_dict)
-        self.msg_mgr.reg_event('log',  WorkMsgDispatcher.event_log)
+        self.msg_mgr.reg_event('log',        WorkMsgDispatcher.event_log)
+        self.msg_mgr.reg_event('progress',   WorkMsgDispatcher.event_progress)
 
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
 

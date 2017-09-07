@@ -10,6 +10,7 @@ CREATE TABLE task_info (
     tid     TEXT    PRIMARY KEY NOT NULL,
     url     TEXT    NOT NULL,
     state   INTEGER NOT NULL DEFAULT 2,
+    valid   INTEGER NOT NULL DEFAULT 0,
     title   TEXT    NOT NULL DEFAULT '',
     create_time REAL    DEFAULT 0.0,
     finish_time REAL    DEFAULT 0.0,

@@ -10,61 +10,44 @@ from youtube_dl import DownloadError
 
 from multiprocessing import Process
 from time import time
-from copy import deepcopy
-
-WQ_DICT = {'from': 'worker'}
-MSG = None
-
 
 class YdlHook(object):
     def __init__(self, tid, msg_cli):
         self.logger = logging.getLogger('ydl_webui')
         self.tid = tid
         self.msg_cli = msg_cli
-        #  self.wqd = deepcopy(WQ_DICT)
-        #  self.wqd['tid'] = self.tid
-        #  self.wqd['msgtype'] = 'progress'
-        #  self.wqd['data'] = None
-
 
     def finished(self, d):
         self.logger.debug('finished status')
-        #  d['_percent_str'] = '100%'
-        #  d['speed'] = '0'
-        #  d['elapsed'] = 0
-        #  d['eta'] = 0
-        #  d['downloaded_bytes'] = d['total_bytes']
-
-        #  return d
-
+        d['_percent_str'] = '100%'
+        d['speed'] = '0'
+        d['elapsed'] = 0
+        d['eta'] = 0
+        d['downloaded_bytes'] = d['total_bytes']
+        return d
 
     def downloading(self, d):
         self.logger.debug('downloading status')
-        #  return d
-
+        return d
 
     def error(self, d):
         self.logger.debug('error status')
         #  d['_percent_str'] = '100%'
-        #  return d
-
+        return d
 
     def dispatcher(self, d):
-        pass
-        #  if 'total_bytes_estimate' not in d:
-            #  d['total_bytes_estimate'] = 0
-        #  if 'tmpfilename' not in d:
-            #  d['tmpfilename'] = ''
+        if 'total_bytes_estimate' not in d:
+            d['total_bytes_estimate'] = 0
+        if 'tmpfilename' not in d:
+            d['tmpfilename'] = ''
 
-        #  if d['status'] == 'finished':
-            #  d = self.finished(d)
-        #  elif d['status'] == 'downloading':
-            #  d = self.downloading(d)
-        #  elif d['error'] == 'error':
-            #  d = self.error(d)
-
-        #  self.wqd['data'] = d
-        #  self.wq.put(self.wqd)
+        if d['status'] == 'finished':
+            d = self.finished(d)
+        elif d['status'] == 'downloading':
+            d = self.downloading(d)
+        elif d['error'] == 'error':
+            d = self.error(d)
+        self.msg_cli.put('progress', {'tid': self.tid, 'data': d})
 
 
 class LogFilter(object):
@@ -137,7 +120,7 @@ class Worker(Process):
                     self.msg_cli.put('info_dict', payload)
 
                 self.logger.info('start downloading ...')
-                #  ydl.download([self.url])
+                ydl.download([self.url])
             except DownloadError as e:
                 # url error
                 event_handler = FatalEvent(self.tid, self.msg_cli)
