@@ -117,7 +117,7 @@ class Worker(Process):
                     payload = {'tid': self.tid, 'data': info_dict}
                     self.msg_cli.put('info_dict', payload)
 
-                self.logger.info('start downloading ...')
+                self.logger.info('start downloading, url - %s' %(self.url))
                 ydl.download([self.url])
             except DownloadError as e:
                 # url error

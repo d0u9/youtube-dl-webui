@@ -12,8 +12,6 @@ from time import time
 from .utils import state_index, state_name
 from .utils import TaskExistenceError
 from .utils import TaskInexistenceError
-from .utils import TaskPausedError
-from .utils import TaskRunningError
 from .utils  import url2tid
 
 class DataBase(object):

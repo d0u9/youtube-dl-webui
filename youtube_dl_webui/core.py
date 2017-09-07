@@ -14,9 +14,8 @@ from os.path import expanduser
 from .utils import state_name
 from .db import DataBase
 from .utils import TaskInexistenceError
-from .utils import TaskRunningError
 from .utils import TaskExistenceError
-from .utils import TaskPausedError
+from .utils import TaskError
 from .server import Server
 from .worker import Worker
 
@@ -32,8 +31,8 @@ class WebMsgDispatcher(object):
     TaskExistenceErrorMsg   = {'status': 'error', 'errmsg': 'URL is already added'}
     TaskInexistenceErrorMsg = {'status': 'error', 'errmsg': 'Task does not exist'}
     UrlErrorMsg             = {'status': 'error', 'errmsg': 'URL is invalid'}
-    InvalidStateMsg         = {'status': 'error', 'errmsg': 'invalid query state'}
-    RequestErrorMsg         = {'status': 'error', 'errmsg': 'request error'}
+    InvalidStateMsg         = {'status': 'error', 'errmsg': 'Invalid query state'}
+    RequestErrorMsg         = {'status': 'error', 'errmsg': 'Request error'}
 
     _task_mgr = None
     _conf = None
@@ -75,11 +74,19 @@ class WebMsgDispatcher(object):
 
         ret_val = cls.RequestErrorMsg
         if   act == 'pause':
-            cls._task_mgr.pause_task(tid)
-            ret_val = cls.SuccessMsg
+            try:
+                cls._task_mgr.pause_task(tid)
+            except TaskError as e:
+                ret_val = {'status': 'error', 'errmsg': e.msg}
+            else:
+                ret_val = cls.SuccessMsg
         elif act == 'resume':
-            cls._task_mgr.start_task(tid)
-            ret_val = cls.SuccessMsg
+            try:
+                cls._task_mgr.start_task(tid)
+            except TaskError as e:
+                ret_val = {'status': 'error', 'errmsg': e.msg}
+            else:
+                ret_val = cls.SuccessMsg
 
         svr.put(ret_val)
 
@@ -144,20 +151,24 @@ class WebMsgDispatcher(object):
                 try:
                     cls._task_mgr.pause_task(tid)
                 except TaskInexistenceError:
-                    errors.append([tid, 'inexistence error'])
+                    errors.append([tid, 'Inexistence error'])
+                except TaskError as e:
+                    errors.append([tid, e.msg])
         elif act == 'resume':
             for tid in tids:
                 try:
                     cls._task_mgr.start_task(tid)
                 except TaskInexistenceError:
-                    errors.append([tid, 'inexistence error'])
+                    errors.append([tid, 'Inexistence error'])
+                except TaskError as e:
+                    errors.append([tid, e.msg])
         elif act == 'delete':
             del_file = True if detail.get('del_file', 'false') == 'true' else False
             for tid in tids:
                 try:
                     cls._task_mgr.delete_task(tid, del_file)
                 except TaskInexistenceError:
-                    errors.append([tid, 'inexistence error'])
+                    errors.append([tid, 'Inexistence error'])
 
         if errors:
             ret_val = {'status': 'success', 'detail': errors}
