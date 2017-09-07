@@ -101,7 +101,7 @@ class conf(object):
                      'port': 'server'}
 
         for key, val in self.cmd_args.items():
-            if key not in _cat_dict:
+            if key not in _cat_dict or val is None:
                 continue
             sub_conf = self.get_val(_cat_dict[key])
             sub_conf.set_val(key, val)
