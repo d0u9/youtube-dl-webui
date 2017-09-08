@@ -13,10 +13,6 @@ MSG = None
 
 app = Flask(__name__)
 
-RQ = None
-WQ = None
-
-WQ_DICT = {'from': 'server'}
 MSG_INVALID_REQUEST = {'status': 'error', 'errmsg': 'invalid request'}
 
 @app.route('/')
