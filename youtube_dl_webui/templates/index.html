@@ -29,10 +29,10 @@
                             <div class="modal-footer">
                                 <slot name="footer">
                                 <button class="modal-default-button" @click="$emit('confirm')">
-                                    OK
+                                    ok
                                 </button>
                                 <button class="modal-default-button" @click="$emit('close')">
-                                    CANCEL
+                                    cancel
                                 </button>
                                 </slot>
                             </div>
@@ -108,15 +108,22 @@
                         </tbody>
                     </table>
                 </div>
-                <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
-		    <template v-if="modalType === 'removeTask'">
-			<p>Are you sure you want to delete the task?</p>		
-			<label><input type="checkbox" v-model="removeFile"><b></b>&nbsp;Please click the checkbox if you want to delete the file by the way!</label>
-		    </template>
-		    <template v-if="modalType === 'addTask'">
-		        <div slot="header">URL to download</div>
-                        <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
-		    </template>
+            <modal v-if="showModal" @close="showModal = false" @confirm="execFunction" v-cloak>
+            <template v-if="modalType === 'removeTask'">
+                <div slot="header"></div>
+                <div slot="body" v-cloak style="display:block">
+                    <p>Are you sure you want to delete the task?</p>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" @click="showModal = false">cancel</button>
+                    <button class="modal-default-button" @click="removeData" style="width:auto;">remove with data</button>
+                    <button class="modal-default-button" @click="removeTask">remove task</button>
+                </div>
+            </template>
+            <template v-if="modalType === 'addTask'">
+                <div slot="header">URL to download</div>
+                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
+            </template>
                 </modal>
                 <vue-toast ref='toast'></vue-toast>
             </div>

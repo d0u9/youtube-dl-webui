@@ -7,7 +7,7 @@ var videoDownload = (function (Vue, extendAM){
         videoList: [],
         videoListCopy: [],
         showModal: false,
-	modalType: 'addTask',
+        modalType: 'addTask',
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
         tablist: ['Status', 'Details', 'Log'],
         showTab: 'Status',
@@ -48,48 +48,54 @@ var videoDownload = (function (Vue, extendAM){
                 showAddTaskModal: function(){
                     this.modalData.url = '';
                     this.showModal = true;
-		    this.modalType = 'addTask';
+                    this.modalType = 'addTask';
                     this.$nextTick(function(){
                         this.$refs.url.focus();
                     });
                 },
-		showRemoveTaskModal: function(){
-		    this.modalData.removeFile = false;
-		    this.showModal = true;
-		    this.modalType = 'removeTask';
-		},
+                execFunction: function(){
+                    switch(this.modalType) {
+                        case 'addTask':
+                            this.addTask();
+                            break;
+                        case 'removeTask':
+                            this.removeTask();
+                            break;
+                    }
+                },
+                showRemoveTaskModal: function(){
+                    this.modalData.removeFile = false;
+                    this.showModal = true;
+                    this.modalType = 'removeTask';
+                },
                 addTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task';
-                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){ _self.showModal = false;
+                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){
+                        _self.showModal = false;
                         that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
                 },
-		modalConfirmHandler: function(){
-		    switch(modalType){
-			case 'addTask':
-			    this.addTask();
-			    break;
-			case 'deleteTask':
-			    this.removeTask();
-			    break;
-		    } 
-		}
                 removeTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
-		    if(_self.modalData.removeFile){
-			url += '?del_data=true';
-		    }
+                    if(_self.modalData.removeFile){
+                        url += '?del_data=true';
+                    }
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('Task Delete', 'info');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
+                        _self.showModal = false;
                         that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
+                },
+                removeData: function(){
+                    this.modalData.removeFile = true;
+                    this.removeTask();
                 },
                 pauseTask: function(){
                     var _self = this;
