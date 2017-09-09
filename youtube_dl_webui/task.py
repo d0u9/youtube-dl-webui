@@ -144,6 +144,9 @@ class TaskManager(object):
             except TaskInexistenceError as e:
                 raise TaskInexistenceError(e.msg)
 
+            if status['state'] == state_index['finished']:
+                raise TaskError('Task is finished')
+
             task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info, 
                         status=status, log_size=self._conf['general']['log_size'])
             self._tasks_dict[tid] = task
