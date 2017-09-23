@@ -82,7 +82,7 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
                     if(_self.modalData.removeFile){
-                        url += '?del_data=true';
+                        url += '?del_file=true';
                     }
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('Task Delete', 'info');
