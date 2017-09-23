@@ -14,325 +14,272 @@ from os.path import expanduser
 from .utils import state_name
 from .db import DataBase
 from .utils import TaskInexistenceError
-from .utils import TaskRunningError
 from .utils import TaskExistenceError
-from .utils import TaskPausedError
+from .utils import TaskError
 from .server import Server
 from .worker import Worker
+
+from .config import ydl_conf, conf
+from .task import TaskManager, Task
+from .msg import MsgMgr
+
+class WebMsgDispatcher(object):
+    logger = logging.getLogger('ydl_webui')
+
+    SuccessMsg              = {'status': 'success'}
+    InternalErrorMsg        = {'status': 'error', 'errmsg': 'Internal Error'}
+    TaskExistenceErrorMsg   = {'status': 'error', 'errmsg': 'URL is already added'}
+    TaskInexistenceErrorMsg = {'status': 'error', 'errmsg': 'Task does not exist'}
+    UrlErrorMsg             = {'status': 'error', 'errmsg': 'URL is invalid'}
+    InvalidStateMsg         = {'status': 'error', 'errmsg': 'Invalid query state'}
+    RequestErrorMsg         = {'status': 'error', 'errmsg': 'Request error'}
+
+    _task_mgr = None
+    _conf = None
+
+    @classmethod
+    def init(cls, conf, task_mgr):
+        cls._task_mgr = task_mgr
+        cls._conf = conf
+
+    @classmethod
+    def event_create(cls, svr, event, data, args):
+        cls.logger.debug('url = %s' %(data['url']))
+        try:
+            ydl_opts = cls._task_mgr.ydl_conf.dict()
+            tid = cls._task_mgr.new_task(data['url'], ydl_opts=ydl_opts)
+        except TaskExistenceError:
+            svr.put(cls.TaskExistenceErrorMsg)
+            return
+
+        task = cls._task_mgr.start_task(tid)
+
+        svr.put({'status': 'success', 'tid': tid})
+
+    @classmethod
+    def event_delete(cls, svr, event, data, args):
+        tid, del_file = data['tid'], data['del_file']
+
+        try:
+            cls._task_mgr.delete_task(tid, del_file)
+        except TaskInexistenceError:
+            svr.put(cls.TaskInexistenceErrorMsg)
+        else:
+            svr.put(cls.SuccessMsg)
+
+    @classmethod
+    def event_manipulation(cls, svr, event, data, args):
+        cls.logger.debug('manipulation event')
+        tid, act = data['tid'], data['act']
+
+        ret_val = cls.RequestErrorMsg
+        if   act == 'pause':
+            try:
+                cls._task_mgr.pause_task(tid)
+            except TaskError as e:
+                ret_val = {'status': 'error', 'errmsg': e.msg}
+            else:
+                ret_val = cls.SuccessMsg
+        elif act == 'resume':
+            try:
+                cls._task_mgr.start_task(tid)
+            except TaskError as e:
+                ret_val = {'status': 'error', 'errmsg': e.msg}
+            else:
+                ret_val = cls.SuccessMsg
+
+        svr.put(ret_val)
+
+    @classmethod
+    def event_query(cls, svr, event, data, args):
+        cls.logger.debug('query event')
+        tid, exerpt = data['tid'], data['exerpt']
+
+        try:
+            detail = cls._task_mgr.query(tid, exerpt)
+        except TaskInexistenceError:
+            svr.put(cls.TaskInexistenceErrorMsg)
+        else:
+            svr.put({'status': 'success', 'detail': detail})
+
+    @classmethod
+    def event_list(cls, svr, event, data, args):
+        exerpt, state = data['exerpt'], data['state']
+
+        if state not in state_name:
+            svr.put(cls.InvalidStateMsg)
+        else:
+            d, c = cls._task_mgr.list(state, exerpt)
+            svr.put({'status': 'success', 'detail': d, 'state_counter': c})
+
+    @classmethod
+    def event_state(cls, svr, event, data, args):
+        c = cls._task_mgr.state()
+        svr.put({'status': 'success', 'detail': c})
+
+    @classmethod
+    def event_config(cls, svr, event, data, arg):
+        act = data['act']
+
+        ret_val = cls.RequestErrorMsg
+        if   act == 'get':
+            ret_val = {'status': 'success'}
+            ret_val['config'] = cls._conf.dict()
+        elif act == 'update':
+            conf_dict = data['param']
+            cls._conf.load(conf_dict)
+            suc, msg = cls._conf.save2file()
+            if suc:
+                ret_val = cls.SuccessMsg
+            else:
+                ret_val = {'status': 'error', 'errmsg': msg}
+
+        svr.put(ret_val)
+
+    @classmethod
+    def event_batch(cls, svr, event, data, arg):
+        act, detail = data['act'], data['detail']
+
+        if 'tids' not in detail:
+            svr.put(cls.RequestErrorMsg)
+            return
+
+        tids = detail['tids']
+        errors = []
+        if   act == 'pause':
+            for tid in tids:
+                try:
+                    cls._task_mgr.pause_task(tid)
+                except TaskInexistenceError:
+                    errors.append([tid, 'Inexistence error'])
+                except TaskError as e:
+                    errors.append([tid, e.msg])
+        elif act == 'resume':
+            for tid in tids:
+                try:
+                    cls._task_mgr.start_task(tid)
+                except TaskInexistenceError:
+                    errors.append([tid, 'Inexistence error'])
+                except TaskError as e:
+                    errors.append([tid, e.msg])
+        elif act == 'delete':
+            del_file = True if detail.get('del_file', 'false') == 'true' else False
+            for tid in tids:
+                try:
+                    cls._task_mgr.delete_task(tid, del_file)
+                except TaskInexistenceError:
+                    errors.append([tid, 'Inexistence error'])
+
+        if errors:
+            ret_val = {'status': 'success', 'detail': errors}
+        else:
+            ret_val = cls.SuccessMsg
+
+        svr.put(ret_val)
+
+
+class WorkMsgDispatcher(object):
+
+    _task_mgr = None
+
+    @classmethod
+    def init(cls, task_mgr):
+        cls._task_mgr = task_mgr
+
+    @classmethod
+    def event_info_dict(cls, svr, event, data, arg):
+        tid, info_dict = data['tid'], data['data']
+        cls._task_mgr.update_info(tid, info_dict)
+
+    @classmethod
+    def event_log(cls, svr, event, data, arg):
+        tid, log = data['tid'], data['data']
+        cls._task_mgr.update_log(tid, log)
+
+    @classmethod
+    def event_fatal(cls, svr, event, data, arg):
+        tid, data = data['tid'], data['data']
+
+        cls._task_mgr.update_log(tid, data)
+        if data['type'] == 'fatal':
+            cls._task_mgr.halt_task(tid)
+
+    @classmethod
+    def event_progress(cls, svr, event, data, arg):
+        tid, data = data['tid'], data['data']
+        cls._task_mgr.progress_update(tid, data)
+
+        if data['status'] == 'finished':
+            cls._task_mgr.finish_task(tid)
+
+
+def load_conf_from_file(cmd_args):
+    logger = logging.getLogger('ydl_webui')
+
+    conf_file = cmd_args.get('config', None)
+    logger.info('load config file (%s)' %(conf_file))
+
+    if cmd_args is None or conf_file is None:
+        return (None, {}, {})
+
+    abs_file = os.path.abspath(conf_file)
+    try:
+        with open(abs_file) as f:
+            return (abs_file, json.load(f), cmd_args)
+    except FileNotFoundError as e:
+        logger.critical("Config file (%s) doesn't exist", conf_file)
+        exit(1)
 
 
 class Core(object):
     exerpt_keys = ['tid', 'state', 'percent', 'total_bytes', 'title', 'eta', 'speed']
 
-    def __init__(self, args=None):
+    def __init__(self, cmd_args=None):
         self.logger = logging.getLogger('ydl_webui')
 
-        # options from command line
-        self.cmdl_args_dict = {}
-        # options read from configuration file
-        self.conf_file_dict = {}
-        # configuration options combined cmdl_args_dict with conf_file_dict.
-        self.conf = {'server': {}, 'ydl': {}}
+        self.logger.debug('cmd_args = %s' %(cmd_args))
 
-        self.rq = Queue()
-        self.wq = Queue()
-        self.worker = {}
+        conf_file, conf_dict, cmd_args = load_conf_from_file(cmd_args)
+        self.conf = conf(conf_file, conf_dict=conf_dict, cmd_args=cmd_args)
+        self.logger.debug("configuration: \n%s", json.dumps(self.conf.dict(), indent=4))
 
-        self.load_cmdl_args(args)
-        self.load_conf_file()
-        self.cmdl_override_conf_file()
-        self.logger.debug("configuration: \n%s", json.dumps(self.conf, indent=4))
+        self.msg_mgr = MsgMgr()
+        web_cli  = self.msg_mgr.new_cli('server')
+        task_cli = self.msg_mgr.new_cli()
 
-        self.server = Server(self.wq, self.rq, self.conf['server']['host'], self.conf['server']['port'])
-        self.db = DataBase(self.conf['db_path'])
+        self.db = DataBase(self.conf['general']['db_path'])
+        self.task_mgr = TaskManager(self.db, task_cli, self.conf)
 
-        dl_dir = self.conf['download_dir']
+        WebMsgDispatcher.init(self.conf, self.task_mgr)
+        WorkMsgDispatcher.init(self.task_mgr)
+
+        self.msg_mgr.reg_event('create',     WebMsgDispatcher.event_create)
+        self.msg_mgr.reg_event('delete',     WebMsgDispatcher.event_delete)
+        self.msg_mgr.reg_event('manipulate', WebMsgDispatcher.event_manipulation)
+        self.msg_mgr.reg_event('query',      WebMsgDispatcher.event_query)
+        self.msg_mgr.reg_event('list',       WebMsgDispatcher.event_list)
+        self.msg_mgr.reg_event('state',      WebMsgDispatcher.event_state)
+        self.msg_mgr.reg_event('config',     WebMsgDispatcher.event_config)
+        self.msg_mgr.reg_event('batch',      WebMsgDispatcher.event_batch)
+
+        self.msg_mgr.reg_event('info_dict',  WorkMsgDispatcher.event_info_dict)
+        self.msg_mgr.reg_event('log',        WorkMsgDispatcher.event_log)
+        self.msg_mgr.reg_event('progress',   WorkMsgDispatcher.event_progress)
+        self.msg_mgr.reg_event('fatal',      WorkMsgDispatcher.event_fatal)
+
+        self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
+
+    def start(self):
+        dl_dir = self.conf['general']['download_dir']
         try:
             os.makedirs(dl_dir, exist_ok=True)
-            self.logger.info("Download dir: %s", dl_dir)
+            self.logger.info('Download dir: %s' %(dl_dir))
             os.chdir(dl_dir)
         except PermissionError:
-            self.logger.critical('Permission Error for download dir: %s', dl_dir)
+            self.logger.critical('Permission error when accessing download dir')
             exit(1)
 
-        self.launch_unfinished()
+        self.task_mgr.launch_unfinished()
         self.server.start()
-
-
-    def run(self):
-        while True:
-            data = self.rq.get()
-            data_from = data.get('from', None)
-            if data_from == 'server':
-                ret = self.server_request(data)
-                self.wq.put(ret)
-            elif data_from == 'worker':
-                ret = self.worker_request(data)
-            else:
-                logger.debug(data)
-
-
-    def launch_unfinished(self):
-        tlist = self.db.get_unfinished()
-        for t in tlist:
-            self.start_task(t, ignore_state=True)
-
-
-    def create_task(self, param, ydl_opts):
-        if 'url' not in param:
-            raise KeyError
-
-        if param['url'].strip() == '':
-            raise KeyError
-
-        valid_ydl_opts = {k: ydl_opts[k] for k in ydl_opts if k in self.conf['ydl']}
-
-        tid = self.db.create_task(param, ydl_opts)
-        return tid
-
-
-    def start_task(self, tid, ignore_state=False, first_run=False):
-        try:
-            param = self.db.get_param(tid)
-            ydl_opts = self.db.get_opts(tid)
-        except TaskInexistenceError as e:
-            raise TaskInexistenceError(e.msg)
-
-        log_list = self.db.start_task(tid, ignore_state)
-        self.launch_worker(tid, log_list, param=param, ydl_opts=ydl_opts, first_run=first_run)
-
-
-    def pause_task(self, tid):
-        self.cancel_worker(tid)
-
-
-    def delete_task(self, tid, del_data=False):
-        try:
-            self.cancel_worker(tid)
-        except TaskInexistenceError as e:
-            raise e
-        except:
-            pass
-
-        self.db.delete_task(tid, del_data=del_data)
-
-
-    def launch_worker(self, tid, log_list, param=None, ydl_opts={}, first_run=False):
-        if tid in self.worker:
-            raise TaskRunningError('task already running')
-
-        self.worker[tid] ={'obj': None, 'log': deque(maxlen=10)}
-
-        for l in log_list:
-            self.worker[tid]['log'].appendleft(l)
-
-        self.worker[tid]['log'].appendleft({'time': int(time()), 'type': 'debug', 'msg': 'Task starts...'})
-        self.db.update_log(tid, self.worker[tid]['log'])
-
-        # Merge global ydl_opts with local opts
-        opts = {k: ydl_opts[k] if k in ydl_opts else self.conf['ydl'][k] for k in self.conf['ydl']}
-        self.logger.debug("ydl_opts(%s): %s" %(tid, json.dumps(opts)))
-
-        # launch worker process
-        w = Worker(tid, self.rq, param=param, ydl_opts=opts, first_run=first_run)
-        w.start()
-        self.worker[tid]['obj'] = w
-
-
-    def cancel_worker(self, tid):
-        if tid not in self.worker:
-            raise TaskPausedError('task not running')
-
-        w = self.worker[tid]
-        self.db.cancel_task(tid, log=w['log'])
-        w['obj'].stop()
-        self.worker[tid]['log'].appendleft({'time': int(time()), 'type': 'debug', 'msg': 'Task stops...'})
-        self.db.update_log(tid, self.worker[tid]['log'])
-
-        del self.worker[tid]
-
-
-    def load_cmdl_args(self, args):
-        self.cmdl_args_dict['conf'] = args.get('config')
-        self.cmdl_args_dict['host'] = args.get('host')
-        self.cmdl_args_dict['port'] = args.get('port')
-
-
-    def load_conf_file(self):
-        try:
-            with open(self.cmdl_args_dict['conf']) as f:
-                self.conf_file_dict = json.load(f)
-        except FileNotFoundError as e:
-            self.logger.critical("Config file (%s) doesn't exist", self.cmdl_args_dict['conf'])
-            exit(1)
-
-        self.load_general_conf(self.conf_file_dict)
-        self.load_server_conf(self.conf_file_dict)
-        self.load_ydl_conf(self.conf_file_dict)
-
-
-    def load_general_conf(self, conf_file_dict):
-        # field1: key, field2: default value, field3: function to process the value
-        valid_conf = [  ['download_dir',  '~/Downloads/youtube-dl',         expanduser],
-                        ['db_path',       '~/.conf/youtube-dl-webui/db.db', expanduser],
-                        ['task_log_size', 10,                                None],
-                     ]
-
-        general_conf = conf_file_dict.get('general', {})
-
-        for conf in valid_conf:
-            if conf[2] is None:
-                self.conf[conf[0]] = general_conf.get(conf[0], conf[1])
-            else:
-                self.conf[conf[0]] = conf[2](general_conf.get(conf[0], conf[1]))
-
-        self.logger.debug("general_config: %s", json.dumps(self.conf))
-
-
-    def load_server_conf(self, conf_file_dict):
-        valid_conf = [  ['host', '127.0.0.1'],
-                        ['port', '5000'     ]
-                     ]
-
-        server_conf = conf_file_dict.get('server', {})
-
-        for pair in valid_conf:
-            self.conf['server'][pair[0]] = server_conf.get(pair[0], pair[1])
-
-        self.logger.debug("server_config: %s", json.dumps(self.conf['server']))
-
-
-    def load_ydl_conf(self, conf_file_dict):
-        valid_opts = [  ['proxy',   None,               ],
-                        ['format',  'bestaudio/best'    ]
-                     ]
-
-        ydl_opts = conf_file_dict.get('youtube_dl', {})
-
-        for opt in valid_opts:
-            if opt[0] in ydl_opts:
-                self.conf['ydl'][opt[0]] = ydl_opts.get(opt[0], opt[1])
-
-        self.logger.debug("global ydl_opts: %s", json.dumps(self.conf['ydl']))
-
-
-    def cmdl_override_conf_file(self):
-        if self.cmdl_args_dict['host'] is not None:
-            self.conf['server']['host'] = self.cmdl_args_dict['host']
-
-        if self.cmdl_args_dict['port'] is not None:
-            self.conf['server']['port'] = self.cmdl_args_dict['port']
-
-
-    def server_request(self, data):
-        msg_internal_error = {'status': 'error', 'errmsg': 'Internal Error'}
-        msg_task_existence_error = {'status': 'error', 'errmsg': 'URL is already added'}
-        msg_task_inexistence_error = {'status': 'error', 'errmsg': 'Task does not exist'}
-        msg_url_error = {'status': 'error', 'errmsg': 'URL is invalid'}
-        if data['command'] == 'create':
-            try:
-                tid = self.create_task(data['param'], {})
-                self.start_task(tid, first_run=True)
-            except TaskExistenceError:
-                return msg_task_existence_error
-            except TaskInexistenceError:
-                return msg_internal_error
-            except KeyError:
-                return msg_url_error
-
-            return {'status': 'success', 'tid': tid}
-
-        if data['command'] == 'delete':
-            try:
-                self.delete_task(data['tid'], del_data=data['del_data'])
-            except TaskInexistenceError:
-                return msg_task_inexistence_error
-
-            return {'status': 'success'}
-
-        if data['command'] == 'manipulate':
-            tid = data['tid']
-            try:
-                if data['act'] == 'pause':
-                    self.pause_task(tid)
-                elif data['act'] == 'resume':
-                    self.start_task(tid)
-            except TaskPausedError:
-                return {'status': 'error', 'errmsg': 'task paused already'}
-            except TaskRunningError:
-                return {'status': 'error', 'errmsg': 'task running already'}
-            except TaskInexistenceError:
-                return msg_task_inexistence_error
-
-            return {'status': 'success'}
-
-        if data['command'] == 'query':
-            tid = data['tid']
-            try:
-                ret = self.db.query_task(tid)
-            except TaskInexistenceError:
-                return msg_task_inexistence_error
-
-            detail = {}
-            if data['exerpt'] is True:
-                detail = {k: ret[k] for k in ret if k in Core.exerpt_keys}
-            else:
-                detail = ret
-
-            return {'status': 'success', 'detail': detail}
-
-        if data['command'] == 'list':
-            state = data['state']
-            if state not in state_name:
-                return {'status': 'error', 'errmsg': 'invalid query state'}
-
-            ret, counter = self.db.list_task(state)
-
-            detail = []
-            if data['exerpt'] is True:
-                for each in ret:
-                    d = {k: each[k] for k in each if k in Core.exerpt_keys}
-                    detail.append(d)
-            else:
-                detail = ret
-
-            return {'status': 'success', 'detail': detail, 'state_counter': counter}
-
-        if data['command'] == 'state':
-            return self.db.list_state()
-
-
-    def worker_request(self, data):
-        tid = data['tid']
-        msgtype = data['msgtype']
-
-        if msgtype == 'info_dict':
-            self.db.update_from_info_dict(tid, data['data'])
-            return
-
-        if msgtype == 'log':
-            if tid not in self.worker:
-                return
-
-            self.worker[tid]['log'].appendleft(data['data'])
-            self.db.update_log(tid, self.worker[tid]['log'])
-
-        if msgtype == 'progress':
-            d = data['data']
-
-            if d['status'] == 'downloading':
-                self.db.progress_update(tid, d)
-
-            if d['status'] == 'finished':
-                self.worker[tid]['log'].appendleft({'time': int(time()), 'type': 'debug', 'msg': 'Task is done'})
-                self.cancel_worker(tid)
-                self.db.progress_update(tid, d)
-                self.db.set_state(tid, 'finished')
-
-        if msgtype == 'fatal':
-            d = data['data']
-
-            if d['type'] == 'invalid_url':
-                self.logger.error("Can't start downloading {}, url is invalid".format(d['url']))
-                self.db.set_state(tid, 'invalid')
+        self.msg_mgr.run()
 
