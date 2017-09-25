@@ -141,7 +141,15 @@
                 <template v-if="modalType === 'addTask'">
                     <div slot="header">Add Task</div>
                     <div slot="body" v-cloak style="display:block">
-                        <div><label>URL:</label><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
+                        <div>
+                            <label>URL:</label><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div style="text-align:center;">
+                            <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
+                        </div>
+                        <div>
+                            <label>Format:</label><input type="text" ref="format" v-model="modalData.format" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
                     </div>
                 </template>
             </modal>
