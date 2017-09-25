@@ -22,7 +22,7 @@ def index():
 
 @app.route('/task', methods=['POST'])
 def add_task():
-    payload = {'url': request.form['url'], 'ydl_opts': {}}
+    payload = request.get_json()
 
     MSG.put('create', payload)
     return json.dumps(MSG.get())

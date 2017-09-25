@@ -200,7 +200,7 @@ class DataBase(object):
         return dl_file
 
     def query_task(self, tid):
-        self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=(?) and task_info.tid=(?)', (tid, tid))
+        self.db.execute('SELECT * FROM task_status, task_info, task_ydl_opt WHERE task_status.tid=(?) and task_info.tid=(?) and task_ydl_opt.tid=(?)', (tid, tid, tid))
         row = self.db.fetchone()
         if row is None:
             raise TaskInexistenceError('')

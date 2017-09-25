@@ -126,7 +126,9 @@ class TaskManager(object):
     def new_task(self, url, ydl_opts={}):
         """Create a new task and put it in inactive type"""
 
-        return self._db.new_task(url, ydl_opts)
+        # stripe out necessary fields
+        ydl_opts = ydl_conf(ydl_opts)
+        return self._db.new_task(url, ydl_opts.dict())
 
     def start_task(self, tid, ignore_state=False):
         """make an inactive type task into active type"""
@@ -138,7 +140,7 @@ class TaskManager(object):
                 raise TaskError('Task is downloading')
         else:
             try:
-                ydl_opts = self._db.get_ydl_opts(tid)
+                ydl_opts = self.ydl_conf.merge_conf(self._db.get_ydl_opts(tid))
                 info     = self._db.get_info(tid)
                 status   = self._db.get_stat(tid)
             except TaskInexistenceError as e:
