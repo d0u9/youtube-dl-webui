@@ -22,6 +22,10 @@ html, body {
     flex-flow: column;
 }
 
+a {
+    text-decoration:none;
+}
+
 [v-cloak] {
     display: none!important;
 }
