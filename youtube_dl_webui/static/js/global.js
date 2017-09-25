@@ -117,6 +117,10 @@ var videoDownload = (function (Vue, extendAM){
                         _self.showAlertToast(err, 'error');
                     });
                 },
+                about: function() {
+                    this.showModal = true;
+                    this.modalType = 'about';
+                },
                 selected: function(index){
                     var _self = this;
                     this.currentSelected = index;
