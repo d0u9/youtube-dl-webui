@@ -17,7 +17,17 @@
             </div>
             <div class="row">
                 <label class="left" for="tid">TID:</label>
-                <input class="right" id="tid" type="text" style="width:350px;"> </div>
+                <input class="right" id="tid" type="text" style="width:350px;">
+            </div>
+            <div class="row">
+                <b>-- ydl opts --</b>
+            </div>
+            <div class="row">
+                <label class="left" for="format">format:</label>
+                <input class="right" id="format" type="text" style="width:350px;" value="best">
+            </div>
+            <div class="row">
+                <b>-- Operations --</b>
             </div>
             <div class="row">
                 <label class="left">Actions:</label>
@@ -41,48 +51,48 @@
         <div class="row"></div>
         <fieldset>
         <legend>Settings</legend>
-        <div class="row">
-            <b>-- General --</b>
-        </div>
-        <div class="row general">
-            <label class="left" for="download_dir">Download Path:</label>
-            <input class="right" id="download_dir" type="text">
-        </div>
-        <div class="row general">
-            <label class="left" for="db_path">Database Path:</label>
-            <input class="right" id="db_path" type="text">
-        </div>
-        <div class="row general">
-            <label class="left" for="task_log_size">log-size: </label>
-            <input class="right" id="task_log_size" type="text" value="10">
-        </div>
-        <hr />
-        <div class="row">
-            <b>-- Server --</b>
-        </div>
-        <div class="row server">
-            <label class="left" for="server-host">HOST:</label>
-            <input class="right read-only" id="host" type="text" readonly>
-        </div>
-        <div class="row server">
-            <label class="left" for="server-port">PORT:</label>
-            <input class="right read-only" id="port" type="text" readonly>
-        </div>
-        <hr />
-        <div class="row">
-            <b>-- youtubedl --</b>
-        </div>
-        <div class="row youtube_dl">
-            <label class="left" for="format">Format:</label>
-            <input class="right" id="format" type="text">
-        </div>
-        <div class="row youtube_dl">
-            <label class="left" for="proxy">Proxy:</label>
-            <input class="right" id="proxy" type="text">
-        </div>
-        <div class="row">
-            <button id="conf-save">Save</button> <button id="conf-reset">Reset</button>
-        </div>
+            <div class="row">
+                <b>-- General --</b>
+            </div>
+            <div class="row general">
+                <label class="left" for="download_dir">Download Path:</label>
+                <input class="right" id="download_dir" type="text">
+            </div>
+            <div class="row general">
+                <label class="left" for="db_path">Database Path:</label>
+                <input class="right" id="db_path" type="text">
+            </div>
+            <div class="row general">
+                <label class="left" for="task_log_size">log-size: </label>
+                <input class="right" id="task_log_size" type="text" value="10">
+            </div>
+            <hr />
+            <div class="row">
+                <b>-- Server --</b>
+            </div>
+            <div class="row server">
+                <label class="left" for="server-host">HOST:</label>
+                <input class="right read-only" id="host" type="text" readonly>
+            </div>
+            <div class="row server">
+                <label class="left" for="server-port">PORT:</label>
+                <input class="right read-only" id="port" type="text" readonly>
+            </div>
+            <hr />
+            <div class="row">
+                <b>-- youtubedl --</b>
+            </div>
+            <div class="row youtube_dl">
+                <label class="left" for="format">Format:</label>
+                <input class="right" id="format" type="text">
+            </div>
+            <div class="row youtube_dl">
+                <label class="left" for="proxy">Proxy:</label>
+                <input class="right" id="proxy" type="text">
+            </div>
+            <div class="row">
+                <button id="conf-save">Save</button> <button id="conf-reset">Reset</button>
+            </div>
         </fieldset>
     </body>
     <script type="text/javascript">
@@ -91,16 +101,23 @@
         $("#conf-reset").trigger("click");
 
         $("#add-task").click(function() {
-            $.post(host + '/task',
-            {
-                url: $("#url").val()
-            },
-            function(data, status) {
-                console.log(data);
-                if (data['status'] == 'success') {
-                    $("#tid").val(data['tid']);
-                }
-            }, 'json');
+            var url = $("#url").val();
+            var format = $("#format").val();
+            var data = { url: url, ydl_opts: {format: format} };
+
+            $.ajax({url: host + '/task',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                    if (result['status'] == 'success') {
+                        $("#tid").val(result['tid']);
+                    }
+                },
+                dataType: 'json'
+            });
+
         });
 
         $("#pause-task").click(function() {
