@@ -44,10 +44,15 @@ class WebMsgDispatcher(object):
 
     @classmethod
     def event_create(cls, svr, event, data, args):
-        cls.logger.debug('url = %s' %(data['url']))
+        url, ydl_opts = data.get('url', None), data.get('ydl_opts', {})
+        cls.logger.debug('url = %s' %(url))
+
+        if url is None:
+            svr.put(cls.UrlErrorMsg)
+            return
+
         try:
-            ydl_opts = cls._task_mgr.ydl_conf.dict()
-            tid = cls._task_mgr.new_task(data['url'], ydl_opts=ydl_opts)
+            tid = cls._task_mgr.new_task(url, ydl_opts=ydl_opts)
         except TaskExistenceError:
             svr.put(cls.TaskExistenceErrorMsg)
             return

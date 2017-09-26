@@ -4,6 +4,7 @@
 import logging
 import json
 
+from copy import deepcopy
 from os.path import expanduser
 
 class conf_base(object):
@@ -52,10 +53,21 @@ class ydl_conf(conf_base):
             ('format',          None,                       'string',   None,               None),
         ]
 
+    _task_settable_fields = set(['format'])
+
     def __init__(self, conf_dict={}):
         self.logger = logging.getLogger('ydl_webui')
 
         super(ydl_conf, self).__init__(self._valid_fields, conf_dict)
+
+    def merge_conf(self, task_conf_dict={}):
+        ret = deepcopy(self.dict())
+        for key, val in task_conf_dict.items():
+            if key not in self._task_settable_fields:
+                continue
+            ret[key] = val
+
+        return ret
 
 
 class svr_conf(conf_base):
