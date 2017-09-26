@@ -7,11 +7,15 @@ var videoDownload = (function (Vue, extendAM){
         videoList: [],
         videoListCopy: [],
         showModal: false,
+        modalType: 'addTask',
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
         tablist: ['Status', 'Details', 'Log'],
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
-        modalData: { url: '' },
+        modalData: {
+            add: { url: '' },
+            remove: {removeFile: false }
+        },
         currentSelected: null,
         taskDetails: {},
         taskInfoUrl: null,
@@ -45,16 +49,35 @@ var videoDownload = (function (Vue, extendAM){
             },
             methods: {
                 showAddTaskModal: function(){
-                    this.modalData.url = '';
+                    this.modalData.add.url = '';
                     this.showModal = true;
+                    this.modalType = 'addTask';
+                    console.log(this.modalData);
                     this.$nextTick(function(){
                         this.$refs.url.focus();
                     });
                 },
+                execFunction: function(){
+                    switch(this.modalType) {
+                        case 'addTask':
+                            this.addTask();
+                            break;
+                        case 'removeTask':
+                            this.removeTask();
+                            break;
+                    }
+                },
+                showRemoveTaskModal: function(){
+                    this.modalData.remove.removeFile = false;
+                    this.showModal = true;
+                    this.modalType = 'removeTask';
+                },
                 addTask: function(){
+                    console.log(this.modalData.add);
                     var _self = this;
                     var url = _self.headPath + 'task';
-                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){ _self.showModal = false;
+                    Vue.http.post(url, _self.modalData.add, {emulateJSON: false}).then(function(res){
+                        _self.showModal = false;
                         that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
@@ -63,13 +86,21 @@ var videoDownload = (function (Vue, extendAM){
                 removeTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
+                    if(_self.modalData.remove.removeFile){
+                        url += '?del_file=true';
+                    }
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('Task Delete', 'info');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
+                        _self.showModal = false;
                         that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
+                },
+                removeData: function(){
+                    this.modalData.remove.removeFile = true;
+                    this.removeTask();
                 },
                 pauseTask: function(){
                     var _self = this;
@@ -91,6 +122,10 @@ var videoDownload = (function (Vue, extendAM){
                         _self.showAlertToast(err, 'error');
                     });
                 },
+                about: function() {
+                    this.showModal = true;
+                    this.modalType = 'about';
+                },
                 selected: function(index){
                     var _self = this;
                     this.currentSelected = index;
@@ -101,9 +136,11 @@ var videoDownload = (function (Vue, extendAM){
                     var _self = this;
                     if(!_self.taskInfoUrl) return false;
                     Vue.http.get(_self.taskInfoUrl).then(function(res){
-                        console.log(res.data);
-                        _self.taskDetails = JSON.parse(res.data).detail;
-                        console.log(_self.taskDetails);
+                        var responseJSON = JSON.parse(res.data);
+                        if(responseJSON.status === 'error'){
+                            return false;
+                        }
+                        _self.taskDetails = responseJSON.detail;
                     }, function(err){
                         _self.showAlertToast('Network connection lost', 'error');
                     });
@@ -199,7 +236,6 @@ var videoDownload = (function (Vue, extendAM){
 
     videoDownload.getTaskList = function() {
         var that = videoDownload;
-        console.log(that.tasksData.headPath);
         var url = that.tasksData.headPath + 'task/list';
         url = url + '?state=' + that.tasksData.status;
         Vue.http.get(url).then(function(res){
@@ -212,7 +248,6 @@ var videoDownload = (function (Vue, extendAM){
                                               that.tasksData.stateCounter.invalid;
             that.updateVm();
         }, function(err){
-            console.log(err)
             that.vm.showAlertToast('Network connection lost', 'error');
         });
     };

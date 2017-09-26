@@ -16,7 +16,7 @@
 }
 
 .modal-container {
-    width: 400px;
+    width: 500px;
     margin: 0px auto;
     padding: 20px;
     background-color: #fff;
@@ -27,8 +27,10 @@
 }
 
 .modal-header div {
+    font-weight: bold;
+    font-size: 20px;
     margin-top: 0;
-    color: #42b983;
+    color: #020202;
 }
 
 .modal-body div {
@@ -38,11 +40,46 @@
     align-items: center;
 }
 
+.modal-body label {
+    min-width: 60px;
+    max-width: 100px;
+}
+
 .modal-body input {
     font-size: 15px;
     display: block;
     width: 100%;
+    height: 12px;
     padding: 5px;
+}
+
+.modal-body hr {
+    border: 0; 
+    height: 1px; 
+    margin-left:auto;
+    margin-right:auto;
+    width: 40%;
+}
+
+.modal-body .left-hr {
+    float: left;
+    background-image: -webkit-linear-gradient(left, #f0f0f0, #000000, #000000);
+    background-image: -moz-linear-gradient(left, #f0f0f0, #000000, #000000);
+    background-image: -ms-linear-gradient(left, #f0f0f0, #000000, #000000);
+    background-image: -o-linear-gradient(left, #f0f0f0, #000000, #000000); 
+}
+
+.modal-body .right-hr {
+    float: right;
+    background-image: -webkit-linear-gradient(left, #000000, #000000, #f0f0f0);
+    background-image: -moz-linear-gradient(left, #000000, #000000, #f0f0f0);
+    background-image: -ms-linear-gradient(left, #000000, #000000, #f0f0f0);
+    background-image: -o-linear-gradient(left, #000000, #000000, #f0f0f0); 
+}
+
+.modal-body .caption {
+    width: 80px;
+    font-weight: bold;
 }
 
 .modal-footer {
