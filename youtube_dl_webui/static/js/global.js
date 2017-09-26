@@ -12,7 +12,10 @@ var videoDownload = (function (Vue, extendAM){
         tablist: ['Status', 'Details', 'Log'],
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
-        modalData: { url: '' , removeFile: false },
+        modalData: {
+            add: { url: '' },
+            remove: {removeFile: false }
+        },
         currentSelected: null,
         taskDetails: {},
         taskInfoUrl: null,
@@ -46,9 +49,10 @@ var videoDownload = (function (Vue, extendAM){
             },
             methods: {
                 showAddTaskModal: function(){
-                    this.modalData.url = '';
+                    this.modalData.add.url = '';
                     this.showModal = true;
                     this.modalType = 'addTask';
+                    console.log(this.modalData);
                     this.$nextTick(function(){
                         this.$refs.url.focus();
                     });
@@ -64,14 +68,15 @@ var videoDownload = (function (Vue, extendAM){
                     }
                 },
                 showRemoveTaskModal: function(){
-                    this.modalData.removeFile = false;
+                    this.modalData.remove.removeFile = false;
                     this.showModal = true;
                     this.modalType = 'removeTask';
                 },
                 addTask: function(){
+                    console.log(this.modalData.add);
                     var _self = this;
                     var url = _self.headPath + 'task';
-                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){
+                    Vue.http.post(url, _self.modalData.add, {emulateJSON: false}).then(function(res){
                         _self.showModal = false;
                         that.getTaskList();
                     }, function(err){
@@ -81,7 +86,7 @@ var videoDownload = (function (Vue, extendAM){
                 removeTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
-                    if(_self.modalData.removeFile){
+                    if(_self.modalData.remove.removeFile){
                         url += '?del_file=true';
                     }
                     Vue.http.delete(url).then(function(res){
@@ -94,7 +99,7 @@ var videoDownload = (function (Vue, extendAM){
                     });
                 },
                 removeData: function(){
-                    this.modalData.removeFile = true;
+                    this.modalData.remove.removeFile = true;
                     this.removeTask();
                 },
                 pauseTask: function(){
