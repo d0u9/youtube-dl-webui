@@ -13,7 +13,7 @@ var videoDownload = (function (Vue, extendAM){
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
         modalData: {
-            add: { url: '' },
+            add: { url: '', ydl_opts: {} },
             remove: {removeFile: false }
         },
         currentSelected: null,
@@ -73,9 +73,12 @@ var videoDownload = (function (Vue, extendAM){
                     this.modalType = 'removeTask';
                 },
                 addTask: function(){
-                    console.log(this.modalData.add);
                     var _self = this;
                     var url = _self.headPath + 'task';
+                    for (var key in _self.modalData.add.ydl_opts) {
+                        if (_self.modalData.add.ydl_opts[key].trim() == '')
+                            delete _self.modalData.add.ydl_opts[key];
+                    }
                     Vue.http.post(url, _self.modalData.add, {emulateJSON: false}).then(function(res){
                         _self.showModal = false;
                         that.getTaskList();
