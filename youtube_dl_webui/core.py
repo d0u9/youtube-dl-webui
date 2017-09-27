@@ -45,7 +45,7 @@ class WebMsgDispatcher(object):
     @classmethod
     def event_create(cls, svr, event, data, args):
         url, ydl_opts = data.get('url', None), data.get('ydl_opts', {})
-        cls.logger.debug('url = %s' %(url))
+        cls.logger.debug('url = %s, ydl_opts = %s' %(url, ydl_opts))
 
         if url is None:
             svr.put(cls.UrlErrorMsg)

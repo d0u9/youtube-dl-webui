@@ -63,7 +63,7 @@ class ydl_conf(conf_base):
     def merge_conf(self, task_conf_dict={}):
         ret = deepcopy(self.dict())
         for key, val in task_conf_dict.items():
-            if key not in self._task_settable_fields:
+            if key not in self._task_settable_fields or val == '':
                 continue
             ret[key] = val
 

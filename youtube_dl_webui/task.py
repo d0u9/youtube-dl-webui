@@ -38,7 +38,7 @@ class Task(object):
             self.log.appendleft(log)
 
     def start(self):
-        self.logger.info('Task starts, url - %s(%s)' %(self.url, self.tid))
+        self.logger.info('Task starts, url: %s(%s), ydl_opts: %s' %(self.url, self.tid, self.ydl_opts))
         tm = time()
         self.state = state_index['downloading']
 
