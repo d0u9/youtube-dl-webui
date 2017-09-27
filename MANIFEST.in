@@ -4,5 +4,6 @@ include *.py
 include MANIFEST.in
 include LICENSE
 recursive-include youtube_dl_webui *.py
+recursive-include youtube_dl_webui *.sql
 recursive-include youtube_dl_webui/templates *
 recursive-include youtube_dl_webui/static *
