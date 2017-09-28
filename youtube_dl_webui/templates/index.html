@@ -48,6 +48,7 @@
                     <button @click="showRemoveTaskModal"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
                     <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
                     <button @click="resumeTask"><i class="fa fa-play" aria-hidden="true"></i> Resume</button>
+                    <button @click="preference"><i class="fa fa-cog" aria-hidden="true"></i> Preference</button>
                     <button @click="about" style="float:right"><i class="fa fa-question-circle" aria-hidden="true"></i> About</button>
                 </div>
             </header>
@@ -110,6 +111,32 @@
                     </table>
                 </div>
             <modal v-if="showModal" @close="showModal = false" @confirm="execFunction" v-cloak>
+                <template v-if="modalType === 'updatePreference'">
+                    <div slot="header">Preference</div>
+                    <div slot="body" v-cloak style="display:block">
+                        <div style="text-align:center;">
+                            <hr class="left-hr" /><span style="font-weight: bold;">General</span><hr class="right-hr" />
+                        </div>
+                        <div>
+                            <label>Download Path:</label><input type="text" ref="dl-path" v-model="modalData.preference.dl_path" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Database Path:</label><input type="text" ref="db-path" v-model="modalData.preference.db_path" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Log Size:</label><input type="text" ref="log-size" v-model="modalData.preference.log_size" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div style="text-align:center;">
+                            <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
+                        </div>
+                        <div>
+                            <label>Format:</label><input type="text" ref="format" v-model="modalData.preference.format" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Proxy:</label><input type="text" ref="proxy" v-model="modalData.preference.proxy" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
+                    </div>
+                </template>
                 <template v-if="modalType === 'about'">
                     <div slot="header">About</div>
                     <div slot="body" v-cloak style="display:block">

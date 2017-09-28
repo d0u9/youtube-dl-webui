@@ -14,7 +14,8 @@ var videoDownload = (function (Vue, extendAM){
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
         modalData: {
             add: { url: '', ydl_opts: {} },
-            remove: {removeFile: false }
+            remove: { removeFile: false },
+            preference: {}
         },
         currentSelected: null,
         taskDetails: {},
@@ -65,6 +66,9 @@ var videoDownload = (function (Vue, extendAM){
                         case 'removeTask':
                             this.removeTask();
                             break;
+                        case 'updatePreference':
+                            this.updatePreference();
+                            break;
                     }
                 },
                 showRemoveTaskModal: function(){
@@ -85,6 +89,9 @@ var videoDownload = (function (Vue, extendAM){
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
+                },
+                updatePreference: function () {
+                    console.log('updatePreference()');
                 },
                 removeTask: function(){
                     var _self = this;
@@ -128,6 +135,10 @@ var videoDownload = (function (Vue, extendAM){
                 about: function() {
                     this.showModal = true;
                     this.modalType = 'about';
+                },
+                preference: function() {
+                    this.showModal = true;
+                    this.modalType = 'updatePreference';
                 },
                 selected: function(index){
                     var _self = this;
