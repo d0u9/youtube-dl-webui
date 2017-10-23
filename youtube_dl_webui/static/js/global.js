@@ -137,8 +137,26 @@ var videoDownload = (function (Vue, extendAM){
                     this.modalType = 'about';
                 },
                 preference: function() {
+                    var _self = this;
+                    var url = _self.headPath + 'config';
+
                     this.showModal = true;
                     this.modalType = 'updatePreference';
+                    Vue.http.get(url).then(function(res) {
+                        var responseJSON = JSON.parse(res.data);
+                        if (responseJSON.status === 'error') {
+                            return false;
+                        } else {
+                            config = responseJSON['config'];
+                            for (let cls in config) {
+                                items = config[cls];
+                                for (let id in items) {
+                                    console.log(cls);
+                                    console.log(items[id]);
+                                }
+                            }
+                        }
+                    });
                 },
                 selected: function(index){
                     var _self = this;
