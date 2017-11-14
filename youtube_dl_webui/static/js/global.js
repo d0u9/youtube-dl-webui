@@ -15,7 +15,7 @@ var videoDownload = (function (Vue, extendAM){
         modalData: {
             add: { url: '', ydl_opts: {} },
             remove: { removeFile: false },
-            preference: {youtube_dl: {}, general: {}},
+            preference: {youtube_dl: {fomart: '', proxy: ''}, general: {download_dir: '', db_path: '', log_size: ''}},
         },
         currentSelected: null,
         taskDetails: {},
@@ -28,11 +28,8 @@ var videoDownload = (function (Vue, extendAM){
         closeBtn: false
     };
 
-    videoDownload.updateVm = function(res) {
+    videoDownload.createVm = function(res) {
         var that = videoDownload;
-        if(that.vm){
-            return false;
-        }
         that.vm = new Vue({
             el: '#videoWrapper',
             data: that.tasksData,
@@ -47,6 +44,7 @@ var videoDownload = (function (Vue, extendAM){
             },
             mounted: function () {
                 this.resetOptions();
+                setInterval(videoDownload.timeOut, 3000);
             },
             methods: {
                 showAddTaskModal: function(){
@@ -282,7 +280,6 @@ var videoDownload = (function (Vue, extendAM){
                                               that.tasksData.stateCounter.finished +
                                               that.tasksData.stateCounter.paused +
                                               that.tasksData.stateCounter.invalid;
-            that.updateVm();
         }, function(err){
             that.vm.showAlertToast('Network connection lost', 'error');
         });
@@ -291,14 +288,14 @@ var videoDownload = (function (Vue, extendAM){
     videoDownload.timeOut = function(){
         var that = videoDownload;
         that.getTaskList();
-        that.vm && that.vm.getTaskInfoById();
+        that.vm.getTaskInfoById();
     };
 
     videoDownload.init = function(){
         var that = this;
         that.tasksData.headPath = window.location.protocol + '//' + window.location.host + '/';
+        that.createVm();
         that.getTaskList();
-        setInterval(videoDownload.timeOut, 3000);
     }
 
     return videoDownload;
