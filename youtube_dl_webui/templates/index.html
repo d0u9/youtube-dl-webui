@@ -29,10 +29,10 @@
                             <div class="modal-footer">
                                 <slot name="footer">
                                 <button class="modal-default-button" @click="$emit('confirm')">
-                                    OK
+                                    ok
                                 </button>
                                 <button class="modal-default-button" @click="$emit('close')">
-                                    CANCEL
+                                    cancel
                                 </button>
                                 </slot>
                             </div>
@@ -45,9 +45,11 @@
             <header>
                 <div class="operBtns">
                     <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
-                    <button @click="removeTask"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
+                    <button @click="showRemoveTaskModal"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
                     <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
                     <button @click="resumeTask"><i class="fa fa-play" aria-hidden="true"></i> Resume</button>
+                    <button @click="preference"><i class="fa fa-cog" aria-hidden="true"></i> Preference</button>
+                    <button @click="about" style="float:right"><i class="fa fa-question-circle" aria-hidden="true"></i> About</button>
                 </div>
             </header>
             <div class="main-body">
@@ -108,11 +110,77 @@
                         </tbody>
                     </table>
                 </div>
-                <modal v-if="showModal" @close="showModal = false" @confirm="addTask" v-cloak>
-                <div slot="header">URL to download</div>
-                <div slot="body" v-cloak><input type="text" ref="url" v-model="modalData.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/></div>
-                </modal>
-                <vue-toast ref='toast'></vue-toast>
+            <modal v-if="showModal" @close="showModal = false" @confirm="execFunction" v-cloak>
+                <template v-if="modalType === 'updatePreference'">
+                    <div slot="header">Preference</div>
+                    <div slot="body" v-cloak style="display:block">
+                        <div style="text-align:center;">
+                            <hr class="left-hr" /><span style="font-weight: bold;">General</span><hr class="right-hr" />
+                        </div>
+                        <div>
+                            <label>Download Path:</label><input type="text" ref="dl-path" v-model="modalData.preference.general.download_dir" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Database Path:</label><input type="text" ref="db-path" v-model="modalData.preference.general.db_path" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Log Size:</label><input type="text" ref="log-size" v-model="modalData.preference.general.log_size" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div style="text-align:center;">
+                            <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
+                        </div>
+                        <div>
+                            <label>Format:</label><input type="text" ref="format" v-model="modalData.preference.youtube_dl.format" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Proxy:</label><input type="text" ref="proxy" v-model="modalData.preference.youtube_dl.proxy" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
+                    </div>
+                </template>
+                <template v-if="modalType === 'about'">
+                    <div slot="header">About</div>
+                    <div slot="body" v-cloak style="display:block">
+                        <div style="justify-content: left;">
+                            <span class="caption">Version:</span>web_dev
+                        </div>
+                        <div style="justify-content: left;">
+                            <span class="caption">Github:</span><a href="https://github.com/d0u9/youtube-dl-webui">https://github.com/d0u9/youtube-dl-webui</a>
+                        </div>
+                        <div style="justify-content: left;">
+                            <span class="caption">License:</span><a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">GPL-2.0</a>
+                        </div>
+                    </div>
+                    <div slot="footer">
+                        <button class="modal-default-button" @click="showModal = false">OK</button>
+                    </div>
+                </template>
+                <template v-if="modalType === 'removeTask'">
+                    <div slot="header">Remove Task</div>
+                    <div slot="body" v-cloak style="display:block">
+                        <p>Are you sure you want to delete the task?</p>
+                    </div>
+                    <div slot="footer">
+                        <button class="modal-default-button" @click="showModal = false">cancel</button>
+                        <button class="modal-default-button" @click="removeData" style="width:auto;">remove with data</button>
+                        <button class="modal-default-button" @click="removeTask">remove task</button>
+                    </div>
+                </template>
+                <template v-if="modalType === 'addTask'">
+                    <div slot="header">Add Task</div>
+                    <div slot="body" v-cloak style="display:block">
+                        <div>
+                            <label>URL:</label><input type="text" ref="url" v-model="modalData.add.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                        </div>
+                        <div style="text-align:center;">
+                            <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
+                        </div>
+                        <div>
+                            <label>Format:</label><input type="text" ref="format" v-model="modalData.add.ydl_opts.format" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
+                    </div>
+                </template>
+            </modal>
+            <vue-toast ref='toast'></vue-toast>
             </div>
             <footer>
                 <div class="info-tabs">

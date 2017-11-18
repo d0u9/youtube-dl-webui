@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test cases</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/test.css') }}">
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+    </head>
+    <body>
+        <fieldset>
+            <div class="retval"></div>
+            <legend>Task control</legend>
+            <div class="row">
+                <label class="left" for="url">URL:</label>
+                <input class="right" id="url" type="text" style="width:350px;" value="https://www.youtube.com/watch?v=BaW_jenozKc">
+                <button class="right" id="add-task">Add</button>
+            </div>
+            <div class="row">
+                <label class="left" for="tid">TID:</label>
+                <input class="right" id="tid" type="text" style="width:350px;">
+            </div>
+            <div class="row">
+                <b>-- ydl opts --</b>
+            </div>
+            <div class="row">
+                <label class="left" for="format">format:</label>
+                <input class="right" id="format" type="text" style="width:350px;" value="best">
+            </div>
+            <div class="row">
+                <b>-- Operations --</b>
+            </div>
+            <div class="row">
+                <label class="left">Actions:</label>
+                <button id="pause-task">Pause</button> <button id="resume-task">Resume</button>
+            </div>
+            <div class="row">
+                <span class="left">Del:</span>
+                <button id="del-task">Delete</button>
+                <input id="del-file" type="checkbox" value="del">Delete File
+            </div>
+            <div class="row">
+                <label class="left">Batch actions:</label>
+                <button id="pause-task-batch">Pause</button> <button id="resume-task-batch">Resume</button>
+            </div>
+            <div class="row">
+                <span class="left">Batch Del:</span>
+                <button id="del-task-batch">Delete</button>
+                <input id="del-file-batch" type="checkbox" value="del">Delete File
+            </div>
+        </fieldset>
+        <div class="row"></div>
+        <fieldset>
+        <legend>Settings</legend>
+            <div class="row">
+                <b>-- General --</b>
+            </div>
+            <div class="row general">
+                <label class="left" for="download_dir">Download Path:</label>
+                <input class="right" id="download_dir" type="text">
+            </div>
+            <div class="row general">
+                <label class="left" for="db_path">Database Path:</label>
+                <input class="right" id="db_path" type="text">
+            </div>
+            <div class="row general">
+                <label class="left" for="task_log_size">log-size: </label>
+                <input class="right" id="task_log_size" type="text" value="10">
+            </div>
+            <hr />
+            <div class="row">
+                <b>-- Server --</b>
+            </div>
+            <div class="row server">
+                <label class="left" for="server-host">HOST:</label>
+                <input class="right read-only" id="host" type="text" readonly>
+            </div>
+            <div class="row server">
+                <label class="left" for="server-port">PORT:</label>
+                <input class="right read-only" id="port" type="text" readonly>
+            </div>
+            <hr />
+            <div class="row">
+                <b>-- youtubedl --</b>
+            </div>
+            <div class="row youtube_dl">
+                <label class="left" for="format">Format:</label>
+                <input class="right" id="format" type="text">
+            </div>
+            <div class="row youtube_dl">
+                <label class="left" for="proxy">Proxy:</label>
+                <input class="right" id="proxy" type="text">
+            </div>
+            <div class="row">
+                <button id="conf-save">Save</button> <button id="conf-reset">Reset</button>
+            </div>
+        </fieldset>
+    </body>
+    <script type="text/javascript">
+        var host = window.location.protocol + '//' + window.location.host;
+
+        $("#conf-reset").trigger("click");
+
+        $("#add-task").click(function() {
+            var url = $("#url").val();
+            var format = $("#format").val();
+            var data = { url: url, ydl_opts: {format: format} };
+
+            $.ajax({url: host + '/task',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                    if (result['status'] == 'success') {
+                        $("#tid").val(result['tid']);
+                    }
+                },
+                dataType: 'json'
+            });
+
+        });
+
+        $("#pause-task").click(function() {
+            $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=pause',
+                type: 'PUT',
+                success : function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $("#pause-task-batch").click(function() {
+            var data = { tids: [ $("#tid").val() ] };
+
+            $.ajax({url: host + '/task/batch/pause',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
+            });
+        });
+
+        $("#resume-task").click(function() {
+            $.ajax({ url: host + '/task/tid/' + $("#tid").val() + '?act=resume',
+                type: 'PUT',
+                success : function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $("#resume-task-batch").click(function() {
+            var data = { tids: [ $("#tid").val() ] };
+
+            $.ajax({url: host + '/task/batch/resume',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
+            });
+        });
+
+        $("#del-task").click(function () {
+            var act = $("#del-file").is(":checked") ? '?del_file=true' : '';
+
+            $.ajax({ url: host + '/task/tid/' + $("#tid").val() + act,
+                type: 'DELETE',
+                success : function(result) {
+                    console.log(result);
+                }
+            });
+        });
+
+        $("#del-task-batch").click(function () {
+            var del_flag = $("#del-file-batch").is(":checked") ? 'true' : 'false';
+            var data = { tids: [ $("#tid").val() ], del_file: del_flag };
+
+            $.ajax({url: host + '/task/batch/delete',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
+            });
+        });
+
+        $("#conf-reset").click(function () {
+            $.get(host + '/config',
+            function (data, status) {
+                console.log(data)
+                config = data['config'];
+                for (let cls in config) {
+                    items = config[cls];
+                    for (let id in items) {
+                        $("." + cls + " #" + id).val(items[id]);
+                    }
+                }
+            }, 'json');
+        });
+
+        $("#conf-save").click(function () {
+            var data = get_conf_data();
+
+            console.debug(data);
+
+            $.ajax({url: host + '/config',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log(result);
+                },
+                dataType: 'json'
+            });
+        });
+
+        $(document).ready(function(){
+            $("#conf-reset").trigger("click");
+        });
+
+        function get_conf_data() {
+            var data = {};
+            var general = {};
+            var server = {};
+            var ydl = {};
+
+            general['download_dir'] = $("#download_dir").val();
+            general['db_path'] = $("#db_path").val();
+
+            server['host'] = $("#host").val();
+            server['port'] = $("#port").val();
+
+            ydl['format'] = $("#format").val();
+            ydl['proxy'] = $("#proxy").val();
+
+            data['general'] = general;
+            data['server'] = server;
+            data['youtube_dl'] = ydl;
+
+            return data;
+        }
+    </script>
+</html>
+

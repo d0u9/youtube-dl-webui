@@ -4,6 +4,7 @@
 import json
 import os
 import sqlite3
+import logging
 
 from hashlib import sha1
 from time import time
@@ -11,17 +12,17 @@ from time import time
 from .utils import state_index, state_name
 from .utils import TaskExistenceError
 from .utils import TaskInexistenceError
-from .utils import TaskPausedError
-from .utils import TaskRunningError
+from .utils  import url2tid
 
 class DataBase(object):
     def __init__(self, db_path):
+        self.logger = logging.getLogger('ydl_webui')
         if os.path.exists(db_path) and not os.path.isfile(db_path):
-            print('[ERROR] The db_path: {} is not a regular file'.format(db_path))
+            self.logger.error('The db_path: %s is not a regular file', db_path)
             raise Exception('The db_path is not valid')
 
         if os.path.exists(db_path) and not os.access(db_path, os.W_OK):
-            print('[ERROR] The db_path: {} is not writable'.format(db_path))
+            self.logger.error('The db_path: %s is not writable', db_path)
             raise Exception('The db_path is not valid')
 
         # first time to create db
@@ -42,32 +43,40 @@ class DataBase(object):
         self.db = db
         self.conn = conn
 
+        # Get tables
+        self.tables = {}
+        self.db.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        for row in self.db.fetchall():
+            self.tables[row['name']] = None
 
-    def get_unfinished(self):
-        self.db.execute('SELECT tid FROM task_status WHERE state not in (?,?)',
-                (state_index['finished'], state_index['invalid']))
-        rows = self.db.fetchall()
+        for table in self.tables:
+            c = self.conn.execute('SELECT * FROM {}'.format(table))
+            self.tables[table] = [desc[0] for desc in c.description]
 
-        ret = []
-        for row in rows:
-            ret.append(row['tid'])
+    def update(self, tid, val_dict={}):
+        for table, data in val_dict.items():
+            if table not in self.tables:
+                self.logger.warning('table(%s) does not exist' %(table))
+                continue
 
-        return ret
+            f, v = '', []
+            for name, val in data.items():
+                if name in self.tables[table]:
+                    if val is not None:
+                        f = f + '{}=(?),'.format(name)
+                        v.append(val)
+                else:
+                    self.logger.warning('field_name(%s) does not exist' %(name))
+            else:
+                f = f[:-1]
 
-    def get_param(self, tid):
-        self.db.execute('SELECT * FROM task_param WHERE tid=(?) and state not in (?,?)',
-                (tid, state_index['finished'], state_index['invalid']))
-        row = self.db.fetchone()
+            v.append(tid)
+            self.db.execute('UPDATE {} SET {} WHERE tid=(?)'.format(table, f), tuple(v))
 
-        if row is None:
-            raise TaskInexistenceError('task does not exist')
+        self.conn.commit()
 
-        return {'tid': row['tid'], 'url': row['url']}
-
-
-    def get_opts(self, tid):
-        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?) and state not in (?,?)',
-                (tid, state_index['finished'], state_index['invalid']))
+    def get_ydl_opts(self, tid):
+        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
 
         if row is None:
@@ -75,100 +84,123 @@ class DataBase(object):
 
         return json.loads(row['opt'])
 
+    def get_stat(self, tid):
+        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
 
-    def get_ydl_opts(self, tid):
-        self.db.execute('SELECT opt FROM task_ydl_opt WHERE tid=(?)', (tid, ))
+        if row is None:
+            raise TaskInexistenceError('task does not exist')
 
+        return dict(row)
 
-    def create_task(self, param, ydl_opts):
-        url = param['url']
-        tid = sha1(url.encode()).hexdigest()
+    def get_info(self, tid):
+        self.db.execute('SELECT * FROM task_info WHERE tid=(?)', (tid, ))
+        row = self.db.fetchone()
+
+        if row is None:
+            raise TaskInexistenceError('task does not exist')
+
+        return dict(row)
+
+    def new_task(self, url, ydl_opts):
+        tid = url2tid(url)
 
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         if self.db.fetchone() is not None:
             raise TaskExistenceError('Task exists')
 
-        self.db.execute('INSERT INTO task_status (tid) VALUES (?)', (tid, ))
-        self.db.execute('INSERT INTO task_param (tid, url) VALUES (?, ?)', (tid, url))
+        ydl_opts_str = json.dumps(ydl_opts)
+
+        self.db.execute('INSERT INTO task_status (tid, url) VALUES (?, ?)', (tid, url))
         self.db.execute('INSERT INTO task_info (tid, url, create_time) VALUES (?, ?, ?)',
                         (tid, url, time()))
-        ydl_opt_str = json.dumps(ydl_opts)
-        self.db.execute('INSERT INTO task_ydl_opt (tid, opt) VALUES (?, ?)', (tid, ydl_opt_str))
+        self.db.execute('INSERT INTO task_ydl_opt (tid, url, opt) VALUES (?, ?, ?)',
+                        (tid, url, ydl_opts_str))
         self.conn.commit()
 
         return tid
 
-
-    def set_state(self, tid, state):
-        if state not in state_index:
-            raise KeyError
-
-        self.db.execute('UPDATE task_status SET state=? WHERE tid=(?)', (state_index[state], tid))
-        self.db.execute('UPDATE task_param SET state=? WHERE tid=(?)', (state_index[state], tid))
-        self.db.execute('UPDATE task_info SET state=? WHERE tid=(?)', (state_index[state], tid))
-        self.db.execute('UPDATE task_ydl_opt SET state=? WHERE tid=(?)', (state_index[state], tid))
-        self.conn.commit()
-
-
-    def cancel_task(self,tid, log=None):
-        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
-        row = self.db.fetchone()
-        if row is None:
-            raise TaskInexistenceError('')
-
-        if row['state'] == state_index['paused']:
-            raise TaskPausedError('')
-
-        cur_time = time()
-        elapsed = row['elapsed']
-        start_time = row['start_time']
-        elapsed += (cur_time - start_time);
-
-        state = state_index['paused']
-        self.db.execute('UPDATE task_status SET state=?, pause_time=?, elapsed=? WHERE tid=(?)',
-                        (state,  cur_time, elapsed, tid))
-        self.db.execute('UPDATE task_param SET state=? WHERE tid=(?)', (state, tid))
-        self.db.execute('UPDATE task_info SET state=? WHERE tid=(?)', (state, tid))
-        self.db.execute('UPDATE task_ydl_opt SET state=? WHERE tid=(?)', (state, tid))
-        self.conn.commit()
-
-        self.update_log(tid, log)
-
-
-    def start_task(self, tid, ignore_state=False):
-        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
-        row = self.db.fetchone()
-        if row is None:
-            raise TaskInexistenceError('')
-
-        if row['state'] == state_index['downloading'] and ignore_state is False:
-            raise TaskRunningError('')
-
+    def start_task(self, tid, start_time=time()):
         state = state_index['downloading']
-        self.db.execute('UPDATE task_status SET state=?, start_time=? WHERE tid=(?)', (state, time(), tid))
-        self.db.execute('UPDATE task_param SET state=? WHERE tid=(?)', (state, tid))
-        self.db.execute('UPDATE task_info SET state=? WHERE tid=(?)', (state, tid))
-        self.db.execute('UPDATE task_ydl_opt SET state=? WHERE tid=(?)', (state, tid))
-        self.conn.commit()
+        db_data =   {
+                        'task_info': {'state': state},
+                        'task_status': {'start_time': start_time, 'state': state},
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
 
-        return json.loads(row['log'])
+    def pause_task(self, tid, elapsed, pause_time=time()):
+        self.logger.debug("db pause_task()")
+        state = state_index['paused']
+        db_data =   {
+                        'task_info': {'state': state},
+                        'task_status': {'pause_time': pause_time,
+                                        'eta': 0,
+                                        'speed': 0,
+                                        'elapsed': elapsed,
+                                        'state': state,
+                        },
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
 
+    def finish_task(self, tid, elapsed, finish_time=time()):
+        self.logger.debug("db finish_task()")
+        state = state_index['finished']
+        db_data =   {
+                        'task_info': {  'state': state,
+                                        'finish_time': finish_time,
+                        },
+                        'task_status': {'pause_time': finish_time,
+                                        'eta': 0,
+                                        'speed': 0,
+                                        'elapsed': elapsed,
+                                        'state': state,
+                                        'percent': '100.0%',
+                        },
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
+
+    def halt_task(self, tid, elapsed, halt_time=time()):
+        self.logger.debug('db halt_task()')
+        state = state_index['invalid']
+        db_data =   {
+                        'task_info': {  'state': state,
+                                        'finish_time': halt_time,
+                        },
+                        'task_status': {'pause_time': halt_time,
+                                        'eta': 0,
+                                        'speed': 0,
+                                        'elapsed': elapsed,
+                                        'state': state,
+                        },
+                        'task_ydl_opt': {'state': state},
+                    }
+        self.update(tid, db_data)
 
     def delete_task(self, tid):
+        """ return the tmp file or file downloaded """
         self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
         row = self.db.fetchone()
         if row is None:
             raise TaskInexistenceError('')
+
+        dl_file = None
+        if row['tmpfilename'] != '':
+            dl_file = row['tmpfilename']
+        elif row['filename'] != '':
+            dl_file = row['filename']
 
         self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
         self.db.execute('DELETE FROM task_info WHERE tid=(?)', (tid, ))
-        self.db.execute('DELETE FROM task_param WHERE tid=(?)', (tid, ))
         self.db.execute('DELETE FROM task_ydl_opt WHERE tid=(?)', (tid, ))
         self.conn.commit()
 
+        return dl_file
 
     def query_task(self, tid):
-        self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=(?) and task_info.tid=(?)', (tid, tid))
+        self.db.execute('SELECT * FROM task_status, task_info, task_ydl_opt WHERE task_status.tid=(?) and task_info.tid=(?) and task_ydl_opt.tid=(?)', (tid, tid, tid))
         row = self.db.fetchone()
         if row is None:
             raise TaskInexistenceError('')
@@ -184,34 +216,30 @@ class DataBase(object):
 
         return ret
 
-    def list_task(self, qstate):
+    def list_task(self, state):
         self.db.execute('SELECT * FROM task_status, task_info WHERE task_status.tid=task_info.tid')
         rows = self.db.fetchall()
 
-        ret = []
         state_counter = {'downloading': 0, 'paused': 0, 'finished': 0, 'invalid': 0}
-        if len(rows) == 0:
-            return ret, state_counter
-
-        keys = set(rows[0].keys())
+        ret_val = []
         for row in rows:
             t = {}
-            for key in keys:
+            for key in set(row.keys()):
                 if key == 'state':
-                    state = row[key]
-                    t[key] = state_name[state]
-                    state_counter[state_name[state]] += 1
+                    s = row[key]
+                    t[key] = state_name[s]
+                    state_counter[state_name[s]] += 1
                 elif key == 'log':
-                    t['log'] = json.loads(row['log'])
+                    t['log'] = json.loads(row[key])
                 else:
                     t[key] = row[key]
 
-            if qstate == 'all' or qstate == t['state']:
-                ret.append(t)
+            if state == 'all' or t['state'] == state:
+                ret_val.append(t)
 
-        return ret, state_counter
+        return ret_val, state_counter
 
-    def list_state(self):
+    def state_counter(self):
         state_counter = {'downloading': 0, 'paused': 0, 'finished': 0, 'invalid': 0}
 
         self.db.execute('SELECT state, count(*) as NUM FROM task_status GROUP BY state')
@@ -222,54 +250,59 @@ class DataBase(object):
 
         return state_counter
 
+    def update_info(self, tid, info_dict):
+        self.logger.debug('db update_info()')
+        db_data =   {
+                        'valid':            1,      # info_dict is updated
+                        'title':            info_dict['title'],
+                        'format':           info_dict['format'],
+                        'ext':              info_dict['ext'],
+                        'thumbnail':        info_dict['thumbnail'],
+                        'duration':         info_dict['duration'],
+                        'view_count':       info_dict['view_count'],
+                        'like_count':       info_dict['like_count'],
+                        'dislike_count':    info_dict['dislike_count'],
+                        'average_rating':   info_dict['average_rating'],
+                        'description':      info_dict['description'],
+                    }
+        self.update(tid, {'task_info': db_data})
 
-    def update_from_info_dict(self, tid, info_dict):
-        if info_dict['like_count'] is None:
-            info_dict['like_count'] = 0 
-        if info_dict['dislike_count'] is None:
-            info_dict['dislike_count'] = 0 
-
-        self.db.execute('UPDATE task_info SET title=(?), format=(?), ext=(?), thumbnail=(?), duration=(?), view_count=(?), like_count=(?), dislike_count=(?), average_rating=(?), description=(?) WHERE tid=(?)',
-                        (info_dict['title'], info_dict['format'], info_dict['ext'], info_dict['thumbnail'], info_dict['duration'], info_dict['view_count'], info_dict['like_count'], info_dict['dislike_count'], info_dict['average_rating'], info_dict['description'], tid))
-        self.conn.commit()
-
-
-    def update_log(self, tid, log):
-        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
-        row = self.db.fetchone()
-        if row is None:
-            raise TaskInexistenceError('')
+    def update_log(self, tid, log, exist_test=False):
+        if exist_test:
+            self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
+            row = self.db.fetchone()
+            if row is None:
+                raise TaskInexistenceError('')
 
         log_str = json.dumps([l for l in log])
-        self.db.execute('UPDATE task_status SET log = (?) WHERE tid=(?)', (log_str, tid))
-        self.conn.commit()
+        self.update(tid, {'task_status': {'log': log_str}})
 
+    def progress_update(self, tid, d, elapsed):
+        self.logger.debug("update filename=%s, tmpfilename=%s" %(d['filename'], d['tmpfilename']))
 
-    def progress_update(self, tid, d):
-        self.db.execute('SELECT * FROM task_status WHERE tid=(?)', (tid, ))
-        row = self.db.fetchone()
-        if row is None:
-            raise TaskInexistenceError('')
+        db_data =   {
+                        'percent':              d['_percent_str'],
+                        'filename':             d['filename'],
+                        'tmpfilename':          d['tmpfilename'],
+                        'downloaded_bytes':     d['downloaded_bytes'],
+                        'total_bytes':          d['total_bytes'],
+                        'total_bytes_estmt':    d['total_bytes_estimate'],
+                        'speed':                d['speed'],
+                        'eta':                  d['eta'],
+                        'elapsed':              elapsed,
+                    }
+        self.update(tid, {'task_status': db_data})
 
-        elapsed = row['elapsed'] + d['elapsed']
+    def launch_unfinished(self):
+        self.db.execute('SELECT tid FROM task_status WHERE state in (?)',
+                        (state_index['downloading'],))
 
-        if 'total_bytes' in d:
-            d['total_bytes_estmt'] = d['total_bytes']
-        else:
-            d['total_bytes'] = '0'
+        rows = self.db.fetchall()
 
-        self.db.execute("UPDATE task_status SET "
-                "percent=:percent,            filename=:filename, "
-                "tmpfilename=:tmpfilename,    downloaded_bytes=:downloaded_bytes, "
-                "total_bytes=:total_bytes,    total_bytes_estmt=:total_bytes_estmt, "
-                "speed=:speed, eta=:eta,      elapsed=:elapsed WHERE tid=:tid",
-                { "percent":     d['_percent_str'], "filename":          d['filename'],             \
-                  "tmpfilename": d['tmpfilename'],  "downloaded_bytes":  d['downloaded_bytes'],     \
-                  "total_bytes": d['total_bytes'],  "total_bytes_estmt": d['total_bytes_estimate'], \
-                  "speed":       d['speed'],        "eta":               d['eta'],                  \
-                  "elapsed":     elapsed,           "tid":               tid
-                })
+        ret_val = []
+        for row in rows:
+            ret_val.append(row['tid'])
 
-        self.db.execute('UPDATE task_info SET finish_time=? WHERE tid=(?)', (time(), tid))
-        self.conn.commit()
+        return ret_val
+
 

@@ -7,11 +7,16 @@ var videoDownload = (function (Vue, extendAM){
         videoList: [],
         videoListCopy: [],
         showModal: false,
+        modalType: 'addTask',
         // tablist: ['status', 'details', 'file24s', 'peers', 'options'],
         tablist: ['Status', 'Details', 'Log'],
         showTab: 'Status',
         stateCounter: { all: 0, downloading: 0, finished: 0, paused: 0, invalid: 0},
-        modalData: { url: '' },
+        modalData: {
+            add: { url: '', ydl_opts: {} },
+            remove: { removeFile: false },
+            preference: {youtube_dl: {fomart: '', proxy: ''}, general: {download_dir: '', db_path: '', log_size: ''}},
+        },
         currentSelected: null,
         taskDetails: {},
         taskInfoUrl: null,
@@ -23,11 +28,8 @@ var videoDownload = (function (Vue, extendAM){
         closeBtn: false
     };
 
-    videoDownload.updateVm = function(res) {
+    videoDownload.createVm = function(res) {
         var that = videoDownload;
-        if(that.vm){
-            return false;
-        }
         that.vm = new Vue({
             el: '#videoWrapper',
             data: that.tasksData,
@@ -42,20 +44,55 @@ var videoDownload = (function (Vue, extendAM){
             },
             mounted: function () {
                 this.resetOptions();
+                setInterval(videoDownload.timeOut, 3000);
             },
             methods: {
                 showAddTaskModal: function(){
-                    this.modalData.url = '';
+                    this.modalData.add.url = '';
                     this.showModal = true;
+                    this.modalType = 'addTask';
+                    console.log(this.modalData);
                     this.$nextTick(function(){
                         this.$refs.url.focus();
                     });
                 },
+                execFunction: function(){
+                    switch(this.modalType) {
+                        case 'addTask':
+                            this.addTask();
+                            break;
+                        case 'removeTask':
+                            this.removeTask();
+                            break;
+                        case 'updatePreference':
+                            this.updatePreference();
+                            break;
+                    }
+                },
+                showRemoveTaskModal: function(){
+                    this.modalData.remove.removeFile = false;
+                    this.showModal = true;
+                    this.modalType = 'removeTask';
+                },
                 addTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task';
-                    Vue.http.post(url, _self.modalData, {emulateJSON: true}).then(function(res){ _self.showModal = false;
+                    for (var key in _self.modalData.add.ydl_opts) {
+                        if (_self.modalData.add.ydl_opts[key].trim() == '')
+                            delete _self.modalData.add.ydl_opts[key];
+                    }
+                    Vue.http.post(url, _self.modalData.add, {emulateJSON: false}).then(function(res){
+                        _self.showModal = false;
                         that.getTaskList();
+                    }, function(err){
+                        _self.showAlertToast(err, 'error');
+                    });
+                },
+                updatePreference: function () {
+                    var _self = this;
+                    var url = _self.headPath + 'config';
+                    Vue.http.post(url, _self.modalData.preference, {emulateJSON: false}).then(function(res){
+                        console.log("Successfully");
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
@@ -63,13 +100,21 @@ var videoDownload = (function (Vue, extendAM){
                 removeTask: function(){
                     var _self = this;
                     var url = _self.headPath + 'task/tid/' + (_self.videoList[_self.currentSelected] && _self.videoList[_self.currentSelected].tid);
+                    if(_self.modalData.remove.removeFile){
+                        url += '?del_file=true';
+                    }
                     Vue.http.delete(url).then(function(res){
                         _self.showAlertToast('Task Delete', 'info');
                         _self.videoList.splice(_self.currentSelected, _self.currentSelected+1);
+                        _self.showModal = false;
                         that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
+                },
+                removeData: function(){
+                    this.modalData.remove.removeFile = true;
+                    this.removeTask();
                 },
                 pauseTask: function(){
                     var _self = this;
@@ -89,6 +134,30 @@ var videoDownload = (function (Vue, extendAM){
                         that.getTaskList();
                     }, function(err){
                         _self.showAlertToast(err, 'error');
+                    });
+                },
+                about: function() {
+                    this.showModal = true;
+                    this.modalType = 'about';
+                },
+                preference: function() {
+                    var _self = this;
+                    var url = _self.headPath + 'config';
+
+                    this.showModal = true;
+                    this.modalType = 'updatePreference';
+                    Vue.http.get(url).then(function(res) {
+                        var responseJSON = JSON.parse(res.data);
+                        if (responseJSON.status === 'error') {
+                            return false;
+                        } else {
+                            config = responseJSON['config'];
+                            _self.modalData.preference.general.download_dir = config.general.download_dir;
+                            _self.modalData.preference.general.db_path = config.general.db_path;
+                            _self.modalData.preference.general.log_size = config.general.log_size;
+                            _self.modalData.preference.youtube_dl.format = config.youtube_dl.format;
+                            _self.modalData.preference.youtube_dl.proxy = config.youtube_dl.proxy;
+                        }
                     });
                 },
                 selected: function(index){
@@ -211,7 +280,6 @@ var videoDownload = (function (Vue, extendAM){
                                               that.tasksData.stateCounter.finished +
                                               that.tasksData.stateCounter.paused +
                                               that.tasksData.stateCounter.invalid;
-            that.updateVm();
         }, function(err){
             that.vm.showAlertToast('Network connection lost', 'error');
         });
@@ -220,14 +288,14 @@ var videoDownload = (function (Vue, extendAM){
     videoDownload.timeOut = function(){
         var that = videoDownload;
         that.getTaskList();
-        that.vm && that.vm.getTaskInfoById();
+        that.vm.getTaskInfoById();
     };
 
     videoDownload.init = function(){
         var that = this;
         that.tasksData.headPath = window.location.protocol + '//' + window.location.host + '/';
+        that.createVm();
         that.getTaskList();
-        setInterval(videoDownload.timeOut, 3000);
     }
 
     return videoDownload;
