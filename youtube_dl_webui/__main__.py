@@ -20,8 +20,6 @@ else:
 import youtube_dl_webui
 
 if __name__ == '__main__':
-    print("----" + path + "-----");
-    print("----" + dirname + "-----");
     # Setup logger
     logging_json = os.path.join(dirname, 'logging.json')
     with open(logging_json) as f:
