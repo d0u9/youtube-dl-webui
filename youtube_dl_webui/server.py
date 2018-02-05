@@ -131,7 +131,6 @@ class Server(Process):
         self.port = port
 
     def run(self):
-        app.run(host=self.host, port=self.port, use_reloader=False)
-        #  app.run(host='0.0.0.0', port=5000, use_reloader=False)
+        app.run(host=self.host, port=int(self.port), use_reloader=False)
 
 
