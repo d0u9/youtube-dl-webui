@@ -149,7 +149,7 @@ class TaskManager(object):
             if status['state'] == state_index['finished']:
                 raise TaskError('Task is finished')
 
-            task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info, 
+            task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info,
                         status=status, log_size=self._conf['general']['log_size'])
             self._tasks_dict[tid] = task
 
@@ -279,5 +279,10 @@ class TaskManager(object):
         tid_list = self._db.launch_unfinished()
 
         for t in tid_list:
-            self.start_task(t)
+            try:
+                self.start_task(t)
+            except TaskError as e:
+                self.logger.warn("Task %s is in downloading or finished state", tid)
+            except TaskInexistenceError:
+                self.logger.error('Task does not exist')
 

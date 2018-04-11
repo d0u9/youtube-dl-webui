@@ -186,6 +186,7 @@ class WebMsgDispatcher(object):
 class WorkMsgDispatcher(object):
 
     _task_mgr = None
+    logger = logging.getLogger('ydl_webui')
 
     @classmethod
     def init(cls, task_mgr):
@@ -212,10 +213,13 @@ class WorkMsgDispatcher(object):
     @classmethod
     def event_progress(cls, svr, event, data, arg):
         tid, data = data['tid'], data['data']
-        cls._task_mgr.progress_update(tid, data)
-
-        if data['status'] == 'finished':
-            cls._task_mgr.finish_task(tid)
+        try:
+            cls._task_mgr.progress_update(tid, data)
+        except TaskInexistenceError:
+            cls.logger.error('Cannot update progress, task does not exist')
+        else:
+            if data['status'] == 'finished':
+                cls._task_mgr.finish_task(tid)
 
 
 def load_conf_from_file(cmd_args):
