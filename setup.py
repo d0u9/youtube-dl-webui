@@ -8,7 +8,7 @@ LONG_DESCRIPTION = 'Another webui for youtube-dl, powered by youtube-dl'
 
 setup (
         name='youtube_dl_webui',
-        version='0.1-dev',
+        version='web_dev',
         packages=['youtube_dl_webui'],
         license='GPL-2.0',
         author='d0u9, yuanyingfeiyu',
