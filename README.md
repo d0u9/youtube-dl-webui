@@ -26,6 +26,8 @@ This project is writen under the **python 3.6**, I haven't test the codes in
 any other python versions. So, I hightly recommend you to use python 3.6 to
 avoid any troubles.
 
+Also, we need **[ffmpeg](https://www.ffmpeg.org/download.html)** for post
+processing. Lack of ffmpeg may case some funtions not working.
 
 # Install
 

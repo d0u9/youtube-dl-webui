@@ -217,9 +217,11 @@ class WorkMsgDispatcher(object):
             cls._task_mgr.progress_update(tid, data)
         except TaskInexistenceError:
             cls.logger.error('Cannot update progress, task does not exist')
-        else:
-            if data['status'] == 'finished':
-                cls._task_mgr.finish_task(tid)
+
+    @classmethod
+    def event_worker_done(cls, svr, event, data, arg):
+        tid, data = data['tid'], data['data']
+        cls._task_mgr.finish_task(tid)
 
 
 def load_conf_from_file(cmd_args):
@@ -275,6 +277,7 @@ class Core(object):
         self.msg_mgr.reg_event('log',        WorkMsgDispatcher.event_log)
         self.msg_mgr.reg_event('progress',   WorkMsgDispatcher.event_progress)
         self.msg_mgr.reg_event('fatal',      WorkMsgDispatcher.event_fatal)
+        self.msg_mgr.reg_event('worker_done',WorkMsgDispatcher.event_worker_done)
 
         self.server = Server(web_cli, self.conf['server']['host'], self.conf['server']['port'])
 

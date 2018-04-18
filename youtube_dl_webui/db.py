@@ -186,11 +186,7 @@ class DataBase(object):
         if row is None:
             raise TaskInexistenceError('')
 
-        dl_file = None
-        if row['tmpfilename'] != '':
-            dl_file = row['tmpfilename']
-        elif row['filename'] != '':
-            dl_file = row['filename']
+        dl_file = row['filename']
 
         self.db.execute('DELETE FROM task_status WHERE tid=(?)', (tid, ))
         self.db.execute('DELETE FROM task_info WHERE tid=(?)', (tid, ))
