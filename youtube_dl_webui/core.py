@@ -221,7 +221,10 @@ class WorkMsgDispatcher(object):
     @classmethod
     def event_worker_done(cls, svr, event, data, arg):
         tid, data = data['tid'], data['data']
-        cls._task_mgr.finish_task(tid)
+        try:
+            cls._task_mgr.finish_task(tid)
+        except TaskInexistenceError:
+            cls.logger.error('Cannot finish, task does not exist')
 
 
 def load_conf_from_file(cmd_args):
