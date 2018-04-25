@@ -1,17 +1,15 @@
-:root {
-    --border-color: #bfbfbf;
-    --header-height: 33px;
-    --footer-margin: 5px;
-    --footer-height: 195px;
-    --main-height: calc(100% - (var(--footer-height) + var(--header-height) + var(--footer-margin)));
-    --info-tab-height: 35px;
-    --tabpane-dl-width: 500px;
-    --tabpane-dt-width: 120px;
-    --state-finished-color: grey;
-    --state-downloading-color: blue;
-    --state-paused-color: green;
-    --state-invalid-color: red;
-}
+@border-color: #bfbfbf;
+@header-height: 33px;
+@footer-margin: 5px;
+@footer-height: 195px;
+@main-height: calc(~'100% - 195px - 33px - 5px');
+@info-tab-height: 35px;
+@tabpane-dl-width: 500px;
+@tabpane-dt-width: 120px;
+@state-finished-color: grey;
+@state-downloading-color: blue;
+@state-paused-color: green;
+@state-invalid-color: red;
 
 html, body {
     height: 100%;
@@ -68,13 +66,13 @@ header {
 
 .main-body {
     display: flex;
-    height: var(--main-height);
+    height: @main-height;
 }
 
 .main-body .sidebar-wrapper {
     width: 200px;
     min-width: 150px;
-    border: 2px solid var(--border-color);
+    border: 2px solid @border-color;
     border-radius: 5px;
     background-color: #fff;
 }
@@ -104,7 +102,7 @@ header {
     list-style: none;
     height: 100%;
     margin:0;
-    padding-left:0;:
+    padding-left:0;
 }
 
 .main-body .sidebar-wrapper ul li {
@@ -119,7 +117,7 @@ header {
 
 .main-body .videoList-wrapper {
     margin-left:5px;
-    border: 2px solid var(--border-color);
+    border: 2px solid @border-color;
     border-radius: 5px;
     background-color: #fff;
     flex-grow:1;
@@ -188,10 +186,10 @@ tr.selected {
 footer {
     display: flex;
     flex-direction: column;
-    margin-top: var(--footer-margin);
-    height: var(--footer-height);
+    margin-top: @footer-margin;
+    height: @footer-height;
     overflow: hidden;
-    border: solid 2px var(--border-color);
+    border: solid 2px @border-color;
     border-radius: 5px;
     overflow: hidden;
 }
@@ -199,7 +197,7 @@ footer {
 footer div.info-tabs {
     background-color: #f5f6f9;
     width: 100%;
-    min-height: var(--info-tab-height);
+    min-height: @info-tab-height;
     overflow: auto;
     padding: 3px 10px 3px 10px;
     border: #e6e7ec solid thin;
@@ -227,9 +225,7 @@ ul.task-info li {
 }
 
 ul.task-info li.selected {
-    -webkit-box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.59);
-    -moz-box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.59);
-    box-shadow: inset 0px 1px 3px 0px rgba(0,0,0,0.59);
+    box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.59);
 }
 
 ul.task-info li:first-of-type {
@@ -241,7 +237,7 @@ ul.task-info li:first-of-type {
 }
 
 .tabpane dl {
-    width: var(--tabpane-dl-width);
+    width: @tabpane-dl-width;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -253,7 +249,7 @@ ul.task-info li:first-of-type {
 .tabpane dl dt {
     font-weight: bold;
     display: inline-block;
-    width: var(--tabpane-dt-width);
+    width: @tabpane-dt-width;
     margin-bottom:5px;
 }
 
@@ -263,7 +259,7 @@ ul.task-info li:first-of-type {
     list-style: none;
     margin-left: 0;
     margin-bottom: 5px;
-    width: calc(var(--tabpane-dl-width) - var(--tabpane-dt-width));
+    width: @tabpane-dl-width - @tabpane-dt-width;
 }
 
 .tabpane div.details {
@@ -275,14 +271,14 @@ ul.task-info li:first-of-type {
     flex: 3 0;
     border-right: rgb(185, 185, 185) solid thin;
     margin: 10px;
-    height: calc(var(--footer-height) - var(--info-tab-height) - 20px);
+    height: @footer-height - @info-tab-height - 20px;
     overflow: hidden;
 }
 
 .tabpane div.details div.row {
-    --height: 15px;
-    height: var(--height);
-    line-height: var(--height);
+    @height: 15px;
+    height: @height;
+    line-height: @height;
     padding: 3px 0 3px 0;
     display: flex;
     flex-direction: row;
@@ -306,7 +302,7 @@ ul.task-info li:first-of-type {
 
 .tabpane div.details .description {
     margin-top: 5px;
-    height: calc(var(--footer-height) - var(--info-tab-height) - 20px - 15px - 5px);
+    height: @footer-height - @info-tab-height - 20px - 15px - 5px;
     overflow: auto;
     white-space: normal;
 }
@@ -314,7 +310,7 @@ ul.task-info li:first-of-type {
 .tabpane div.log-container {
     flex-grow: 1;
     margin: 5px 10px 5px 10px;
-    height: calc(var(--footer-height) - var(--info-tab-height) - 5px - 10px);
+    height: @footer-height - @info-tab-height - 5px - 10px;
     overflow: auto;
 }
 

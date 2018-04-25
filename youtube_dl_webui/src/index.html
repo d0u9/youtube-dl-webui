@@ -1,0 +1,214 @@
+<!doctype html>
+<html>
+    <head>
+        <title>youtube-dl-webUI</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <div id="videoWrapper">
+            <header>
+                <div class="operBtns">
+                    <button @click="showAddTaskModal"><i class="fa fa-plus" aria-hidden="true"></i> Add</button>
+                    <button @click="showRemoveTaskModal"><i class="fa fa-minus" aria-hidden="true"></i> Remove</button>
+                    <button @click="pauseTask"><i class="fa fa-pause" aria-hidden="true"></i> Pause</button>
+                    <button @click="resumeTask"><i class="fa fa-play" aria-hidden="true"></i> Resume</button>
+                    <button @click="preference"><i class="fa fa-cog" aria-hidden="true"></i> Preference</button>
+                    <button @click="about" style="float:right"><i class="fa fa-question-circle" aria-hidden="true"></i> About</button>
+                </div>
+            </header>
+            <div class="main-body">
+                <div class="sidebar-wrapper">
+                    <div class="filter-caption">Filter <i class="fa fa-chevron-circle-left" style="float: right" aria-hidden="true"></i></div>
+                    <div class="filter-list">
+                        <ul>
+                          <li v-cloak @click="filterTasks('all')" v-bind:class="{'active': status === 'all'}"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;All&nbsp;({{"{{stateCounter.all}}"}})</li>
+                          <li v-cloak @click="filterTasks('downloading')" v-bind:class="{'active': status === 'downloading'}">
+                              <i class="fa fa-download" aria-hidden="true" style="color:blue;"></i>&nbsp;Downloading&nbsp;({{"{{stateCounter.downloading}}"}})
+                          </li>
+                          <li v-cloak @click="filterTasks('finished')" v-bind:class="{'active': status === 'finished'}">
+                              <i class="fa fa-check-circle" aria-hidden="true" style="color:grey;"></i>&nbsp;Finished&nbsp;({{"{{stateCounter.finished}}"}})
+                          </li>
+                          <li v-cloak @click="filterTasks('paused')" v-bind:class="{'active': status === 'paused'}">
+                              <i class="fa fa-pause-circle" aria-hidden="true" style="color:green;"></i>&nbsp;Paused&nbsp;({{"{{stateCounter.paused}}"}})
+                          </li>
+                          <li v-cloak @click="filterTasks('invalid')" v-bind:class="{'active': status === 'invalid'}">
+                              <i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:red;"></i>&nbsp;Invalid&nbsp;({{"{{stateCounter.invalid}}"}})
+                          </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="videoList-wrapper">
+                    <table class="videoList">
+                        <thead>
+                            <tr>
+                                <th width="30px">#</th>
+                                <th width="25ox">State</th>
+                                <th>Name</th>
+                                <th width="90px">Total Size</th>
+                                <th width="230px">Progress</th>
+                                <th width="100px">Down Speed</th>
+                                <th width="80px">ETA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(video, index) in videoList" @click="selected(index)" :class="{'selected': currentSelected === index}">
+                                <td v-cloak>{{"{{index + 1}}"}}</td>
+                                <td v-cloak style="font-size: 16px">
+                                    <i v-bind:style="{color: stateIcon(video.state).color}" v-bind:class="['fa', stateIcon(video.state).icon]" aria-hidden="true"></i>
+                                </td>
+                                <td v-cloak>{{"{{video.title}}"}}</td>
+                                <td v-cloak>{{"{{bitsToHuman(video.total_bytes)}}"}}</td>
+                                <td v-cloak>
+                                    <div class="progress-bar">
+                                        <div class="string">{{"{{progressConv(video.state, video.percent)}}"}}</div>
+                                        <div class="bar-container">
+                                            <div class="bar" :style="{width:video.percent}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td v-cloak>{{"{{speedConv(video.state, video.speed)}}"}}</td>
+                                <td v-cloak>{{"{{etaConv(video.state, video.eta)}}"}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <modal v-if="showModal" @close="showModal = false" @confirm="execFunction" v-cloak>
+                    <template v-if="modalType === 'updatePreference'">
+                        <div slot="header">Preference</div>
+                        <div slot="body" v-cloak style="display:block">
+                            <div style="text-align:center;">
+                                <hr class="left-hr" /><span style="font-weight: bold;">General</span><hr class="right-hr" />
+                            </div>
+                            <div>
+                                <label>Download Path:</label><input type="text" ref="dl-path" v-model="modalData.preference.general.download_dir" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            </div>
+                            <div>
+                                <label>Database Path:</label><input type="text" ref="db-path" v-model="modalData.preference.general.db_path" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            </div>
+                            <div>
+                                <label>Log Size:</label><input type="text" ref="log-size" v-model="modalData.preference.general.log_size" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            </div>
+                            <div style="text-align:center;">
+                                <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
+                            </div>
+                            <div>
+                                <label>Format:</label><input type="text" ref="format" v-model="modalData.preference.youtube_dl.format" v-cloak @keyup.esc="showModal = false"/>
+                            </div>
+                            <div>
+                                <label>Proxy:</label><input type="text" ref="proxy" v-model="modalData.preference.youtube_dl.proxy" v-cloak @keyup.esc="showModal = false"/>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-if="modalType === 'about'">
+                        <div slot="header">About</div>
+                        <div slot="body" v-cloak style="display:block">
+                            <div style="justify-content: left;">
+                                <span class="caption">Version:</span>web_dev
+                            </div>
+                            <div style="justify-content: left;">
+                                <span class="caption">Github:</span><a href="https://github.com/d0u9/youtube-dl-webui">https://github.com/d0u9/youtube-dl-webui</a>
+                            </div>
+                            <div style="justify-content: left;">
+                                <span class="caption">License:</span><a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">GPL-2.0</a>
+                            </div>
+                        </div>
+                        <div slot="footer">
+                            <button class="modal-default-button" @click="showModal = false">OK</button>
+                        </div>
+                    </template>
+                    <template v-if="modalType === 'removeTask'">
+                        <div slot="header">Remove Task</div>
+                        <div slot="body" v-cloak style="display:block">
+                            <p>Are you sure you want to delete the task?</p>
+                        </div>
+                        <div slot="footer">
+                            <button class="modal-default-button" @click="showModal = false">cancel</button>
+                            <button class="modal-default-button" @click="removeData" style="width:auto;">remove with data</button>
+                            <button class="modal-default-button" @click="removeTask">remove task</button>
+                        </div>
+                    </template>
+                    <template v-if="modalType === 'addTask'">
+                        <div slot="header">Add Task</div>
+                        <div slot="body" v-cloak style="display:block">
+                            <div>
+                                <label>URL:</label><input type="text" ref="url" v-model="modalData.add.url" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            </div>
+                            <div style="text-align:center;">
+                                <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
+                            </div>
+                            <div>
+                                <label>Format:</label><input type="text" ref="format" v-model="modalData.add.ydl_opts.format" v-cloak @keyup.esc="showModal = false"/>
+                            </div>
+                        </div>
+                    </template>
+                </modal>
+            </div>
+            <footer>
+                <div class="info-tabs">
+                    <ul class="task-info">
+                        <li v-for="tab in tablist" class="tab" v-bind:class="{selected: showTab === tab}" @click="showTab = tab" v-cloak><span>{{"{{tab}}"}}</span></li>
+                    </ul>
+                </div>
+                <div class="tabpane">
+                    <div v-show="showTab === 'Status'" v-cloak>
+                        <dl>
+                            <dt>Title:</dt><dd v-bind:title="taskDetails.title" style="overflow:auto; white-space:normal">{{"{{taskDetails.title}}"}}</dd>
+                            <dt>Extension:</dt><dd>{{"{{taskDetails.ext}}"}}</dd>
+                            <dt>Format:</dt><dd>{{"{{taskDetails.format}}"}}</dd>
+                            <dt>Create Time:</dt><dd>{{"{{tsToLocal(taskDetails.create_time)}}"}}</dd>
+                            <dt>Finish Time:</dt><dd>{{"{{tsToLocal(taskDetails.finish_time)}}"}}</dd>
+                            <dt>File Name:</dt><dd style="overflow:auto; white-space:normal;">{{"{{taskDetails.filename}}"}}</dd>
+                        </dl>
+                    </div>
+                    <div class="details" v-show="showTab === 'Details'" v-cloak>
+                        <div class="col">
+                            <div class="row">
+                                <span class="key">Title:</span>
+                                <span class="val">{{"{{taskDetails.title}}"}}</span>
+                            </div>
+                            <div class="row">
+                                <span class="key">URL:</span>
+                                <span class="val"><a v-bind:title="taskDetails.url" :href="taskDetails.url" target="_blank">{{"{{taskDetails.url}}"}}</a></span>
+                            </div>
+                            <div class="row auto-height">
+                                <span class="key">Thumbnail:</span>
+                                <span class="val" style="overflow-y:hidden; height:92px;"><img height="92px" :src="taskDetails.thumbnail"></span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="row auto-height" style="display:block; padding-right: 8px;">
+                                <span class="key" style="text-align: center; width: 100%;">Description</span>
+                                <div class="val description" v-html="taskDetails.description"></div>
+                            </div>
+                        </div>
+                        <div class="col" style="flex-grow: 1; border: none">
+                            <div class="row"><span class="key">Duration:</span><span class="val">{{"{{taskDetails.duration}}"}}</span></div>
+                            <div class="row"><span class="key">View Count:</span><span class="val">{{"{{taskDetails.view_count}}"}}</span></div>
+                            <div class="row"><span class="key">Like Count:</span><span class="val">{{"{{taskDetails.like_count}}"}}</span></div>
+                            <div class="row"><span class="key">Dislike Count:</span><span class="val">{{"{{taskDetails.dislike_count}}"}}</span></div>
+                            <div class="row"><span class="key">Average Rating:</span><span class="val">{{"{{taskDetails.average_rating}}"}}</span></div>
+                        </div>
+                    </div>
+                    <div v-show="showTab === 'Log'" class="log-container" v-cloak>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th style="width: 125px">Time</th>
+                                <th style="width: 90px">Type</th>
+                                <th style="text-align: center; padding-left: 5px;">Message</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="log in taskDetails.log" class="log" v-cloak>
+                                <td>{{"{{tsToLocal(log.time)}}"}}</td>
+                                <td>{{"{{log.type}}"}}</td>
+                                <td style="text-align: left; padding-left: 5px;">{{"{{log.msg}}"}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </body>
+</html>
