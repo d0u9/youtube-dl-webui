@@ -4,6 +4,7 @@
 import logging
 import os
 import json
+import glob
 
 from time import time
 from collections import deque
@@ -149,7 +150,7 @@ class TaskManager(object):
             if status['state'] == state_index['finished']:
                 raise TaskError('Task is finished')
 
-            task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info, 
+            task = Task(tid, self._msg_cli, ydl_opts=ydl_opts, info=info,
                         status=status, log_size=self._conf['general']['log_size'])
             self._tasks_dict[tid] = task
 
@@ -211,9 +212,14 @@ class TaskManager(object):
             raise TaskInexistenceError(e.msg)
 
         if del_file and dl_file is not None:
-            abs_dl_file = os.path.join(os.getcwd(), dl_file)
-            self.logger.debug('delete file: %s' %(abs_dl_file))
-            os.remove(abs_dl_file)
+            file_wo_ext, ext = dl_file, None
+            while ext != '':
+                file_wo_ext, ext = os.path.splitext(file_wo_ext)
+
+            for fname in os.listdir(os.getcwd()):
+                if fname.startswith(file_wo_ext):
+                    self.logger.debug('delete file: %s' %(fname))
+                    os.remove(os.path.join(os.getcwd(), fname))
 
     def query(self, tid, exerpt=True):
         db_ret = self._db.query_task(tid)
@@ -279,5 +285,10 @@ class TaskManager(object):
         tid_list = self._db.launch_unfinished()
 
         for t in tid_list:
-            self.start_task(t)
+            try:
+                self.start_task(t)
+            except TaskError as e:
+                self.logger.warn("Task %s is in downloading or finished state", tid)
+            except TaskInexistenceError:
+                self.logger.error('Task does not exist')
 

@@ -50,9 +50,11 @@ class MsgMgr(object):
     def new_cli(self, cli_name=None):
         uuid = None
         if cli_name is not None:
+            # For named client, we create unique queue for communicating with server
             uuid = cli_name
             cli = CliMsg(cli_name, Queue(), self._svrQ)
         else:
+            # Anonymous client is a client who needn't to talk to the server.
             uuid = new_uuid()
             cli = CliMsg(uuid, None, self._svrQ)
 
@@ -61,6 +63,10 @@ class MsgMgr(object):
         return cli
 
     def reg_event(self, event, cb_func, arg=None):
+        # callback functions should have the signature of callback(svr, event, data, arg)
+        #
+        # svr is an instance of SrvMsg class, so the callback can directly send
+        # mssages via svr to its corresponding client.
         self._evnt_cb_dict[event] = (cb_func, arg)
 
     def run(self):

@@ -126,6 +126,8 @@ class Worker(Process):
                 event_handler = FatalEvent(self.tid, self.msg_cli)
                 event_handler.invalid_url(self.url);
 
+        self.msg_cli.put('worker_done', {'tid': self.tid, 'data': {}})
+
     def stop(self):
         self.logger.info('Terminating Process ...')
         self.terminate()
