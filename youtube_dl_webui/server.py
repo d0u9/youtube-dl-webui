@@ -124,13 +124,14 @@ class Server(Process):
     def __init__(self, msg_cli, host, port):
         super(Server, self).__init__()
 
-        global MSG
-        MSG = msg_cli
+        self.msg_cli = msg_cli
 
         self.host = host
         self.port = port
 
     def run(self):
+        global MSG
+        MSG = self.msg_cli
         app.run(host=self.host, port=int(self.port), use_reloader=False)
 
 
