@@ -105,6 +105,11 @@ class Worker(Process):
         self.ydl_opts['progress_hooks'] = [self.ydl_hook.dispatcher]
         self.ydl_opts['noplaylist'] = "false"
         self.ydl_opts['progress_with_newline'] = True
+        #testing post-processing options
+        self.ydl_opts['prefer_ffmpeg'] = True
+        self.ydl_opts['outtmpl'] = "%(title)s.%(ext)s"
+        self.ydl_opts['postprocessor_args'] = ["-x", "--embed-thumbnail", "--add-metadata", "--no-mtime", "--audio-format mp3"]
+
 
     def run(self):
         self.intercept_ydl_opts()
