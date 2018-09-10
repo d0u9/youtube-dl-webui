@@ -105,6 +105,9 @@ class Worker(Process):
         self.ydl_opts['progress_hooks'] = [self.ydl_hook.dispatcher]
         self.ydl_opts['noplaylist'] = "false"
         self.ydl_opts['progress_with_newline'] = True
+        
+        self.ydl_opts['writethumbnail'] = True
+        self.ydl_opts['writedescription'] = True
         #testing post-processing options
         self.ydl_opts['prefer_ffmpeg'] = True
         self.ydl_opts['outtmpl'] = "%(title)s.%(ext)s"
