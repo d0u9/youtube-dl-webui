@@ -107,11 +107,9 @@ class Worker(Process):
         self.ydl_opts['progress_with_newline'] = True
         
         self.ydl_opts['writethumbnail'] = True
-        self.ydl_opts['writedescription'] = True
-        #testing post-processing options
-        self.ydl_opts['prefer_ffmpeg'] = True
+        self.ydl_opts['writeinfojson'] = True
+        
         self.ydl_opts['outtmpl'] = "%(title)s.%(ext)s"
-        self.ydl_opts['postprocessor_args'] = ["-x", "--embed-thumbnail", "--add-metadata", "--no-mtime", "--audio-format mp3"]
 
 
     def run(self):
