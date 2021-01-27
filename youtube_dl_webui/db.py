@@ -250,16 +250,16 @@ class DataBase(object):
         self.logger.debug('db update_info()')
         db_data =   {
                         'valid':            1,      # info_dict is updated
-                        'title':            info_dict['title'],
-                        'format':           info_dict['format'],
-                        'ext':              info_dict['ext'],
-                        'thumbnail':        info_dict['thumbnail'],
-                        'duration':         info_dict['duration'],
-                        'view_count':       info_dict['view_count'],
-                        'like_count':       info_dict['like_count'],
-                        'dislike_count':    info_dict['dislike_count'],
-                        'average_rating':   info_dict['average_rating'],
-                        'description':      info_dict['description'],
+                        'title':            info_dict.get('title',''),
+                        'format':           info_dict.get('format',''),
+                        'ext':              info_dict.get('ext',''),
+                        'thumbnail':        info_dict.get('thumbnail',''),
+                        'duration':         info_dict.get('duration',''),
+                        'view_count':       info_dict.get('view_count',''),
+                        'like_count':       info_dict.get('like_count',''),
+                        'dislike_count':    info_dict.get('dislike_count',''),
+                        'average_rating':   info_dict.get('average_rating',''),
+                        'description':      info_dict.get('description',''),
                     }
         self.update(tid, {'task_info': db_data})
 
