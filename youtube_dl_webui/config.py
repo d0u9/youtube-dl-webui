@@ -51,6 +51,8 @@ class ydl_conf(conf_base):
             #(key,              default_val,                type,       validate_regex,     call_function)
             ('proxy',           None,                       'string',   None,               None),
             ('format',          None,                       'string',   None,               None),
+            ('ratelimit',       1048576,                    'int',      None,               None),
+            ('outtmpl',         None,                       'string',   None,               None),
         ]
 
     _task_settable_fields = set(['format'])
