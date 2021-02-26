@@ -211,7 +211,7 @@ class TaskManager(object):
         except TaskInexistenceError as e:
             raise TaskInexistenceError(e.msg)
 
-        if del_file and dl_file is not None:
+        if del_file and dl_file is not None and len(dl_file) > 0:
             file_wo_ext, ext = dl_file, None
             while ext != '':
                 file_wo_ext, ext = os.path.splitext(file_wo_ext)
