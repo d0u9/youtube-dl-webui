@@ -118,13 +118,13 @@
                             <hr class="left-hr" /><span style="font-weight: bold;">General</span><hr class="right-hr" />
                         </div>
                         <div>
-                            <label>Download Path:</label><input type="text" ref="dl-path" v-model="modalData.preference.general.download_dir" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            <label>Download Path:</label><input type="text" ref="dl-path" v-model="modalData.preference.general.download_dir" v-cloak @keyup.esc="showModal = false"/>
                         </div>
                         <div>
-                            <label>Database Path:</label><input type="text" ref="db-path" v-model="modalData.preference.general.db_path" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            <label>Database Path:</label><input type="text" ref="db-path" v-model="modalData.preference.general.db_path" v-cloak @keyup.esc="showModal = false"/>
                         </div>
                         <div>
-                            <label>Log Size:</label><input type="text" ref="log-size" v-model="modalData.preference.general.log_size" v-cloak @keyup.enter="addTask" @keyup.esc="showModal = false"/>
+                            <label>Log Size:</label><input type="text" ref="log-size" v-model="modalData.preference.general.log_size" v-cloak @keyup.esc="showModal = false"/>
                         </div>
                         <div style="text-align:center;">
                             <hr class="left-hr" /><span style="font-weight: bold;">youtube-dl options</span><hr class="right-hr" />
@@ -136,6 +136,10 @@
                             <label>Proxy:</label><input type="text" ref="proxy" v-model="modalData.preference.youtube_dl.proxy" v-cloak @keyup.esc="showModal = false"/>
                         </div>
                     </div>
+                    <div slot="footer">
+                        <button class="modal-default-button" @click="updatePreference" style="width:auto;">save</button>
+                        <button class="modal-default-button" @click="showModal = false" style="width:auto;">cancel</button>
+                    </div>                    
                 </template>
                 <template v-if="modalType === 'about'">
                     <div slot="header">About</div>

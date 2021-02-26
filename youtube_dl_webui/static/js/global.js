@@ -96,6 +96,7 @@ var videoDownload = (function (Vue, extendAM){
                     }, function(err){
                         _self.showAlertToast(err, 'error');
                     });
+                    _self.showModal = false;
                 },
                 removeTask: function(){
                     var _self = this;
