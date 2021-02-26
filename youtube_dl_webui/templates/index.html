@@ -135,6 +135,12 @@
                         <div>
                             <label>Proxy:</label><input type="text" ref="proxy" v-model="modalData.preference.youtube_dl.proxy" v-cloak @keyup.esc="showModal = false"/>
                         </div>
+                        <div>
+                            <label>Out Tmpl:</label><input type="text" ref="outtmpl" v-model="modalData.preference.youtube_dl.outtmpl" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
+                        <div>
+                            <label>Rate Limit:</label><input type="text" ref="ratelimit" v-model="modalData.preference.youtube_dl.ratelimit" v-cloak @keyup.esc="showModal = false"/>
+                        </div>
                     </div>
                     <div slot="footer">
                         <button class="modal-default-button" @click="updatePreference" style="width:auto;">save</button>

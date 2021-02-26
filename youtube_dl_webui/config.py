@@ -26,6 +26,7 @@ class conf_base(object):
             # More check can be made here
             if key in conf_dict:
                 self._conf[key] = conf_dict[key] if func is None else func(conf_dict.get(key, dft_val))
+                self._conf[key] = int(self._conf[key]) if val_type == 'int' else self._conf[key]
             elif dft_val is not None:
                 self._conf[key] = dft_val if func is None else func(conf_dict.get(key, dft_val))
 
