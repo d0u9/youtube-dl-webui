@@ -1,0 +1,13 @@
+{
+    "general": {
+        "download_dir": "/tmp/youtube_dl",
+        "db_path": "/tmp/youtube_dl_webui.db",
+        "log_size": 10
+    },
+    "server": {
+        "host": "0.0.0.0",
+        "port": 5000
+    },
+    "youtube_dl": {
+    }
+}
