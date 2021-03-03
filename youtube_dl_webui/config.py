@@ -26,6 +26,7 @@ class conf_base(object):
             # More check can be made here
             if key in conf_dict:
                 self._conf[key] = conf_dict[key] if func is None else func(conf_dict.get(key, dft_val))
+                self._conf[key] = int(self._conf[key]) if val_type == 'int' else self._conf[key]
             elif dft_val is not None:
                 self._conf[key] = dft_val if func is None else func(conf_dict.get(key, dft_val))
 
@@ -51,6 +52,8 @@ class ydl_conf(conf_base):
             #(key,              default_val,                type,       validate_regex,     call_function)
             ('proxy',           None,                       'string',   None,               None),
             ('format',          None,                       'string',   None,               None),
+            ('ratelimit',       1048576,                    'int',      None,               None),
+            ('outtmpl',         None,                       'string',   None,               None),
         ]
 
     _task_settable_fields = set(['format'])

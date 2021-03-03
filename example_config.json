@@ -10,6 +10,8 @@
     },
     "youtube_dl": {
         "format": "bestaudio/best",
-        "proxy": "socks5://127.0.0.1:1080"
+        "proxy": "socks5://127.0.0.1:1080",
+        "ratelimit": 1097152,
+        "outtmpl": "%(title)s.%(ext)s"        
     }
 }
