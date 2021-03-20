@@ -1,9 +1,9 @@
 # For ubuntu, the latest tag points to the LTS version, since that is
 # recommended for general use.
-FROM python:3.6-slim
+FROM python:3.8-slim
 
 # grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.10
+ENV GOSU_VERSION 1.11
 RUN set -x \
 	&& buildDeps=' \
 		unzip \
@@ -12,6 +12,7 @@ RUN set -x \
 		wget \
 		xz-utils \
 		gpg \
+		gpg-agent \
 	' \
 	&& apt-get update && apt-get install -y --no-install-recommends $buildDeps \
 	&& wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
@@ -24,13 +25,13 @@ RUN set -x \
 	&& gosu nobody true
 
 # install ffmpeg
-ENV FFMPEG_URL 'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz'
+ENV FFMPEG_URL 'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz'
 RUN : \
 	&& mkdir -p /tmp/ffmpeg \
 	&& cd /tmp/ffmpeg \
 	&& wget -O ffmpeg.tar.xz "$FFMPEG_URL" \
 	&& tar -xf ffmpeg.tar.xz -C . --strip-components 1 \
-	&& cp ffmpeg ffmpeg-10bit ffprobe qt-faststart /usr/bin \
+	&& cp ffmpeg ffprobe qt-faststart /usr/bin \
 	&& cd .. \
 	&& rm -fr /tmp/ffmpeg
 
@@ -40,7 +41,7 @@ WORKDIR $YOUTUBE_DL_WEBUI_SOURCE
 
 RUN : \
 	&& pip install --no-cache-dir youtube-dl flask \
-	&& wget -O youtube-dl-webui.zip https://github.com/d0u9/youtube-dl-webui/archive/dev.zip \
+	&& wget -O youtube-dl-webui.zip https://github.com/d0u9/youtube-dl-webui/archive/master.zip \
 	&& unzip youtube-dl-webui.zip \
 	&& cd youtube-dl-webui*/ \
 	&& cp -r ./* $YOUTUBE_DL_WEBUI_SOURCE/ \
